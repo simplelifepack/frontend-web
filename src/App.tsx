@@ -7,6 +7,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import BootstrapSkeleton from "@/components/BootstrapSkeleton";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializeApp } from "@/store/bootstrap";
+import { fetchPackages } from "@/store/slices/packagesSlice";
 
 const DocumentsPage = lazy(() => import("@/pages/documents"));
 const FamilyPage = lazy(() => import("@/pages/family"));
@@ -46,6 +47,12 @@ export default function App() {
       void dispatch(initializeApp());
     }
   }, [dispatch, initializationStatus, initialized, token]);
+
+  useEffect(() => {
+    if (token && initialized) {
+      void dispatch(fetchPackages({ limit: 20, page: 1 }));
+    }
+  }, [dispatch, initialized, token]);
 
   return (
     <Suspense fallback={null}>

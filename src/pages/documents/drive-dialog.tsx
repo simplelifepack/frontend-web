@@ -1,23 +1,36 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check, Cloud, X } from "lucide-react";
 
 import { btnGhost, btnGold, T } from "@/constants/theme";
 import { api, type DriveStatus } from "@/lib/api";
+import { useGoogleOAuthPopup, type OAuthPopupMessage } from "@/lib/oauth-popup";
 
 type Props = { open: boolean; onClose: () => void; onStatusChange: (status: DriveStatus) => void; onDocumentsChanged: () => void };
 
 const emptyStatus: DriveStatus = {
-  connected: false, account: null, lastScannedAt: null, lastSuccessfulSync: null,
+  connected: false, account: null, scanStatus: "idle", lastScannedAt: null, lastSuccessfulSync: null,
   scanning: false, phase: null, processed: 0, total: 0, indexedCount: 0, error: null,
 };
+
+function oauthErrorMessage(payload: OAuthPopupMessage) {
+  if (payload.description) return payload.description;
+  return ({
+    invalid_state: "The Google Drive connection expired. Please start again.",
+    access_denied: "Google Drive authorization was denied.",
+    token_exchange_failed: "Google could not complete the Google Drive connection. Please try again.",
+    account_lookup_failed: "LifePack could not read the selected Google account. Please try another account.",
+    missing_refresh_token: "Google did not return offline access. Remove LifePack from Google Account connections, then reconnect.",
+    missing_scope: "Google Drive read-only permission was not granted. Please reconnect and allow it.",
+    database_error: "LifePack could not save the Google Drive connection. Please try again.",
+    token_storage_failed: "LifePack could not securely store the Google Drive connection. Please try again.",
+  }[payload.reason ?? ""] ?? "Google Drive connection was not completed. Please try again.");
+}
 
 export default function DriveDialog({ open, onClose, onStatusChange, onDocumentsChanged }: Props) {
   const [status, setStatus] = useState<DriveStatus>(emptyStatus);
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
   const [duplicateAction, setDuplicateAction] = useState<"replace" | "keep_both" | "ignore">("ignore");
-  const oauthHandled = useRef(false);
-  const oauthPopup = useRef<Window | null>(null);
   const updateStatus = useCallback((next: DriveStatus) => {
     setStatus(next);
     onStatusChange(next);
@@ -32,6 +45,7 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
     setMessage("");
     updateStatus({
       ...currentStatus,
+      scanStatus: "scanning",
       scanning: true,
       phase: "Loading...",
       processed: 0,
@@ -39,17 +53,15 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
       error: null,
     });
     try {
-      await api.drive.scan(full, duplicateAction);
+      const result = await api.drive.scan(full, duplicateAction);
       const next = await refresh();
-      if (!next.scanning) {
-        setBusy("");
-        onDocumentsChanged();
-        setMessage(next.error || "Google Drive scan complete.");
-      }
-    } catch {
       setBusy("");
-      updateStatus({ ...currentStatus, scanning: false, phase: null });
-      setMessage("Google Drive scan could not start. Reconnect if access was revoked.");
+      onDocumentsChanged();
+      setMessage(next.error || `${result.message} Imported ${result.imported}, skipped ${result.skipped}, failed ${result.failed}.`);
+    } catch (error) {
+      setBusy("");
+      updateStatus({ ...currentStatus, scanStatus: "failed", scanning: false, phase: null });
+      setMessage(error instanceof Error ? error.message : "Google Drive scan could not start. Reconnect if access was revoked.");
     }
   }, [duplicateAction, onDocumentsChanged, refresh, status, updateStatus]);
 
@@ -67,49 +79,29 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
     }, 1200);
     return () => window.clearInterval(timer);
   }, [open, onDocumentsChanged, refresh, status.scanning]);
-  useEffect(() => {
-    if (!open) return;
-    const handleResult = (payload: { type?: string; status?: string }) => {
-      if (payload.type !== "lifepack:drive-oauth" || oauthHandled.current) return;
-      oauthHandled.current = true;
-      oauthPopup.current?.close();
-      oauthPopup.current = null;
-      if (payload.status === "connected") {
-        void refresh().then((next) => scan(false, next));
-      } else {
-        setBusy("");
-        setMessage("Google Drive connection was not completed. Please try again.");
-      }
-    };
-    const messageListener = (event: MessageEvent) => {
-      if (event.origin === window.location.origin) handleResult(event.data);
-    };
-    const storageListener = (event: StorageEvent) => {
-      if (event.key !== "lifepack:drive-oauth-result" || !event.newValue) return;
-      try { handleResult(JSON.parse(event.newValue)); } catch { /* Ignore malformed cross-window events. */ }
-    };
-    const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("lifepack:drive-oauth");
-    if (channel) channel.onmessage = (event) => handleResult(event.data);
-    window.addEventListener("message", messageListener);
-    window.addEventListener("storage", storageListener);
-    return () => {
-      channel?.close();
-      window.removeEventListener("message", messageListener);
-      window.removeEventListener("storage", storageListener);
-    };
-  }, [open, refresh, scan]);
+  const handleOAuthResult = useCallback((payload: OAuthPopupMessage) => {
+    if (payload.status === "connected") {
+      void refresh().then((next) => scan(false, next));
+    } else {
+      setBusy("");
+      setMessage(oauthErrorMessage(payload));
+    }
+  }, [refresh, scan]);
+  const driveOAuth = useGoogleOAuthPopup({
+    provider: "drive",
+    popupName: "lifepack-drive-oauth",
+    onResult: handleOAuthResult,
+    onCancel: () => { setBusy(""); setMessage("Google Drive connection was cancelled."); },
+  });
 
   if (!open) return null;
 
   const connect = async () => {
-    oauthHandled.current = false;
     setBusy("connect");
     setMessage("");
     try {
       const { authorizationUrl } = await api.drive.authorize();
-      const popup = window.open(authorizationUrl, "lifepack-drive", "popup,width=560,height=720");
-      oauthPopup.current = popup;
-      if (!popup) { setBusy(""); setMessage("Allow popups to connect Google Drive."); }
+      if (!driveOAuth.openPopup(authorizationUrl)) { setBusy(""); setMessage("Allow popups to connect Google Drive."); }
     } catch { setBusy(""); setMessage("Unable to start Google Drive authorization."); }
   };
   const disconnect = async () => {

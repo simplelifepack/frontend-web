@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, Mail, X } from "lucide-react";
 
 import { btnGhost, btnGold, T } from "@/constants/theme";
 import { api, type GmailCandidate, type GmailStatus } from "@/lib/api";
+import { useGoogleOAuthPopup, type OAuthPopupMessage } from "@/lib/oauth-popup";
 import { useAppDispatch } from "@/store/hooks";
 import { setImportedAnalyses } from "@/store/slices/documentsSlice";
 
@@ -12,7 +13,7 @@ const labels: Record<string, string> = {
   employment: "Employment", education: "Education", property: "Property", other: "Other",
 };
 const formatSize = (size: number) => size ? `${(size / 1024 / 1024).toFixed(size > 1024 * 1024 ? 1 : 2)} MB` : "Email content";
-const oauthErrorMessage = (reason?: string) => ({
+const oauthErrorMessage = (reason?: string, description?: string) => description || ({
   invalid_state: "The Gmail connection expired. Please start again.",
   access_denied: "Gmail permission was cancelled. Please allow read-only access to continue.",
   token_exchange_failed: "Google could not complete the Gmail connection. Please try again.",
@@ -35,8 +36,6 @@ export default function GmailImportDialog({ open, onClose, onStatusChange }: Pro
   const [showIgnored, setShowIgnored] = useState(false);
   const [busy, setBusy] = useState<"" | "connect" | "scan" | "import" | "disconnect">("");
   const [message, setMessage] = useState("");
-  const oauthPopup = useRef<Window | null>(null);
-  const oauthHandled = useRef(false);
 
   const refresh = useCallback(async (forceStatus = false) => {
     const next = await api.gmail.status(forceStatus);
@@ -45,44 +44,28 @@ export default function GmailImportDialog({ open, onClose, onStatusChange }: Pro
   }, [onStatusChange]);
 
   useEffect(() => { if (open) void refresh().catch(() => setMessage("Unable to load Gmail connection.")); }, [open, refresh]);
-  useEffect(() => {
-    const handleResult = (payload: { type?: string; status?: string; reason?: string }) => {
-      if (payload.type !== "lifepack:gmail-oauth" || oauthHandled.current) return;
-      oauthHandled.current = true;
-      oauthPopup.current?.close();
-      oauthPopup.current = null;
-      setBusy("");
-      if (payload.status === "connected") {
-        setBusy("scan");
-        setMessage("Connected. Searching Gmail for likely personal documents…");
-        void refresh(true)
-          .then(() => api.gmail.scan(false))
-          .then((result) => refresh(true).then(() => {
-            setMessage(`Scan complete: ${result.relevant} relevant, ${result.needsReview} need review, ${result.ignored} ignored.`);
-          }))
-          .catch(() => setMessage("Gmail connected, but the first scan failed. Use Scan Gmail to try again."))
-          .finally(() => setBusy(""));
-      } else {
-        setMessage(oauthErrorMessage(payload.reason));
-      }
-    };
-    const receive = (event: MessageEvent<{ type?: string; status?: string; reason?: string }>) => {
-      if (event.origin === window.location.origin) handleResult(event.data);
-    };
-    const receiveStorage = (event: StorageEvent) => {
-      if (event.key !== "lifepack:gmail-oauth-result" || !event.newValue) return;
-      try { handleResult(JSON.parse(event.newValue)); } catch { /* Ignore malformed cross-window events. */ }
-    };
-    const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel("lifepack:gmail-oauth");
-    if (channel) channel.onmessage = (event) => handleResult(event.data);
-    window.addEventListener("message", receive);
-    window.addEventListener("storage", receiveStorage);
-    return () => {
-      channel?.close();
-      window.removeEventListener("message", receive);
-      window.removeEventListener("storage", receiveStorage);
-    };
+  const handleOAuthResult = useCallback((payload: OAuthPopupMessage) => {
+    setBusy("");
+    if (payload.status === "connected") {
+      setBusy("scan");
+      setMessage("Connected. Searching Gmail for likely personal documents…");
+      void refresh(true)
+        .then(() => api.gmail.scan(false))
+        .then((result) => refresh(true).then(() => {
+          setMessage(`Scan complete: ${result.relevant} relevant, ${result.needsReview} need review, ${result.ignored} ignored.`);
+        }))
+        .catch(() => setMessage("Gmail connected, but the first scan failed. Use Scan Gmail to try again."))
+        .finally(() => setBusy(""));
+    } else {
+      setMessage(oauthErrorMessage(payload.reason, payload.description));
+    }
   }, [refresh]);
+  const gmailOAuth = useGoogleOAuthPopup({
+    provider: "gmail",
+    popupName: "lifepack-gmail-oauth",
+    onResult: handleOAuthResult,
+    onCancel: () => { setBusy(""); setMessage("Gmail connection was cancelled."); },
+  });
 
   const visible = useMemo(() => candidates.filter((item) => {
     if (!showIgnored && ["ignored", "dismissed"].includes(item.status)) return false;
@@ -104,13 +87,10 @@ export default function GmailImportDialog({ open, onClose, onStatusChange }: Pro
 
   if (!open) return null;
   const connect = async () => {
-    oauthHandled.current = false;
     setBusy("connect"); setMessage("");
     try {
       const { authorizationUrl } = await api.gmail.authorize();
-      const popup = window.open(authorizationUrl, "lifepack-gmail", "popup,width=560,height=720");
-      oauthPopup.current = popup;
-      if (!popup) { setBusy(""); setMessage("Allow popups to connect Gmail."); }
+      if (!gmailOAuth.openPopup(authorizationUrl)) { setBusy(""); setMessage("Allow popups to connect Gmail."); }
     } catch { setBusy(""); setMessage("Unable to start Gmail authorization."); }
   };
   const scan = async (full = false) => {

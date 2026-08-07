@@ -51,6 +51,7 @@ export type DocumentRecord = {
 export type DriveStatus = {
   connected: boolean;
   account: string | null;
+  scanStatus: "idle" | "scanning" | "completed" | "failed";
   lastScannedAt: string | null;
   lastSuccessfulSync: string | null;
   scanning: boolean;
@@ -59,6 +60,23 @@ export type DriveStatus = {
   total: number;
   indexedCount: number;
   error: string | null;
+};
+
+export type DriveScanResult = {
+  discovered: number;
+  processed: number;
+  imported: number;
+  skipped: number;
+  failed: number;
+  indexed: number;
+  updated: number;
+  unchanged: number;
+  ignored: number;
+  duplicate: number;
+  duplicate_kept: number;
+  indexedCount: number;
+  lastSuccessfulSync: string;
+  message: string;
 };
 
 export type Evidence = {
@@ -198,12 +216,91 @@ export type PackSummary = {
   id: string;
   slug: string;
   title: string;
+  subtitle?: string | null;
   category: string;
   description: string;
   aliases: string[];
   keywords: string[];
+  sourceType?: string;
+  sourceName?: string | null;
+  sourceTitle?: string | null;
+  sourceUrl?: string | null;
+  lastCheckedAt?: string | null;
+  verificationSources?: VerificationSource[];
+  lastVerifiedAt?: string | null;
+  verificationStatus?: "verified" | "needs_review";
+  createdAt?: string;
+  createdBy?: string;
   version: number;
   requirements: PackageRequirement[];
+};
+
+export type VerificationSource = {
+  title: string;
+  organization: string;
+  url: string;
+  type: "government" | "official" | "bank" | "university" | "insurance" | "authority";
+  retrievedAt: string;
+};
+
+export type PackageListItem = {
+  id: string;
+  slug: string;
+  name: string;
+  title: string;
+  subtitle: string | null;
+  category: string;
+  provider: string | null;
+  location: string | null;
+  description: string;
+  shortDescription: string;
+  icon: string | null;
+  sourceType: string;
+  sourceName: string | null;
+  sourceTitle: string | null;
+  sourceUrl: string | null;
+  lastCheckedAt: string | null;
+  verificationSources: VerificationSource[];
+  lastVerifiedAt: string | null;
+  verificationStatus: "verified" | "needs_review";
+  createdAt: string;
+  requiredDocumentCount: number;
+  readyDocumentCount: number;
+  source: string;
+  generationSource: string;
+  version: number;
+};
+
+export type PackageListResponse = {
+  query: string;
+  items: PackageListItem[];
+  matches: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    matchType: string;
+    confidence: number;
+    matchedTokens: string[];
+    missingTokens: string[];
+  }>;
+  hasConfidentMatch: boolean;
+  canGenerate: boolean;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasNextPage: boolean;
+  };
+};
+
+export type PackageListQuery = {
+  category?: string;
+  limit?: number;
+  location?: string;
+  page?: number;
+  provider?: string;
+  search?: string;
+  sort?: "category" | "newest" | "relevance" | "title";
 };
 
 export type PackageRequirement = {
@@ -230,7 +327,6 @@ export type BootstrapResponse = {
   user: AuthUser;
   familyMembers: FamilyMember[];
   documents: DocumentRecord[];
-  packages: PackSummary[];
   savedPackages: string[];
   version: string;
 };
@@ -297,3 +393,11 @@ export type ReadinessResult = {
 };
 
 export type PackageLookup = ReadinessResult["suggestions"][number];
+
+export type PackageSearchOrGenerateResponse = {
+  source: "existing" | "official_source";
+  confidence: number | null;
+  matchReason: string | null;
+  package: PackSummary;
+  readiness: ReadinessResult;
+};

@@ -35,6 +35,26 @@ type PackDetailProps = {
   onUpload: () => void;
 };
 
+function formatPackageDate(value?: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+function packageSource(pack: PackSummary) {
+  const [firstSource] = pack.verificationSources ?? [];
+  return {
+    title: pack.sourceTitle ?? firstSource?.title ?? firstSource?.organization ?? "Official source",
+    url: pack.sourceUrl ?? firstSource?.url ?? "",
+    checked: formatPackageDate(pack.lastCheckedAt ?? pack.lastVerifiedAt ?? firstSource?.retrievedAt),
+  };
+}
+
 export default function PackDetail({
   completion,
   downloadStatus,
@@ -54,7 +74,7 @@ export default function PackDetail({
     (group) => group.requirements,
   );
   const found = requirements.filter((slot) => slot.status === "ready");
-  const needed = requirements.filter((slot) => slot.status !== "ready");
+  const needed = requirements.filter((slot) => slot.required && slot.status !== "ready");
 
   return (
     <div className="lp-pack-drawer-inner">
@@ -77,11 +97,26 @@ export default function PackDetail({
               <span><Plane size={23} /></span>
               <div>
                 <h2>{pack.title}</h2>
-                <p>{pack.description || pack.category}</p>
+                <p>{pack.subtitle || pack.description || pack.category}</p>
               </div>
             </div>
             <div className="lp-pack-drawer-source">
-              Curated · Category: {pack.category}
+              {(() => {
+                const source = packageSource(pack);
+                return (
+                  <>
+                    <span>Source: </span>
+                    {source.url ? (
+                      <a href={source.url} target="_blank" rel="noreferrer" title={source.url}>
+                        {source.title}
+                      </a>
+                    ) : (
+                      <span>{source.title}</span>
+                    )}
+                    <span>Last checked: {source.checked ?? "Not available"}</span>
+                  </>
+                );
+              })()}
             </div>
             <div className="lp-pack-drawer-score">
               <Ring score={completion} size={64} />
@@ -137,9 +172,6 @@ export default function PackDetail({
                   </div>
                 );
               })}
-              {!found.length && readinessStatus === "idle" ? (
-                <div className="lp-pack-check-empty">No matching documents yet.</div>
-              ) : null}
             </section>
 
             {needed.length ? (

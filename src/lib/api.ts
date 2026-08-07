@@ -6,13 +6,17 @@ import type {
   AuthUser,
   BootstrapResponse,
   DocumentRecord,
+  DriveScanResult,
   DriveStatus,
   ForgotPasswordResponse,
   GmailCandidate,
   GmailImportResult,
   GmailStatus,
   PackSummary,
+  PackageListQuery,
+  PackageListResponse,
   PackageLookup,
+  PackageSearchOrGenerateResponse,
   ReadinessResult,
   SaveDocumentPayload,
   UploadDocumentResponse,
@@ -20,6 +24,14 @@ import type {
 
 export type * from "./api.types";
 export { API_URL };
+
+function toQueryString(params: Record<string, string | number | undefined>) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") query.set(key, String(value));
+  });
+  return query.toString();
+}
 
 export const api = {
   ai: {
@@ -62,7 +74,7 @@ export const api = {
     status: () => request<DriveStatus>("/api/integrations/drive/status", { requiresAuth: true }),
     authorize: () => request<{ authorizationUrl: string }>("/api/integrations/drive/authorize", { method: "POST", requiresAuth: true }),
     scan: (full = false, duplicateAction: "replace" | "keep_both" | "ignore" = "ignore") =>
-      request<{ started: true }>("/api/integrations/drive/scan", { method: "POST", body: { full, duplicateAction }, requiresAuth: true }),
+      request<DriveScanResult>("/api/integrations/drive/scan", { method: "POST", body: { full, duplicateAction }, requiresAuth: true }),
     disconnect: () => request<void>("/api/integrations/drive", { method: "DELETE", requiresAuth: true }),
   },
   documents: {
@@ -102,9 +114,26 @@ export const api = {
   },
   bootstrap: () => request<BootstrapResponse>("/api/bootstrap", { requiresAuth: true }),
   packages: {
-    list: () => request<PackSummary[]>("/packs", { requiresAuth: true }),
+    list: (query: PackageListQuery = {}) =>
+      request<PackageListResponse>(`/api/packages?${toQueryString({
+        category: query.category,
+        limit: query.limit ?? 20,
+        location: query.location,
+        page: query.page ?? 1,
+        provider: query.provider,
+        search: query.search,
+        sort: query.sort,
+      })}`, { requiresAuth: true, dedupeMs: 5_000 }),
+    get: (slug: string) =>
+      request<PackSummary>(`/api/packages/${encodeURIComponent(slug)}`, { requiresAuth: true, dedupeMs: 5_000 }),
     search: (query: string) =>
       request<ReadinessResult>(`/packages/search?q=${encodeURIComponent(query)}`, { requiresAuth: true }),
+    searchOrGenerate: (query: string) =>
+      request<PackageSearchOrGenerateResponse>("/api/packages/search-or-generate", {
+        method: "POST",
+        body: { query },
+        requiresAuth: true,
+      }),
     getByIds: (ids: string[]) =>
       request<PackageLookup[]>(`/packages?ids=${encodeURIComponent(ids.join(","))}`, { requiresAuth: true }),
     download: (slug: string) => downloadBlob(`/packs/${encodeURIComponent(slug)}/download`, { requiresAuth: true }),

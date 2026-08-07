@@ -15,7 +15,7 @@ const DocumentsOverview = lazy(() => import("./documents-overview"));
 const GmailImportDialog = lazy(() => import("./gmail-import-dialog"));
 const DriveDialog = lazy(() => import("./drive-dialog"));
 
-const emptyDriveStatus: DriveStatus = { connected: false, account: null, lastScannedAt: null, lastSuccessfulSync: null, scanning: false, phase: null, processed: 0, total: 0, indexedCount: 0, error: null };
+const emptyDriveStatus: DriveStatus = { connected: false, account: null, scanStatus: "idle", lastScannedAt: null, lastSuccessfulSync: null, scanning: false, phase: null, processed: 0, total: 0, indexedCount: 0, error: null };
 
 function DocumentsFallback() {
   return (
@@ -45,32 +45,19 @@ export default function DocumentsPage() {
 
   useEffect(() => { void api.gmail.status().then(setGmailStatus).catch(() => undefined); }, []);
   useEffect(() => { void api.drive.status().then(setDriveStatus).catch(() => undefined); }, []);
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const provider = params.has("drive") ? "drive" : "gmail";
+    const provider = params.has("drive") ? "drive" : params.has("gmail") ? "gmail" : null;
+    if (!provider) return;
     const oauthStatus = params.get(provider);
     if (oauthStatus !== "connected" && oauthStatus !== "error") return;
-    const payload = { type: `lifepack:${provider}-oauth`, status: oauthStatus, reason: params.get("reason") ?? undefined };
     if (provider === "drive") {
-      if (typeof BroadcastChannel !== "undefined") {
-        const channel = new BroadcastChannel("lifepack:drive-oauth");
-        channel.postMessage(payload);
-        channel.close();
-      }
-      localStorage.setItem("lifepack:drive-oauth-result", JSON.stringify({ ...payload, timestamp: Date.now() }));
-      window.opener?.postMessage(payload, window.location.origin);
-      window.close();
-      window.setTimeout(() => navigate("/documents", { replace: true }), 250);
-      return;
+      void api.drive.status().then(setDriveStatus).catch(() => undefined);
+      setDriveOpen(true);
+    } else {
+      void api.gmail.status(true).then(setGmailStatus).catch(() => undefined);
+      setGmailOpen(true);
     }
-    if (window.opener) {
-      window.opener.postMessage(payload, window.location.origin);
-      window.close();
-      return;
-    }
-    if (provider === "drive") { void api.drive.status().then(setDriveStatus).catch(() => undefined); setDriveOpen(true); }
-    else { void api.gmail.status(true).then(setGmailStatus).catch(() => undefined); setGmailOpen(true); }
     navigate("/documents", { replace: true });
   }, [navigate]);
 
