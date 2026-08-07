@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
       </p>
       <h2 className="mt-4 text-3xl font-semibold text-white">Forgot password</h2>
       <p className="mt-2 text-sm text-slate-400">
-        Submit your email and we will return a generic success response.
+        Enter your email and we will send reset instructions if the account exists.
       </p>
 
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>

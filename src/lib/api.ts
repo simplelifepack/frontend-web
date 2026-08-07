@@ -18,6 +18,7 @@ import type {
   PackageLookup,
   PackageSearchOrGenerateResponse,
   ReadinessResult,
+  ResetPasswordResponse,
   SaveDocumentPayload,
   UploadDocumentResponse,
 } from "./api.types";
@@ -55,6 +56,8 @@ export const api = {
       request<ForgotPasswordResponse>("/auth/logout", { method: "POST", body: payload }),
     forgotPassword: (payload: { email: string }) =>
       request<ForgotPasswordResponse>("/auth/forgot-password", { method: "POST", body: payload }),
+    resetPassword: (payload: { token: string; password: string }) =>
+      request<ResetPasswordResponse>("/auth/reset-password", { method: "POST", body: payload }),
     me: () => request<{ user: AuthUser }>("/auth/me", { requiresAuth: true }),
   },
   gmail: {

@@ -18,6 +18,7 @@ const LandingPage = lazy(() => import("@/pages/landing"));
 const LegacyPage = lazy(() => import("@/pages/legacy"));
 const LoginPage = lazy(() => import("@/pages/login"));
 const PackagesPage = lazy(() => import("@/pages/packages"));
+const ResetPasswordPage = lazy(() => import("@/pages/reset-password"));
 const SignupPage = lazy(() => import("@/pages/signup"));
 const TrustPage = lazy(() => import("@/pages/trust"));
 const WealthPage = lazy(() => import("@/pages/wealth"));
@@ -80,6 +81,14 @@ export default function App() {
           element={
             <AuthLayout>
               <ForgotPasswordPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <AuthLayout>
+              <ResetPasswordPage />
             </AuthLayout>
           }
         />

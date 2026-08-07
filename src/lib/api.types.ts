@@ -16,6 +16,10 @@ export type ForgotPasswordResponse = {
   message: string;
 };
 
+export type ResetPasswordResponse = {
+  message: string;
+};
+
 export type DocumentRecord = {
   id: string;
   title?: string | null;
