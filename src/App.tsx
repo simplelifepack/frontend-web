@@ -5,6 +5,7 @@ import AppShell from "@/components/AppShell";
 import AuthLayout from "@/components/AuthLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import BootstrapSkeleton from "@/components/BootstrapSkeleton";
+import PlanGate from "@/components/PlanGate";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializeApp } from "@/store/bootstrap";
 import { fetchPackages } from "@/store/slices/packagesSlice";
@@ -14,6 +15,7 @@ const FamilyPage = lazy(() => import("@/pages/family"));
 const ForgotPasswordPage = lazy(() => import("@/pages/forgot-password"));
 const HealthPage = lazy(() => import("@/pages/health"));
 const HomePage = lazy(() => import("@/pages/home"));
+const InvitePage = lazy(() => import("@/pages/invite"));
 const LandingPage = lazy(() => import("@/pages/landing"));
 const LegacyPage = lazy(() => import("@/pages/legacy"));
 const LoginPage = lazy(() => import("@/pages/login"));
@@ -92,6 +94,14 @@ export default function App() {
             </AuthLayout>
           }
         />
+        <Route
+          path="/invite/:token"
+          element={
+            <AuthLayout>
+              <InvitePage />
+            </AuthLayout>
+          }
+        />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
@@ -103,9 +113,9 @@ export default function App() {
               path="/documents/:category/:documentId"
               element={<DocumentsPage />}
             />
-            <Route path="/health" element={<HealthPage />} />
+            <Route path="/health" element={<PlanGate module="health"><HealthPage /></PlanGate>} />
             <Route path="/family" element={<FamilyPage />} />
-            <Route path="/wealth" element={<WealthPage />} />
+            <Route path="/wealth" element={<PlanGate module="wealth"><WealthPage /></PlanGate>} />
             <Route path="/legacy" element={<LegacyPage />} />
             <Route path="/trust" element={<TrustPage />} />
           </Route>

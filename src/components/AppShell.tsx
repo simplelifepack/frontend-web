@@ -4,51 +4,21 @@ import {
   ChevronsLeft,
   ChevronsRight,
   FileText,
-  FolderOpen,
-  HeartPulse,
-  LayoutGrid,
-  Plane,
+  LockKeyhole,
   Search,
-  ShieldCheck,
-  Wallet,
   X,
 } from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { T } from "@/constants/theme";
-import type { WorkspaceRoute } from "@/data/demoData";
 import { api } from "@/lib/api";
 import { getStoredRefreshToken } from "@/lib/auth";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
-
-const ROUTE_PATHS: Record<WorkspaceRoute, string> = {
-  home: "/home",
-  packages: "/packages",
-  documents: "/documents",
-  health: "/health",
-  family: "/family",
-  wealth: "/wealth",
-  legacy: "/legacy",
-  trust: "/trust",
-};
-
-const SHELL_NAV = [
-  { key: "home", label: "Home", icon: LayoutGrid },
-  { key: "documents", label: "Documents", icon: FolderOpen },
-  { key: "packages", label: "Packages", icon: Plane },
-  { key: "health", label: "Health", icon: HeartPulse },
-  { key: "wealth", label: "Wealth", icon: Wallet },
-  { key: "trust", label: "Trust center", icon: ShieldCheck },
-] as const;
+import LockedUpgradeModal, { type LockedModuleKey } from "./LockedUpgradeModal";
+import { ROUTE_PATHS, SHELL_NAV, routeFromPath } from "./appShellNav";
 
 const UploadDocumentModal = lazy(() => import("@/components/UploadDocumentModal"));
-
-function routeFromPath(pathname: string): WorkspaceRoute {
-  if (pathname.startsWith("/documents")) return "documents";
-  const match = Object.entries(ROUTE_PATHS).find(([, path]) => path === pathname);
-  return (match?.[0] as WorkspaceRoute | undefined) ?? "home";
-}
 
 type AppShellProps = {
   children?: ReactNode;
@@ -59,9 +29,11 @@ export default function AppShell({ children }: AppShellProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAppSelector((state) => state.auth.user);
+  const entitlements = useAppSelector((state) => state.auth.entitlements);
   const currentRoute = routeFromPath(location.pathname);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [stayAfterUpload, setStayAfterUpload] = useState(false);
+  const [lockedModule, setLockedModule] = useState<LockedModuleKey | null>(null);
   const [query, setQuery] = useState("");
   const [navOpen, setNavOpen] = useState(() =>
     typeof window === "undefined" ? true : window.innerWidth > 760,
@@ -151,29 +123,49 @@ export default function AppShell({ children }: AppShellProps) {
           {SHELL_NAV.map((n) => {
             const Icon = n.icon;
             const active = currentRoute === n.key;
+            const locked =
+              n.key === "health" ? !entitlements?.rules.modules.health :
+              n.key === "wealth" ? !entitlements?.rules.modules.wealth :
+              false;
+            const navStyle = {
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: navOpen ? "flex-start" : "center",
+              gap: navOpen ? 12 : 0,
+              background: active ? T.raised : "transparent",
+              color: active ? T.white : T.muted,
+              border: `1px solid ${active ? T.border : "transparent"}`,
+              borderRadius: 10,
+              padding: navOpen ? "10px 12px" : "10px 0",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+              textAlign: "left" as const,
+              textDecoration: "none",
+              whiteSpace: "nowrap" as const,
+            };
+            if (locked) {
+              return (
+                <button
+                  key={n.key}
+                  type="button"
+                  title={`${n.label} locked`}
+                  onClick={() => setLockedModule(n.key as LockedModuleKey)}
+                  style={navStyle}
+                >
+                  <Icon size={18} color={T.muted} style={{ flexShrink: 0 }} />
+                  {navOpen ? <span style={{ flex: 1 }}>{n.label}</span> : ""}
+                  {navOpen ? <LockKeyhole size={13} color={T.gold} /> : null}
+                </button>
+              );
+            }
             return (
               <NavLink
                 key={n.key}
                 to={ROUTE_PATHS[n.key]}
                 title={n.label}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: navOpen ? "flex-start" : "center",
-                  gap: navOpen ? 12 : 0,
-                  background: active ? T.raised : "transparent",
-                  color: active ? T.white : T.muted,
-                  border: `1px solid ${active ? T.border : "transparent"}`,
-                  borderRadius: 10,
-                  padding: navOpen ? "10px 12px" : "10px 0",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
-                }}
+                style={navStyle}
               >
                 <Icon size={18} color={active ? T.gold : T.muted} style={{ flexShrink: 0 }} />
                 {navOpen ? n.label : ""}
@@ -217,7 +209,7 @@ export default function AppShell({ children }: AppShellProps) {
         }}
       >
         <div style={{ maxWidth: 1160, margin: "0 auto", width: "100%" }}>
-          {currentRoute !== "documents" ? (
+          {currentRoute !== "documents" && currentRoute !== "wealth" ? (
             <div className="lp-topbar">
               <label className="lp-global-search">
                 <Search size={15} color={T.muted} />
@@ -256,6 +248,7 @@ export default function AppShell({ children }: AppShellProps) {
             />
           </Suspense>
         ) : null}
+        
       </main>
     </div>
   );

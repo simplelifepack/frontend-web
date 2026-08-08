@@ -12,7 +12,7 @@ export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 type RequestOptions = {
   body?: BodyInit | unknown;
   dedupeMs?: number;
-  method?: "GET" | "POST" | "DELETE";
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
   requiresAuth?: boolean;
   retryOnUnauthorized?: boolean;
 };
@@ -51,6 +51,12 @@ const safeMessages: Record<string, string> = {
   INVALID_ENCRYPTION_ENVELOPE: "The encrypted upload could not be verified.",
   UPLOAD_FAILED: "The document could not be uploaded.",
   TEMPORARY_UPLOAD_EXPIRED: "This upload review has expired. Please select the file again.",
+  PLAN_FEATURE_NOT_AVAILABLE: "Your current plan does not include this feature.",
+  PLAN_MEMBER_LIMIT_REACHED: "Your member limit has been reached.",
+  PLAN_STORAGE_LIMIT_REACHED: "Your storage limit has been reached.",
+  PLAN_AI_SEARCH_LIMIT_REACHED: "Your monthly AI package search limit has been reached.",
+  TRUST_ACCESS_DENIED: "You do not have access to this Trust Center action.",
+  TRUST_MEMBER_REVOKED: "This Trust Center access has been revoked.",
 };
 
 async function performRequest<T>(path: string, options: RequestOptions = {}) {

@@ -327,8 +327,237 @@ export type FamilyMember = {
   relationship?: string;
 };
 
+export type PlanCode = "FREEMIUM" | "FAMILY" | "PLUS";
+
+export type PlanEntitlements = {
+  plan: { id: string; code: PlanCode; name: string };
+  rules: {
+    memberLimit: number;
+    storageBytes: number;
+    unknownPackSearchLimit: number;
+    modules: {
+      home: boolean;
+      packages: boolean;
+      documents: boolean;
+      health: boolean;
+      wealth: boolean;
+      trustCenter: boolean;
+    };
+    emergencyAccess: boolean;
+  };
+  usage: {
+    period: string;
+    unknownPackSearches: number;
+    storageBytesUsed: number;
+    aiSearchesRemaining: number;
+    resetAt: string;
+  };
+};
+
+export type TrustAccessType = {
+  id: string;
+  code: "VIEW_ONLY" | "FAMILY_MEMBER" | "EMERGENCY_ACCESS" | "OWNER";
+  name: string;
+  description: string;
+  rules?: unknown;
+};
+
+export type TrustPermission = {
+  module: "DOCUMENTS" | "HEALTH" | "WEALTH";
+  canView: boolean;
+  canDownload: boolean;
+};
+
+export type TrustMember = {
+  id: string;
+  name: string;
+  email: string;
+  relation: string;
+  customRelation?: string | null;
+  relationLabel: string;
+  dateOfBirth: string;
+  bloodGroup: string;
+  accessType: TrustAccessType;
+  status: "INVITED" | "ACTIVE" | "REVOKED" | "REJECTED";
+  invitationStatus: "PENDING" | "EXPIRED" | "ACCEPTED" | "REJECTED" | "NONE";
+  invitedAt: string;
+  inviteExpiresAt?: string | null;
+  acceptedAt?: string | null;
+  rejectedAt?: string | null;
+  revokedAt?: string | null;
+  permissions: TrustPermission[];
+  invitationDelivery?: {
+    sent: boolean;
+    messageId?: string | null;
+    reason?: "email_disabled" | "invalid_recipient" | "delivery_failed";
+    errorCode?: string;
+  };
+};
+
+export type TrustMemberPayload = {
+  name: string;
+  email: string;
+  relation: "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "GUARDIAN" | "RELATIVE" | "FRIEND" | "OTHER";
+  customRelation?: string;
+  dateOfBirth: string;
+  bloodGroup: "A+" | "A-" | "B+" | "B-" | "O+" | "O-" | "AB+" | "AB-";
+  accessTypeCode: "VIEW_ONLY" | "FAMILY_MEMBER" | "EMERGENCY_ACCESS";
+  pin: string;
+  permissions: TrustPermission[];
+};
+
+export type TrustConnection = {
+  id: string;
+  owner: { id: string; name: string; email: string };
+  relation: string;
+  relationLabel: string;
+  accessType: TrustAccessType;
+  status: "ACTIVE";
+  acceptedAt?: string | null;
+};
+
+export type TrustInvitation = {
+  id: string;
+  ownerName: string;
+  memberName: string;
+  relationLabel: string;
+  accessType: TrustAccessType;
+  expiresAt: string;
+};
+
+export type TrustCenterResponse = {
+  role: "OWNER" | "BOTH";
+  owner: { id: string; name: string; email: string; accessType: "OWNER"; note: string };
+  plan: PlanEntitlements["plan"];
+  entitlements: PlanEntitlements;
+  memberLimit: number;
+  memberCount: number;
+  remainingSlots: number;
+  members: TrustMember[];
+  connections: TrustConnection[];
+  accessTypes: TrustAccessType[];
+  modules: PlanEntitlements["rules"]["modules"];
+};
+
+export type WealthHandoffRecipient = {
+  id: string;
+  name: string;
+  email: string;
+  relationship: string;
+  verificationStatus: "verified";
+  type: "family" | "emergency" | "other";
+};
+
+export type WealthRecordType = "ASSET" | "LOAN_TAKEN" | "LOAN_GIVEN" | "INSURANCE" | "PAYMENT_PROOF";
+
+export type WealthRecordPayload = {
+  type: WealthRecordType;
+  title: string;
+  details: Record<string, string | number | boolean | null>;
+  notes?: string;
+  followUpDate?: string | null;
+  followUpNote?: string;
+  attachmentDocumentIds: string[];
+};
+
+export type WealthRecord = WealthRecordPayload & {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  attachments: Array<{
+    id: string;
+    documentId: string;
+    originalName: string;
+    title?: string | null;
+    mimeType: string;
+    size: number;
+  }>;
+  loanBreakdown?: {
+    principal: number;
+    interest: number;
+    payments: number;
+    outstanding: number;
+    monthsElapsed: number;
+    calculationType: string;
+  } | null;
+};
+
+export type DynamicFormOption = string | { label: string; value: string };
+
+export type DynamicFormCategory = {
+  code: string;
+  label: string;
+  description?: string | null;
+};
+
+export type DynamicFormSubtype = DynamicFormCategory;
+
+export type DynamicFormField = {
+  id: string;
+  label: string;
+  inputType: "text" | "number" | "date" | "select" | "textarea" | "file" | string;
+  required: boolean;
+  placeholder?: string | null;
+  defaultValue?: string | number | boolean | null;
+  options?: DynamicFormOption[] | null;
+  validation?: unknown;
+  group?: string | null;
+  visibility?: unknown;
+  order: number;
+};
+
+export type DynamicFormSchema = {
+  category: DynamicFormCategory;
+  subtype: DynamicFormSubtype;
+  fields: DynamicFormField[];
+};
+
+export type WealthDynamicFormSubmitPayload = {
+  categoryCode: string;
+  subtypeCode: string;
+  values: Record<string, string | number | boolean | null | string[]>;
+};
+
+export type WealthHandoffCounts = {
+  assets: number;
+  insurance: number;
+  loans: number;
+  financialRecords: number;
+  documents: number;
+  images: number;
+};
+
+export type WealthHandoffSummary = {
+  generatedAt: string;
+  recipients: {
+    family: WealthHandoffRecipient[];
+    emergency: WealthHandoffRecipient[];
+  };
+  handoffTypes: Array<{
+    type: "family" | "emergency";
+    label: string;
+    contents: string[];
+    excluded: string[];
+    counts: WealthHandoffCounts;
+  }>;
+};
+
+export type WealthHandoffSendResponse = {
+  message: string;
+  results: Array<{
+    recipientId: string;
+    email: string;
+    handoffType: "family" | "emergency";
+    sent: boolean;
+    messageId?: string | null;
+    reason?: "email_disabled" | "invalid_recipient" | "delivery_failed";
+    errorCode?: string;
+  }>;
+};
+
 export type BootstrapResponse = {
   user: AuthUser;
+  entitlements: PlanEntitlements;
   familyMembers: FamilyMember[];
   documents: DocumentRecord[];
   savedPackages: string[];

@@ -26,12 +26,13 @@ export type GmailCandidate = {
   matchedSignals: string[];
   rejectedSignals: string[];
   ignoredReason: string | null;
-  status: "candidate" | "needs_review" | "ignored" | "dismissed" | "pending_review" | "imported";
+  status: "candidate" | "needs_review" | "ignored" | "dismissed" | "pending_review" | "imported" | "import_failed";
 };
 
 export type GmailImportResult = {
   candidateId: string;
-  status: "ready_for_review" | "already_imported";
+  status: "ready_for_review" | "already_imported" | "failed";
   documentId?: string;
   analysis?: AnalyzeDocumentResponse;
+  message?: string;
 };

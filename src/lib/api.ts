@@ -6,6 +6,9 @@ import type {
   AuthUser,
   BootstrapResponse,
   DocumentRecord,
+  DynamicFormCategory,
+  DynamicFormSchema,
+  DynamicFormSubtype,
   DriveScanResult,
   DriveStatus,
   ForgotPasswordResponse,
@@ -20,7 +23,16 @@ import type {
   ReadinessResult,
   ResetPasswordResponse,
   SaveDocumentPayload,
+  TrustCenterResponse,
+  TrustInvitation,
+  TrustMember,
+  TrustMemberPayload,
   UploadDocumentResponse,
+  WealthHandoffSendResponse,
+  WealthHandoffSummary,
+  WealthRecord,
+  WealthRecordPayload,
+  WealthDynamicFormSubmitPayload,
 } from "./api.types";
 
 export type * from "./api.types";
@@ -74,7 +86,7 @@ export const api = {
     disconnect: () => request<void>("/api/integrations/gmail", { method: "DELETE", requiresAuth: true }),
   },
   drive: {
-    status: () => request<DriveStatus>("/api/integrations/drive/status", { requiresAuth: true }),
+    status: () => request<DriveStatus>("/api/integrations/drive/status", { dedupeMs: 5_000, requiresAuth: true }),
     authorize: () => request<{ authorizationUrl: string }>("/api/integrations/drive/authorize", { method: "POST", requiresAuth: true }),
     scan: (full = false, duplicateAction: "replace" | "keep_both" | "ignore" = "ignore") =>
       request<DriveScanResult>("/api/integrations/drive/scan", { method: "POST", body: { full, duplicateAction }, requiresAuth: true }),
@@ -116,6 +128,59 @@ export const api = {
       }),
   },
   bootstrap: () => request<BootstrapResponse>("/api/bootstrap", { requiresAuth: true }),
+  trust: {
+    get: () => request<TrustCenterResponse>("/api/trust", { requiresAuth: true, dedupeMs: 1_000 }),
+    getInvitation: (token: string) => request<TrustInvitation>(`/api/trust/invitations/${encodeURIComponent(token)}`),
+    acceptInvitation: (token: string, pin: string) =>
+      request<{ message: string }>(`/api/trust/invitations/${encodeURIComponent(token)}/accept`, {
+        method: "POST",
+        body: { pin },
+      }),
+    rejectInvitation: (token: string) =>
+      request<{ message: string }>(`/api/trust/invitations/${encodeURIComponent(token)}/reject`, { method: "POST" }),
+    addMember: (payload: TrustMemberPayload) =>
+      request<TrustMember>("/api/trust/members", { method: "POST", body: payload, requiresAuth: true }),
+    updateMember: (id: string, payload: Partial<TrustMemberPayload>) =>
+      request<TrustMember>(`/api/trust/members/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: payload,
+        requiresAuth: true,
+      }),
+    resendInvitation: (id: string) =>
+      request<TrustMember>(`/api/trust/members/${encodeURIComponent(id)}/resend-invitation`, {
+        method: "POST",
+        requiresAuth: true,
+      }),
+    resetInvitationPin: (id: string, pin: string) =>
+      request<TrustMember>(`/api/trust/members/${encodeURIComponent(id)}/reset-pin`, {
+        method: "POST",
+        body: { pin },
+        requiresAuth: true,
+      }),
+    revokeMember: (id: string) =>
+      request<void>(`/api/trust/members/${encodeURIComponent(id)}`, { method: "DELETE", requiresAuth: true }),
+    leaveConnection: (id: string) =>
+      request<void>(`/api/trust/connections/${encodeURIComponent(id)}/leave`, { method: "POST", requiresAuth: true }),
+  },
+  wealth: {
+    records: () => request<WealthRecord[]>("/api/wealth/records", { requiresAuth: true }),
+    createRecord: (payload: WealthRecordPayload) =>
+      request<WealthRecord>("/api/wealth/records", { method: "POST", body: payload, requiresAuth: true }),
+    formCategories: () => request<DynamicFormCategory[]>("/api/wealth/form/categories", { requiresAuth: true }),
+    formSubtypes: (categoryCode: string) =>
+      request<DynamicFormSubtype[]>(`/api/wealth/form/categories/${encodeURIComponent(categoryCode)}/subtypes`, { requiresAuth: true }),
+    formSchema: (categoryCode: string, subtypeCode: string) =>
+      request<DynamicFormSchema>(`/api/wealth/form/categories/${encodeURIComponent(categoryCode)}/subtypes/${encodeURIComponent(subtypeCode)}/schema`, { requiresAuth: true }),
+    createRecordFromForm: (payload: WealthDynamicFormSubmitPayload) =>
+      request<WealthRecord>("/api/wealth/form/records", { method: "POST", body: payload, requiresAuth: true }),
+    handoffSummary: () => request<WealthHandoffSummary>("/api/wealth/handoff/summary", { requiresAuth: true }),
+    sendHandoff: (payload: { familyRecipientIds: string[]; emergencyRecipientIds: string[] }) =>
+      request<WealthHandoffSendResponse>("/api/wealth/handoff/send", {
+        method: "POST",
+        body: payload,
+        requiresAuth: true,
+      }),
+  },
   packages: {
     list: (query: PackageListQuery = {}) =>
       request<PackageListResponse>(`/api/packages?${toQueryString({

@@ -8,6 +8,7 @@ import {
   clearPendingAnalysis,
   saveDocument,
 } from "@/store/slices/documentsSlice";
+import type { AnalyzeDocumentResponse, ReviewField } from "@/lib/api";
 
 const categories = ["Identity", "Employment", "Finance", "Insurance", "Property", "Medical", "Education", "Travel", "Vehicle", "Legal", "Photo", "Other"] as const;
 const categorySlugs: Record<string, string> = {
@@ -30,6 +31,78 @@ const knownCategories = new Set(Object.values(categorySlugs));
 function safeCategory(value: string) {
   const slug = categorySlugs[value] ?? value.toLowerCase();
   return knownCategories.has(slug) ? slug : "other";
+}
+
+function buildReviewedSaveFields(
+  pendingAnalysis: AnalyzeDocumentResponse,
+  uniqueNumber: string,
+  nameOnDocument: string,
+) {
+  const trimmedUniqueNumber = uniqueNumber.trim();
+  const trimmedName = nameOnDocument.trim();
+  const uniqueIdentifierField = pendingAnalysis.validation?.uniqueIdentifierField;
+  const baseFields = pendingAnalysis.analysisSource === "rules"
+    ? { ...(pendingAnalysis.extractedFields ?? {}) }
+    : {};
+
+  if (trimmedUniqueNumber) {
+    baseFields.uniqueNumber = trimmedUniqueNumber;
+    baseFields.uniqueIdentifier = trimmedUniqueNumber;
+    if (uniqueIdentifierField && uniqueIdentifierField !== "documentFingerprint") {
+      baseFields[uniqueIdentifierField] = trimmedUniqueNumber;
+    }
+  }
+
+  if (trimmedName) {
+    baseFields.nameOnDocument = trimmedName;
+    baseFields.name = trimmedName;
+    baseFields.fullName = trimmedName;
+    baseFields.holderName = trimmedName;
+  }
+
+  return baseFields;
+}
+
+function buildReviewedFields(
+  pendingAnalysis: AnalyzeDocumentResponse,
+  uniqueNumber: string,
+  nameOnDocument: string,
+) {
+  const reviewedFields = new Map<string, ReviewField>();
+  for (const field of pendingAnalysis.reviewFields ?? []) {
+    reviewedFields.set(field.key, field);
+  }
+
+  const trimmedUniqueNumber = uniqueNumber.trim();
+  const uniqueIdentifierField = pendingAnalysis.validation?.uniqueIdentifierField;
+  if (trimmedUniqueNumber && uniqueIdentifierField && uniqueIdentifierField !== "documentFingerprint") {
+    reviewedFields.set(uniqueIdentifierField, {
+      id: `user-${uniqueIdentifierField}`,
+      key: uniqueIdentifierField,
+      label: pendingAnalysis.validation?.validatedFields[uniqueIdentifierField]?.label ?? "Unique number",
+      value: trimmedUniqueNumber,
+      confidence: 100,
+      source: "user",
+      editable: true,
+      important: true,
+    });
+  }
+
+  const trimmedName = nameOnDocument.trim();
+  if (trimmedName) {
+    reviewedFields.set("holderName", {
+      id: "user-holderName",
+      key: "holderName",
+      label: pendingAnalysis.validation?.validatedFields.holderName?.label ?? "Name on document",
+      value: trimmedName,
+      confidence: 100,
+      source: "user",
+      editable: true,
+      important: Boolean(pendingAnalysis.validation?.missingRequiredFields.includes("holderName")),
+    });
+  }
+
+  return Array.from(reviewedFields.values());
 }
 
 type UploadDocumentModalProps = {
@@ -82,7 +155,7 @@ export default function UploadDocumentModal({ open, stayOnSave = false, onClose 
 
   const handleSave = async () => {
     if (!pendingAnalysis) return;
-    const trimmedUniqueNumber = uniqueNumber.trim();
+    const reviewedFields = buildReviewedFields(pendingAnalysis, uniqueNumber, nameOnDocument);
 
     await dispatch(
       saveDocument({
@@ -94,11 +167,8 @@ export default function UploadDocumentModal({ open, stayOnSave = false, onClose 
         category,
         documentType,
         confidence: pendingAnalysis.confidence ?? 90,
-        fields: pendingAnalysis.analysisSource === "rules" ? pendingAnalysis.extractedFields ?? {} : {
-          uniqueNumber: trimmedUniqueNumber || undefined,
-          nameOnDocument: nameOnDocument.trim() || undefined,
-        },
-        reviewFields: pendingAnalysis.reviewFields ?? [],
+        fields: buildReviewedSaveFields(pendingAnalysis, uniqueNumber, nameOnDocument),
+        reviewFields: reviewedFields,
         rawExtractedText: pendingAnalysis.extractedText ?? "",
         warnings: pendingAnalysis.warnings ?? [],
         extraction: pendingAnalysis.extraction,

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-import { api, type AuthUser } from "@/lib/api";
+import { api, type AuthUser, type PlanEntitlements } from "@/lib/api";
 import {
   clearStoredAuth,
   getStoredRefreshToken,
@@ -15,6 +15,7 @@ type AuthState = {
   token: string | null;
   refreshToken: string | null;
   user: AuthUser | null;
+  entitlements: PlanEntitlements | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   initialized: boolean;
@@ -26,6 +27,7 @@ const initialState: AuthState = {
   token: getStoredToken(),
   refreshToken: getStoredRefreshToken(),
   user: getStoredUser(),
+  entitlements: null,
   status: "idle",
   error: null,
   initialized: false,
@@ -71,6 +73,7 @@ const authSlice = createSlice({
       state.token = null;
       state.refreshToken = null;
       state.user = null;
+      state.entitlements = null;
       state.status = "idle";
       state.error = null;
       state.initialized = false;
@@ -90,6 +93,7 @@ const authSlice = createSlice({
         state.token = action.payload.accessToken ?? action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         state.user = action.payload.user;
+        state.entitlements = null;
         setStoredAuth(state.token, action.payload.refreshToken, action.payload.user);
         state.initialized = false;
       })
@@ -106,6 +110,7 @@ const authSlice = createSlice({
         state.token = action.payload.accessToken ?? action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         state.user = action.payload.user;
+        state.entitlements = null;
         setStoredAuth(state.token, action.payload.refreshToken, action.payload.user);
         state.initialized = false;
       })
@@ -122,6 +127,7 @@ const authSlice = createSlice({
         state.token = action.payload.accessToken ?? action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         state.user = action.payload.user;
+        state.entitlements = null;
         setStoredAuth(state.token, action.payload.refreshToken, action.payload.user);
         state.initialized = false;
       })
@@ -145,6 +151,7 @@ const authSlice = createSlice({
         state.token = null;
         state.refreshToken = null;
         state.user = null;
+        state.entitlements = null;
         state.error = action.error.message ?? "Unable to load profile.";
         clearStoredAuth();
       })
@@ -154,6 +161,7 @@ const authSlice = createSlice({
       })
       .addCase(initializeApp.fulfilled, (state, action) => {
         state.user = action.payload.user;
+        state.entitlements = action.payload.entitlements;
         state.initialized = true;
         state.initializationStatus = "succeeded";
         setStoredUser(action.payload.user);

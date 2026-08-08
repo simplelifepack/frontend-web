@@ -11,6 +11,7 @@ const emptyStatus: DriveStatus = {
   connected: false, account: null, scanStatus: "idle", lastScannedAt: null, lastSuccessfulSync: null,
   scanning: false, phase: null, processed: 0, total: 0, indexedCount: 0, error: null,
 };
+const DRIVE_STATUS_POLL_MS = 5_000;
 
 function oauthErrorMessage(payload: OAuthPopupMessage) {
   if (payload.description) return payload.description;
@@ -68,16 +69,29 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
   useEffect(() => { if (open) void refresh().catch(() => setMessage("Unable to load Google Drive connection.")); }, [open, refresh]);
   useEffect(() => {
     if (!open || !status.scanning) return;
-    const timer = window.setInterval(() => {
+    let cancelled = false;
+    let timer: number | undefined;
+    const poll = () => {
       void refresh().then((next) => {
+        if (cancelled) return;
         if (!next.scanning) {
           setBusy("");
           onDocumentsChanged();
           setMessage(next.error || "Google Drive scan complete.");
+          return;
         }
-      }).catch(() => setMessage("Unable to refresh scan progress."));
-    }, 1200);
-    return () => window.clearInterval(timer);
+        timer = window.setTimeout(poll, DRIVE_STATUS_POLL_MS);
+      }).catch(() => {
+        if (cancelled) return;
+        setMessage("Unable to refresh scan progress.");
+        timer = window.setTimeout(poll, DRIVE_STATUS_POLL_MS);
+      });
+    };
+    timer = window.setTimeout(poll, DRIVE_STATUS_POLL_MS);
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+    };
   }, [open, onDocumentsChanged, refresh, status.scanning]);
   const handleOAuthResult = useCallback((payload: OAuthPopupMessage) => {
     if (payload.status === "connected") {

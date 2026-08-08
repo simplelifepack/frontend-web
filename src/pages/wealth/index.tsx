@@ -1,108 +1,124 @@
-import { useState } from "react";
-import { AlertTriangle, ArrowRight, FileCheck, KeyRound, Lock, ShieldAlert } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Calculator, FileCheck, Link2, Paperclip, Search, ShieldAlert, X } from "lucide-react";
 
 import Card from "@/components/Card";
 import SectionHead from "@/components/SectionHead";
-import { btnGhost, T } from "@/constants/theme";
-import { WEALTH, money } from "@/data/demoData";
+import { btnGhost } from "@/constants/theme";
+import { api, type TrustMember, type WealthRecord } from "@/lib/api";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchDocuments } from "@/store/slices/documentsSlice";
+import CaptureProofDialog from "./capture-proof-dialog";
+import WealthHandoffDialog from "./sos-handoff-dialog";
+import { attentionRows, calculateLoanBreakdown, dashboardStats, money, recordAmount, recordSubtitle, statusFor, typeLabels } from "./wealth-view";
 
 export default function WealthPage() {
-  const [onlyNoNominee, setOnlyNoNominee] = useState(false);
-  const rows = onlyNoNominee ? WEALTH.filter((item) => !item.nominee && item.cls === "asset") : WEALTH;
-  const assets = WEALTH.filter((item) => item.cls === "asset").reduce((total, item) => total + item.value, 0);
-  const liabilities = WEALTH.filter((item) => item.cls === "liability").reduce((total, item) => total + item.value, 0);
-  const gaps = WEALTH.filter((item) => item.cls === "asset" && !item.nominee).length;
+  const dispatch = useAppDispatch();
+  const docsLoaded = useAppSelector((state) => state.documents.loaded);
+  const user = useAppSelector((state) => state.auth.user);
+  const [records, setRecords] = useState<WealthRecord[]>([]);
+  const [trustedMembers, setTrustedMembers] = useState<TrustMember[]>([]);
+  const [captureOpen, setCaptureOpen] = useState(false);
+  const [handoffOpen, setHandoffOpen] = useState(false);
+  const [selected, setSelected] = useState<WealthRecord | null>(null);
+  const stats = useMemo(() => dashboardStats(records), [records]);
+
+  const load = async () => {
+    setRecords(await api.wealth.records());
+    api.trust.get().then((trust) => setTrustedMembers(trust.members)).catch(() => setTrustedMembers([]));
+  };
+  useEffect(() => {
+    void load();
+    if (!docsLoaded) void dispatch(fetchDocuments());
+  }, [dispatch, docsLoaded]);
+
+  const saved = (record: WealthRecord) => setRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]);
 
   return (
     <div className="lp-route lp-wealth-route">
-      <SectionHead
-        title="Wealth"
-        sub="Not a balance sheet: whether your family could access all of it if something happened to you."
-        action={null}
-      />
-
+      <div className="lp-wealth-page-top">
+        <div className="lp-wealth-search"><Search size={15} /><input placeholder="Search..." /></div>
+        {user ? <div className="lp-wealth-user"><span>{user.name.charAt(0).toUpperCase()}</span><b>{user.name}</b></div> : null}
+      </div>
+      <SectionHead title="Wealth" sub="Not a balance sheet: whether your family could access all of it if something happened to you." action={null} />
       <div className="lp-wealth-actions">
-        <button type="button" style={btnGhost}><FileCheck size={15} /> Capture proof</button>
-        <button type="button" className="danger"><ShieldAlert size={15} /> SOS handoff</button>
-        <button type="button" style={btnGhost}><Lock size={15} /> Add passcode</button>
+        <button type="button" style={btnGhost} onClick={() => setCaptureOpen(true)}><FileCheck size={15} /> Capture proof</button>
+        <button type="button" className="danger" onClick={() => setHandoffOpen(true)}><ShieldAlert size={15} /> SOS handoff</button>
       </div>
-
-      <div className="lp-wealth-hero">
-        <Card>
-          <div className="lp-wealth-card-title"><KeyRound size={16} /> Estate readiness <span>{WEALTH.length} holdings tracked</span></div>
-          <div className="lp-wealth-score">53% <small>of documented value your family could actually reach</small></div>
-          <div className="lp-wealth-progress"><i style={{ width: "53%" }} /></div>
-          <div className="lp-wealth-gaps">
-            <span>{Math.max(0, WEALTH.filter((item) => item.nominee).length)} missing nominees</span>
-            <span>{gaps + 1} missing documents</span>
-            <span>1 missing access instruction</span>
-            <time>~11 min to fix</time>
-          </div>
-          <button type="button" className="lp-wealth-computed">⌄ How is this computed?</button>
-        </Card>
-        <Card style={{ background: "linear-gradient(135deg,#171D2B,#1D2029)", borderColor: "rgba(217,184,106,.25)" }}>
-          <div className="lp-wealth-summary-title"><FileCheck size={17} /> Estate summary</div>
-          <p>The one document your family opens first: every holding, nominee, location, and the first steps to take.</p>
-          <div className="lp-wealth-summary-foot"><b>53% ready for family</b><button type="button">Preview <ArrowRight size={14} /></button></div>
-        </Card>
+      <Readiness stats={stats} records={records} onSummary={() => setHandoffOpen(true)} />
+      <div className="lp-wealth-main-grid">
+        <div>
+          <NeedsAttention records={records} onSelect={setSelected} onCapture={() => setCaptureOpen(true)} />
+          <RecordSection title="Assets" total={stats.assetTotal} records={stats.assets} onSelect={setSelected} />
+          <RecordSection title="Liabilities" total={stats.liabilityTotal} records={stats.liabilities} negative onSelect={setSelected} />
+          <RecordSection title="Protection" total={stats.protectionTotal} records={stats.protection} onSelect={setSelected} />
+          <RecordSection title="Payment proofs" records={stats.proofs} onSelect={setSelected} />
+        </div>
+        <LegacyPanel readiness={stats.readiness} members={trustedMembers} onHandoff={() => setHandoffOpen(true)} />
       </div>
-
-      <div className="lp-wealth-strip">
-        <span>Net worth <b>{money(assets - liabilities)}</b></span>
-        <span>Assets <b>{money(assets)}</b></span>
-        <span>Liabilities <b>{money(liabilities)}</b></span>
-        <span>Protection <b>{money(Math.max(0, assets - liabilities) * .55)}</b></span>
-      </div>
-
-      <Card style={{ marginBottom: 16, padding: 0, overflow: "hidden" }}>
-        <button
-          type="button"
-          onClick={() => setOnlyNoNominee((current) => !current)}
-          className="lp-wealth-attention-head"
-        >
-          <AlertTriangle size={16} color={gaps ? T.coral : T.mint} />
-          <b style={{ color: T.white }}>Needs attention</b>
-          <span style={{ marginLeft: "auto", color: T.gold, fontFamily: "ui-monospace,monospace" }}>{gaps}</span>
-        </button>
-        {WEALTH.filter((item) => item.cls === "asset" && !item.nominee).map((item) => (
-          <div key={item.name} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderTop: `1px solid ${T.border}` }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ color: T.coral, font: "700 10px ui-monospace,monospace", letterSpacing: 1 }}>CRITICAL</div>
-              <div style={{ color: T.text, fontSize: 13.5, fontWeight: 700, marginTop: 3 }}>{item.name} · no nominee named</div>
-              <div style={{ color: T.muted, fontSize: 11.5, marginTop: 2 }}>A family claim may require additional legal verification.</div>
-            </div>
-            <button type="button" style={btnGhost}>Add nominee</button>
-          </div>
-        ))}
-      </Card>
-
-      <Card style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
-        {rows.map((item, index) => (
-          <div
-            key={item.name}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1.8fr 1fr 1fr",
-              alignItems: "center",
-              padding: "13px 16px",
-              borderTop: index ? `1px solid ${T.border}` : "none",
-              fontSize: 13,
-            }}
-          >
-            <div>
-              <div style={{ color: T.text, fontWeight: 600 }}>{item.name}</div>
-              <div style={{ color: T.faint, fontSize: 11.5, marginTop: 2 }}>{item.type}</div>
-            </div>
-            <div style={{ color: item.cls === "liability" ? T.coral : T.text, fontWeight: 600 }}>
-              {item.cls === "liability" ? "-" : ""}
-              {money(item.value)}
-            </div>
-            <div style={{ textAlign: "right", color: item.nominee ? T.mint : T.coral, fontSize: 11.5 }}>
-              {item.nominee ? "nominee set" : "no nominee"}
-            </div>
-          </div>
-        ))}
-      </Card>
+      {captureOpen ? <CaptureProofDialog onClose={() => setCaptureOpen(false)} onSaved={(record) => { saved(record); setCaptureOpen(false); }} /> : null}
+      {selected ? <RecordDetail record={selected} onClose={() => setSelected(null)} /> : null}
+      {handoffOpen ? <WealthHandoffDialog onClose={() => setHandoffOpen(false)} /> : null}
     </div>
   );
+}
+
+function Readiness({ stats, records, onSummary }: { stats: ReturnType<typeof dashboardStats>; records: WealthRecord[]; onSummary: () => void }) {
+  return (
+    <>
+      <div className="lp-wealth-readiness">
+        <b><Link2 size={15} /> Estate readiness</b><strong>{stats.readiness}%</strong><span><i style={{ width: `${stats.readiness}%` }} /></span>
+        <small>{records.length} records · {stats.accessMissing} access missing</small><button type="button">How?</button><button type="button" onClick={onSummary}>Estate summary</button>
+      </div>
+      <div className="lp-wealth-strip">
+        <span>Net worth <b>{money(stats.assetTotal - stats.liabilityTotal)}</b></span><span>Assets <b>{money(stats.assetTotal)}</b></span>
+        <span>Liabilities <b>{money(stats.liabilityTotal)}</b></span><span>Protection <b>{money(stats.protectionTotal)}</b></span>
+      </div>
+    </>
+  );
+}
+
+function NeedsAttention({ records, onSelect, onCapture }: { records: WealthRecord[]; onSelect: (record: WealthRecord) => void; onCapture: () => void }) {
+  const rows = attentionRows(records);
+  return (
+    <Card style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
+      <div className="lp-wealth-panel-head"><span>Needs attention</span><b>{rows.length}</b></div>
+      {rows.map(({ record, severity, reason, action }) => <button key={`${record.id}-${reason}`} type="button" className="lp-wealth-attention-row" onClick={() => action === "Attach" ? onCapture() : onSelect(record)}><em className={severity.toLowerCase()}>{severity}</em><span><b>{record.title} · {reason}</b><small>{recordSubtitle(record)}</small></span><strong>{action}</strong></button>)}
+      {!rows.length ? <div className="lp-wealth-empty">No urgent Wealth gaps right now.</div> : null}
+    </Card>
+  );
+}
+
+function RecordSection({ title, total, records, negative, onSelect }: { title: string; total?: number; records: WealthRecord[]; negative?: boolean; onSelect: (record: WealthRecord) => void }) {
+  if (!records.length) return null;
+  return (
+    <Card style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
+      <div className="lp-wealth-section-head"><span>{title}</span>{total !== undefined ? <b>{negative ? "-" : ""}{money(total)}</b> : null}</div>
+      {records.map((record) => <RecordRow key={record.id} record={record} negative={negative} onSelect={() => onSelect(record)} />)}
+    </Card>
+  );
+}
+
+function RecordRow({ record, negative, onSelect }: { record: WealthRecord; negative?: boolean; onSelect: () => void }) {
+  const status = statusFor(record);
+  return (
+    <button type="button" className="lp-wealth-record-row" onClick={onSelect}>
+      <span className="lp-wealth-link-icon"><Link2 size={14} /></span><span><b>{record.title}</b><small>{recordSubtitle(record)}</small></span>
+      <strong className={negative ? "negative" : ""}>{negative ? "-" : ""}{money(recordAmount(record))}</strong>
+      <StatusBadge ok={status.document} label="Doc" /><StatusBadge ok={status.nominee} label="Nominee" /><StatusBadge ok={status.access} label="Access" />
+    </button>
+  );
+}
+
+function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
+  return <em className={`lp-wealth-status ${ok ? "ok" : "bad"}`}>{ok ? "✓" : "×"} {label}</em>;
+}
+
+function LegacyPanel({ readiness, members, onHandoff }: { readiness: number; members: TrustMember[]; onHandoff: () => void }) {
+  return <Card style={{ position: "sticky", top: 16, height: "max-content" }}><div className="lp-wealth-summary-title"><Link2 size={16} /> Legacy handoff</div><p>Who steps in, and whether nothing is lost if you are gone.</p><div className="lp-wealth-legacy-score"><b>{readiness}</b><span>of documented value has a document, a nominee, and access instructions on file</span></div>{members.slice(0, 3).map((member) => <div key={member.id} className="lp-wealth-trusted"><span>{member.name.charAt(0)}</span><b>{member.name}</b><em>{member.accessType.name}</em></div>)}<button type="button" className="lp-wealth-summary-primary" onClick={onHandoff}>Prepare estate summary</button><button type="button" style={{ ...btnGhost, width: "100%", justifyContent: "center", marginTop: 8 }}>Manage trusted people</button></Card>;
+}
+
+function RecordDetail({ record, onClose }: { record: WealthRecord; onClose: () => void }) {
+  const details = Object.entries(record.details).filter(([, value]) => value !== null && value !== "");
+  const loanBreakdown = calculateLoanBreakdown(record) ?? record.loanBreakdown;
+  return <div className="lp-sos-backdrop" role="presentation"><div className="lp-sos-dialog lp-wealth-detail" role="dialog" aria-modal="true"><div className="lp-sos-head"><div><span><Link2 size={16} /> {typeLabels[record.type]}</span><h2>{record.title}</h2></div><button type="button" onClick={onClose} aria-label="Close"><X size={18} /></button></div><div className="lp-sos-panel"><section className="lp-sos-group"><h3>Record details</h3>{details.map(([key, value]) => <div key={key} className="lp-wealth-kv"><span>{key.replace(/([A-Z])/g, " $1")}</span><b>{String(value)}</b></div>)}{record.notes ? <div className="lp-wealth-note"><span>Notes</span>{record.notes}</div> : null}{record.followUpDate || record.followUpNote ? <div className="lp-wealth-note"><span>Follow-up</span>{record.followUpDate ? new Date(record.followUpDate).toLocaleDateString() : ""} {record.followUpNote}</div> : null}</section><section className="lp-sos-group"><h3>Attached proof</h3>{record.attachments.map((doc) => <div key={doc.id} className="lp-sos-recipient"><Paperclip size={15} /><span><b>{doc.title || doc.originalName}</b><small>{doc.mimeType}</small></span></div>)}{!record.attachments.length ? <p>No proof attached yet.</p> : null}{loanBreakdown ? <div className="lp-wealth-loan-box"><h3><Calculator size={15} /> Loan breakup</h3><b>Principal {money(loanBreakdown.principal)}</b><b>Interest {money(loanBreakdown.interest)}</b><b>Payments {money(loanBreakdown.payments)}</b><strong>Outstanding {money(loanBreakdown.outstanding)}</strong></div> : null}</section></div></div></div>;
 }
