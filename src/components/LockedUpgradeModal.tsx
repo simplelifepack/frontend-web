@@ -3,9 +3,9 @@ import { T } from "@/constants/theme";
 export type LockedModuleKey = "health" | "wealth" | "trust";
 
 const LOCKED_COPY: Record<LockedModuleKey, { title: string; requiredPlan: string; benefits: string[] }> = {
-  health: { title: "Unlock Health", requiredPlan: "Family", benefits: ["Medical records", "Prescriptions", "Lab reports", "Vaccinations", "Secure emergency sharing"] },
-  wealth: { title: "Unlock Wealth", requiredPlan: "Plus", benefits: ["Financial documents", "Insurance", "Loans", "Investments", "Readiness planning"] },
-  trust: { title: "Unlock Trust Center", requiredPlan: "Family", benefits: ["Trusted family members", "Data visibility controls", "Emergency access", "Secure family sharing"] },
+  health: { title: "Unlock Health", requiredPlan: "Paid", benefits: ["Medical records", "Prescriptions", "Lab reports", "Vaccinations", "Secure emergency sharing"] },
+  wealth: { title: "Unlock Wealth", requiredPlan: "Paid", benefits: ["Financial documents", "Insurance", "Loans", "Investments", "Readiness planning"] },
+  trust: { title: "Trust Center", requiredPlan: "Free", benefits: ["Trusted family members", "Data visibility controls", "Emergency access", "Secure family sharing"] },
 };
 
 export default function LockedUpgradeModal({
@@ -23,7 +23,7 @@ export default function LockedUpgradeModal({
       <div onClick={(event) => event.stopPropagation()} style={{ width: "min(460px,100%)", background: T.panel, border: `1px solid ${T.border}`, borderRadius: 16, padding: 22 }}>
         <div style={{ color: T.gold, fontSize: 12, fontWeight: 800, textTransform: "uppercase" }}>{detail.requiredPlan} plan required</div>
         <h2 style={{ color: T.white, margin: "8px 0", fontSize: 24 }}>{detail.title}</h2>
-        <p style={{ color: T.muted, fontSize: 13.5, lineHeight: 1.6 }}>Current plan: {currentPlan}. Upgrade to use this LifePack module.</p>
+        <p style={{ color: T.muted, fontSize: 13.5, lineHeight: 1.6 }}>Current tier: {currentPlan}. Upgrade to use this LifePack module.</p>
         <div style={{ display: "grid", gap: 8, margin: "16px 0" }}>
           {detail.benefits.map((benefit) => (
             <span key={benefit} style={{ color: T.text, background: T.raised, borderRadius: 8, padding: "9px 10px", fontSize: 13 }}>{benefit}</span>

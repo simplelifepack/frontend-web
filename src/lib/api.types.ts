@@ -327,14 +327,31 @@ export type FamilyMember = {
   relationship?: string;
 };
 
-export type PlanCode = "FREEMIUM" | "FAMILY" | "PLUS";
+export type SubscriptionTier = "FREE" | "PAID";
+export type BillingInterval = "MONTHLY" | "YEARLY" | null;
+export type PlanCode = SubscriptionTier;
 
 export type PlanEntitlements = {
   plan: { id: string; code: PlanCode; name: string };
+  subscription: {
+    id: string;
+    tier: SubscriptionTier;
+    billingInterval: BillingInterval;
+    status: string;
+    currentPeriodStart: string | null;
+    currentPeriodEnd: string | null;
+    provider: string | null;
+    providerCustomerId: string | null;
+    providerSubscriptionId: string | null;
+  };
+  tier: SubscriptionTier;
+  billingInterval: BillingInterval;
   rules: {
     memberLimit: number;
     storageBytes: number;
+    storageLimitBytes: number;
     unknownPackSearchLimit: number;
+    aiSearchMonthlyLimit: number;
     modules: {
       home: boolean;
       packages: boolean;
@@ -342,12 +359,18 @@ export type PlanEntitlements = {
       health: boolean;
       wealth: boolean;
       trustCenter: boolean;
+      legacy: boolean;
     };
     emergencyAccess: boolean;
+    wealthEnabled: boolean;
+    healthEnabled: boolean;
   };
   usage: {
     period: string;
+    periodStart: string;
+    periodEnd: string;
     unknownPackSearches: number;
+    aiPackSearchesUsed: number;
     storageBytesUsed: number;
     aiSearchesRemaining: number;
     resetAt: string;

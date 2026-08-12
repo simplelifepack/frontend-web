@@ -9,17 +9,17 @@ type ModuleKey = "health" | "wealth" | "trustCenter";
 const copy: Record<ModuleKey, { title: string; requiredPlan: string; benefits: string[] }> = {
   health: {
     title: "Unlock Health",
-    requiredPlan: "Family",
+    requiredPlan: "Paid",
     benefits: ["Medical records", "Prescriptions", "Lab reports", "Vaccinations", "Secure family and emergency sharing"],
   },
   wealth: {
     title: "Unlock Wealth",
-    requiredPlan: "Plus",
+    requiredPlan: "Paid",
     benefits: ["Financial documents", "Insurance", "Loans", "Investments", "Future readiness features"],
   },
   trustCenter: {
-    title: "Unlock Trust Center",
-    requiredPlan: "Family",
+    title: "Trust Center",
+    requiredPlan: "Free",
     benefits: ["Trusted family members", "Data visibility controls", "Emergency access", "Secure family sharing"],
   },
 };
@@ -36,7 +36,7 @@ export default function PlanGate({ module, children }: { module: ModuleKey; chil
       </div>
       <h1 style={{ color: T.white, margin: "10px 0 8px", fontSize: 28 }}>{detail.title}</h1>
       <p style={{ color: T.muted, fontSize: 14, lineHeight: 1.6, margin: "0 auto 18px", maxWidth: 440 }}>
-        Current plan: {entitlements?.plan.name ?? "Freemium"}. Upgrade to organize this area of your LifePack.
+        Current tier: {entitlements?.plan.name ?? "Free"}. Upgrade to organize this area of your LifePack.
       </p>
       <div style={{ display: "grid", gap: 8, marginBottom: 20, textAlign: "left" }}>
         {detail.benefits.map((benefit) => (

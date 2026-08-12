@@ -248,6 +248,13 @@ export default function AppShell({ children }: AppShellProps) {
             />
           </Suspense>
         ) : null}
+        {lockedModule ? (
+          <LockedUpgradeModal
+            module={lockedModule}
+            currentPlan={entitlements?.plan.name ?? "Free"}
+            onClose={() => setLockedModule(null)}
+          />
+        ) : null}
         
       </main>
     </div>
