@@ -58,7 +58,7 @@ export default function CategoryDocuments({
             No {labelize(name)} documents yet.
           </div>
           <div style={{ color: T.muted, fontSize: 13, marginTop: 8 }}>
-            Upload a document and Readiness will place it here automatically.
+            Upload a document and ReadiNes will place it here automatically.
           </div>
           <button type="button" onClick={openUpload} style={{ ...btnGold, marginTop: 18 }}>
             Upload

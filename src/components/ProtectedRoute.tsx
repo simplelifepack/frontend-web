@@ -17,7 +17,7 @@ export default function ProtectedRoute() {
   if (token && initializationStatus === "failed") {
     return (
       <div role="alert">
-        {initializationError ?? "Unable to initialize Readiness."}{" "}
+        {initializationError ?? "Unable to initialize ReadiNes."}{" "}
         <button type="button" onClick={() => void dispatch(initializeApp())}>
           Retry
         </button>

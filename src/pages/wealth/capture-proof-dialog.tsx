@@ -133,7 +133,7 @@ export default function CaptureProofDialog({ onClose, onSaved }: Props) {
     <div className="lp-sos-backdrop" role="presentation">
       <div className="lp-sos-dialog lp-capture-dialog" role="dialog" aria-modal="true">
         <div className="lp-sos-head">
-          <div><span><FileCheck size={16} /> Wealth vault</span><h2>Capture proof</h2><p>Capture the core details, choose the record type, then Readiness renders the rest from backend form metadata.</p></div>
+          <div><span><FileCheck size={16} /> Wealth vault</span><h2>Capture proof</h2><p>Capture the core details, choose the record type, then ReadiNes renders the rest from backend form metadata.</p></div>
           <button type="button" onClick={onClose} aria-label="Close"><X size={18} /></button>
         </div>
         <div className="lp-capture-steps"><span className={step === 1 ? "active" : ""}>1</span><span className={step === 2 ? "active" : ""}>2</span><span className={step === 3 ? "active" : ""}>3</span></div>

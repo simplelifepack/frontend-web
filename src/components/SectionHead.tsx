@@ -10,7 +10,7 @@ type SectionHeadProps = {
 
 export default function SectionHead({ title, sub, action }: SectionHeadProps) {
   const openUpload = () => {
-    window.dispatchEvent(new CustomEvent("lifepack:open-upload"));
+    window.dispatchEvent(new CustomEvent("ReadiNes:open-upload"));
   };
 
   return (
@@ -29,12 +29,25 @@ export default function SectionHead({ title, sub, action }: SectionHeadProps) {
         >
           {title}
         </h2>
-        <p style={{ color: T.muted, fontSize: 14.5, lineHeight: 1.5, margin: "6px 0 0" }}>
+        <p
+          style={{
+            color: T.muted,
+            fontSize: 14.5,
+            lineHeight: 1.5,
+            margin: "6px 0 0",
+          }}
+        >
           {sub}
         </p>
       </div>
 
-      {action === undefined ? <button type="button" onClick={openUpload} style={btnGold}>Upload</button> : action}
+      {action === undefined ? (
+        <button type="button" onClick={openUpload} style={btnGold}>
+          Upload
+        </button>
+      ) : (
+        action
+      )}
     </div>
   );
 }

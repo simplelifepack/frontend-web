@@ -188,7 +188,7 @@ export default function HomePage() {
         <Card>
           <div className="lp-insight-title">
             <ShieldCheck size={16} color={T.gold} />
-            <b>Connected across Readiness</b>
+            <b>Connected across ReadiNes</b>
           </div>
           <p className="lp-insight-copy">What your modules mean together, not what they already show apart.</p>
           {insights.map((insight, index) => (

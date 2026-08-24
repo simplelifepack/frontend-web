@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="mx-auto max-w-md">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300 lg:hidden">
-        Readiness
+        ReadiNes
       </p>
       <h2 className="mt-4 text-3xl font-semibold text-white">Forgot password</h2>
       <p className="mt-2 text-sm text-slate-400">

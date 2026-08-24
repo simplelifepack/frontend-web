@@ -41,7 +41,7 @@ async function refreshStoredAuth() {
 
 const safeMessages: Record<string, string> = {
   UNSUPPORTED_FILE_TYPE: "Use a supported PDF, JPEG, PNG, or WebP document.",
-  FILE_TOO_LARGE: "The document exceeds Readiness's 20 MB limit.",
+  FILE_TOO_LARGE: "The document exceeds ReadiNes's 20 MB limit.",
   FILE_SIGNATURE_MISMATCH: "The file contents do not match its reported type.",
   FILE_CORRUPTED: "The document is corrupted or incomplete.",
   PASSWORD_PROTECTED_FILE: "Password-protected PDFs are not supported.",

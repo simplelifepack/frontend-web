@@ -96,15 +96,15 @@ export default function TrustPage() {
   };
 
   const leaveConnection = async (connectionId: string, ownerName: string) => {
-    if (!window.confirm(`Leave ${ownerName}'s Readiness? Your access will be removed immediately.`)) return;
+    if (!window.confirm(`Leave ${ownerName}'s ReadiNes? Your access will be removed immediately.`)) return;
     setLeavingId(connectionId);
     setNotice(null);
     try {
       await api.trust.leaveConnection(connectionId);
       await load();
-      setNotice(`You left ${ownerName}'s Readiness.`);
+      setNotice(`You left ${ownerName}'s ReadiNes.`);
     } catch (leaveError) {
-      setError(leaveError instanceof Error ? leaveError.message : "Unable to leave Readiness.");
+      setError(leaveError instanceof Error ? leaveError.message : "Unable to leave ReadiNes.");
     } finally {
       setLeavingId(null);
     }
@@ -175,7 +175,7 @@ export default function TrustPage() {
                 onClick={() => void leaveConnection(connection.id, connection.owner.name)}
                 style={{ ...btnGhost, color: T.coral, borderColor: `${T.coral}55`, opacity: leavingId === connection.id ? 0.55 : 1 }}
               >
-                Leave Readiness
+                Leave ReadiNes
               </button>
             </div>
           ))}

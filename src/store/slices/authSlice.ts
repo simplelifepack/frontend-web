@@ -168,7 +168,7 @@ const authSlice = createSlice({
       })
       .addCase(initializeApp.rejected, (state, action) => {
         state.initializationStatus = "failed";
-        state.initializationError = action.error.message ?? "Unable to initialize Readiness.";
+        state.initializationError = action.error.message ?? "Unable to initialize ReadiNes.";
       });
   },
 });
