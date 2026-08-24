@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             <div className="lp-auth-radar" aria-hidden />
             <div>
               <p className="relative font-mono text-xs font-semibold uppercase tracking-[0.3em] text-[#A87C22]">
-                LifePack AI
+                Readiness AI
               </p>
               <h1 className="relative mt-6 max-w-md font-display text-4xl font-bold leading-tight tracking-tight text-[#221E17]">
                 Your documents, ready when life asks.

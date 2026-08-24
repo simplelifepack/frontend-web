@@ -211,7 +211,7 @@ export default function PackagesPage() {
     <div className="lp-route lp-packages-route">
       <SectionHead
         title="Packages"
-        sub={`${packs.length} real-world situations. LifePack matches your archive against each one and shows how ready you already are.`}
+        sub={`${packs.length} real-world situations. Readiness matches your archive against each one and shows how ready you already are.`}
         action={null}
       />
 
@@ -347,7 +347,7 @@ export default function PackagesPage() {
               {hasSearchQuery ? `No pack covers "${debouncedQuery.trim()}" yet` : "No matching packages"}
             </strong>
             <div style={{ color: T.muted, fontSize: hasSearchQuery ? 15 : 13, marginTop: 8 }}>
-              {hasSearchQuery ? "Describe it and LifePack drafts the checklist for you." : "Try another search or category."}
+              {hasSearchQuery ? "Describe it and Readiness drafts the checklist for you." : "Try another search or category."}
             </div>
             {hasSearchQuery && searchCanGenerate ? (
               <button

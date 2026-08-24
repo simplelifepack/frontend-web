@@ -559,7 +559,7 @@ export default function Landing({ onStart }: { onStart: () => void }) {
               <ShieldCheck size={19} color="#3A2E12" />
             </span>
             <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 17, color: C.ink }}>
-              LifePack <span style={{ color: C.gold }}>AI</span>
+              Readiness <span style={{ color: C.gold }}>AI</span>
             </span>
           </div>
           <div className="lp-navlinks">
@@ -568,7 +568,7 @@ export default function Landing({ onStart }: { onStart: () => void }) {
             <a href="#privacy">Privacy</a>
           </div>
           <button onClick={onStart} className="lp-navcta">
-            Open your LifePack <ArrowRight size={15} />
+            Open Readiness <ArrowRight size={15} />
           </button>
         </div>
       </nav>
@@ -593,12 +593,12 @@ export default function Landing({ onStart }: { onStart: () => void }) {
               </span>
             </h1>
             <p className="lp-sub">
-              LifePack quietly gathers, classifies, and assembles every passport, policy, payslip, and prescription, so
+              Readiness quietly gathers, classifies, and assembles every passport, policy, payslip, and prescription, so
               any visa, loan, job switch, or hospital visit is only a few taps away.
             </p>
             <div className="lp-herocta">
               <button onClick={onStart} className="lp-cta">
-                Open your LifePack <ArrowRight size={17} />
+                Open Readiness <ArrowRight size={17} />
               </button>
               <span className="lp-trust">
                 <Lock size={12} /> private · on-device · you hold the keys
@@ -641,16 +641,16 @@ export default function Landing({ onStart }: { onStart: () => void }) {
             className="lp-body"
             style={{ marginTop: 16, fontSize: 17, maxWidth: 640, marginLeft: "auto", marginRight: "auto" }}
           >
-            You simply open LifePack, and everything is ready to go. Calm, in order, and entirely yours.
+            You simply open Readiness, and everything is ready to go. Calm, in order, and entirely yours.
           </p>
         </motion.div>
       </section>
 
       <section id="features" className="lp-features lp-wrap">
         <Feature
-          eyebrow="Life packs"
+          eyebrow="Readiness packs"
           title="Assemble any pack in a tap."
-          body="Choose a life event. LifePack gathers the right documents from your archive, shows exactly what is ready, and gently points out anything still to add."
+          body="Choose a life event. Readiness gathers the right documents from your archive, shows exactly what is ready, and gently points out anything still to add."
           points={[
             "Visa, loan, hospital, tax, job",
             "Ready and to-add, clearly shown",
@@ -662,7 +662,7 @@ export default function Landing({ onStart }: { onStart: () => void }) {
           flip
           eyebrow="Auto-organize"
           title="Connect once. Everything files itself."
-          body="Link Email, Drive, or DigiLocker, or simply add a photo. LifePack reads each document, files it in the right place, and builds a living graph of your family's papers."
+          body="Link Email, Drive, or DigiLocker, or simply add a photo. Readiness reads each document, files it in the right place, and builds a living graph of your family's papers."
           points={[
             "Sorted automatically as it arrives",
             "Identity, finance, insurance, property, health",
@@ -673,7 +673,7 @@ export default function Landing({ onStart }: { onStart: () => void }) {
         <Feature
           eyebrow="Wealth"
           title="See what you own, and who inherits it."
-          body="LifePack reads your financial and insurance papers for what actually matters: total documented value, and the holdings that still have no nominee named."
+          body="Readiness reads your financial and insurance papers for what actually matters: total documented value, and the holdings that still have no nominee named."
           points={["Documented value at a glance", "Nominee gaps surfaced, not buried", "Ready for a clean handoff"]}
           mock={<WealthMock />}
         />
@@ -681,14 +681,14 @@ export default function Landing({ onStart }: { onStart: () => void }) {
           flip
           eyebrow="Visit companion"
           title="Walk into every appointment ready."
-          body="Medications, recent reports, allergies, and trends for the whole family, assembled into a one-tap doctor visit pack. LifePack organizes and surfaces. It never diagnoses."
+          body="Medications, recent reports, allergies, and trends for the whole family, assembled into a one-tap doctor visit pack. Readiness organizes and surfaces. It never diagnoses."
           points={["One-tap doctor visit pack", "Trends shown against standard ranges", "An emergency card for anyone"]}
           mock={<HealthMock />}
         />
         <Feature
           eyebrow="Search"
           title="You remember the keyword. We find the paper."
-          body="No folders to memorize. Type what you recall, a test, a doctor, a month, and LifePack surfaces the prescription, the report, the medication, and everything related."
+          body="No folders to memorize. Type what you recall, a test, a doctor, a month, and Readiness surfaces the prescription, the report, the medication, and everything related."
           points={["One search across everything", "Documents, health, people, dates", "Answers in a keystroke"]}
           mock={<SearchMock />}
         />
@@ -802,7 +802,7 @@ export default function Landing({ onStart }: { onStart: () => void }) {
               Set it up once, and let the next big moment be the easy one.
             </p>
             <button onClick={onStart} className="lp-cta" style={{ marginTop: 26 }}>
-              Open your LifePack <ArrowRight size={17} />
+              Open Readiness <ArrowRight size={17} />
             </button>
           </div>
         </motion.div>
@@ -824,7 +824,7 @@ export default function Landing({ onStart }: { onStart: () => void }) {
               <ShieldCheck size={16} color="#3A2E12" />
             </span>
             <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 15, color: C.ink }}>
-              LifePack <span style={{ color: C.gold }}>AI</span>
+              Readiness <span style={{ color: C.gold }}>AI</span>
             </span>
           </div>
           <span style={{ fontSize: 13, color: C.muted }}>A private, ready archive for your whole family.</span>

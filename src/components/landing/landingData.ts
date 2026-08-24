@@ -21,7 +21,7 @@ export const TABS: LandingTab[] = [
     label: "Discover & classify",
     icon: FolderTree,
     head: "Connect once. Everything files itself.",
-    body: "Link Gmail, Drive, or DigiLocker, or simply drop files in. LifePack reads each one, sorts it into the right place, and builds a living graph of your documents.",
+    body: "Link Gmail, Drive, or DigiLocker, or simply drop files in. Readiness reads each one, sorts it into the right place, and builds a living graph of your documents.",
     points: [
       "Auto-classified on upload",
       "Identity, finance, insurance, property, medical",
@@ -33,7 +33,7 @@ export const TABS: LandingTab[] = [
     label: "Life-event packages",
     icon: Plane,
     head: "Prepare for any event in minutes.",
-    body: "Ask for a Schengen visa, a home loan, a job switch. LifePack assembles the exact pack, marks what is ready, flags what is missing, and exports a clean ZIP.",
+    body: "Ask for a Schengen visa, a home loan, a job switch. Readiness assembles the exact pack, marks what is ready, flags what is missing, and exports a clean ZIP.",
     points: [
       "Readiness score from your real vault",
       "Missing items flagged, not guessed",
@@ -45,7 +45,7 @@ export const TABS: LandingTab[] = [
     label: "Healthcare",
     icon: HeartPulse,
     head: "Walk into every appointment ready.",
-    body: "Keep every prescription and report on one timeline. Track your own readings. Print a one-page visit summary or carry the whole pack. LifePack organizes, never diagnoses.",
+    body: "Keep every prescription and report on one timeline. Track your own readings. Print a one-page visit summary or carry the whole pack. Readiness organizes, never diagnoses.",
     points: [
       "Per-family-member records",
       "Self-logged lab trends",

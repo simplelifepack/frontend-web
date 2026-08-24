@@ -166,7 +166,7 @@ async function decodeImage(bytes: Uint8Array, mimeType: SupportedDocumentMimeTyp
     ) {
       throw new DocumentFileValidationError(
         "UNSAFE_FILE",
-        "The image dimensions exceed LifePack's safe decoding limits.",
+        "The image dimensions exceed Readiness safe decoding limits.",
       );
     }
   } catch (error) {
