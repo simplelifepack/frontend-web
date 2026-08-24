@@ -41,7 +41,7 @@ async function refreshStoredAuth() {
 
 const safeMessages: Record<string, string> = {
   UNSUPPORTED_FILE_TYPE: "Use a supported PDF, JPEG, PNG, or WebP document.",
-  FILE_TOO_LARGE: "The document exceeds LifePack's 20 MB limit.",
+  FILE_TOO_LARGE: "The document exceeds Readiness's 20 MB limit.",
   FILE_SIGNATURE_MISMATCH: "The file contents do not match its reported type.",
   FILE_CORRUPTED: "The document is corrupted or incomplete.",
   PASSWORD_PROTECTED_FILE: "Password-protected PDFs are not supported.",
@@ -124,6 +124,6 @@ export async function downloadBlob(
   const disposition = response.headers.get("Content-Disposition") ?? "";
   return {
     blob: await response.blob(),
-    fileName: disposition.match(/filename="([^"]+)"/)?.[1] ?? "lifepack.zip",
+    fileName: disposition.match(/filename="([^"]+)"/)?.[1] ?? "readiness.zip",
   };
 }

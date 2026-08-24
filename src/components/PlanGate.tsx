@@ -36,7 +36,7 @@ export default function PlanGate({ module, children }: { module: ModuleKey; chil
       </div>
       <h1 style={{ color: T.white, margin: "10px 0 8px", fontSize: 28 }}>{detail.title}</h1>
       <p style={{ color: T.muted, fontSize: 14, lineHeight: 1.6, margin: "0 auto 18px", maxWidth: 440 }}>
-        Current tier: {entitlements?.plan.name ?? "Free"}. Upgrade to organize this area of your LifePack.
+        Current tier: {entitlements?.plan.name ?? "Free"}. Upgrade to organize this area of your Readiness.
       </p>
       <div style={{ display: "grid", gap: 8, marginBottom: 20, textAlign: "left" }}>
         {detail.benefits.map((benefit) => (

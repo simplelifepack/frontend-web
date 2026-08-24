@@ -110,7 +110,7 @@ export default function AppShell({ children }: AppShellProps) {
           {navOpen ? (
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: 16, color: T.white, whiteSpace: "nowrap" }}>
-                LifePack <span style={{ color: T.gold }}>AI</span>
+                Readiness <span style={{ color: T.gold }}>AI</span>
               </div>
               <div style={{ fontSize: 10, color: T.muted, letterSpacing: 2, fontFamily: "ui-monospace, monospace", whiteSpace: "nowrap" }}>
                 LIVING ARCHIVE
@@ -223,7 +223,7 @@ export default function AppShell({ children }: AppShellProps) {
                     }
                   }}
                   placeholder="Search…"
-                  aria-label="Search LifePack"
+                  aria-label="Search Readiness"
                 />
                 {query ? (
                   <button type="button" onClick={() => setQuery("")} aria-label="Clear search">
