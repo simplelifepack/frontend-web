@@ -18,7 +18,9 @@ import { logout } from "@/store/slices/authSlice";
 import LockedUpgradeModal, { type LockedModuleKey } from "./LockedUpgradeModal";
 import { ROUTE_PATHS, SHELL_NAV, routeFromPath } from "./appShellNav";
 
-const UploadDocumentModal = lazy(() => import("@/components/UploadDocumentModal"));
+const UploadDocumentModal = lazy(
+  () => import("@/components/UploadDocumentModal"),
+);
 
 type AppShellProps = {
   children?: ReactNode;
@@ -33,7 +35,9 @@ export default function AppShell({ children }: AppShellProps) {
   const currentRoute = routeFromPath(location.pathname);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [stayAfterUpload, setStayAfterUpload] = useState(false);
-  const [lockedModule, setLockedModule] = useState<LockedModuleKey | null>(null);
+  const [lockedModule, setLockedModule] = useState<LockedModuleKey | null>(
+    null,
+  );
   const [query, setQuery] = useState("");
   const [navOpen, setNavOpen] = useState(() =>
     typeof window === "undefined" ? true : window.innerWidth > 760,
@@ -45,8 +49,8 @@ export default function AppShell({ children }: AppShellProps) {
       setStayAfterUpload(Boolean(detail?.stayOnSave));
       setUploadOpen(true);
     };
-    window.addEventListener("lifepack:open-upload", openUpload);
-    return () => window.removeEventListener("lifepack:open-upload", openUpload);
+    window.addEventListener("ReadiNes:open-upload", openUpload);
+    return () => window.removeEventListener("ReadiNes:open-upload", openUpload);
   }, []);
 
   const handleLogout = async () => {
@@ -109,10 +113,25 @@ export default function AppShell({ children }: AppShellProps) {
           </div>
           {navOpen ? (
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: T.white, whiteSpace: "nowrap" }}>
-                LifePack <span style={{ color: T.gold }}>AI</span>
+              <div
+                style={{
+                  fontWeight: 800,
+                  fontSize: 16,
+                  color: T.white,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ReadiNes
               </div>
-              <div style={{ fontSize: 10, color: T.muted, letterSpacing: 2, fontFamily: "ui-monospace, monospace", whiteSpace: "nowrap" }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: T.muted,
+                  letterSpacing: 2,
+                  fontFamily: "ui-monospace, monospace",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 LIVING ARCHIVE
               </div>
             </div>
@@ -124,9 +143,11 @@ export default function AppShell({ children }: AppShellProps) {
             const Icon = n.icon;
             const active = currentRoute === n.key;
             const locked =
-              n.key === "health" ? !entitlements?.rules.modules.health :
-              n.key === "wealth" ? !entitlements?.rules.modules.wealth :
-              false;
+              n.key === "health"
+                ? !entitlements?.rules.modules.health
+                : n.key === "wealth"
+                  ? !entitlements?.rules.modules.wealth
+                  : false;
             const navStyle = {
               width: "100%",
               display: "flex",
@@ -167,7 +188,11 @@ export default function AppShell({ children }: AppShellProps) {
                 title={n.label}
                 style={navStyle}
               >
-                <Icon size={18} color={active ? T.gold : T.muted} style={{ flexShrink: 0 }} />
+                <Icon
+                  size={18}
+                  color={active ? T.gold : T.muted}
+                  style={{ flexShrink: 0 }}
+                />
                 {navOpen ? n.label : ""}
               </NavLink>
             );
@@ -194,7 +219,13 @@ export default function AppShell({ children }: AppShellProps) {
             fontWeight: 600,
           }}
         >
-          {navOpen ? <><ChevronsLeft size={16} /> Collapse</> : <ChevronsRight size={16} />}
+          {navOpen ? (
+            <>
+              <ChevronsLeft size={16} /> Collapse
+            </>
+          ) : (
+            <ChevronsRight size={16} />
+          )}
         </button>
       </aside>
       <main
@@ -218,22 +249,30 @@ export default function AppShell({ children }: AppShellProps) {
                   onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" && query.trim()) {
-                      navigate(`/documents?search=${encodeURIComponent(query.trim())}`);
+                      navigate(
+                        `/documents?search=${encodeURIComponent(query.trim())}`,
+                      );
                       setQuery("");
                     }
                   }}
                   placeholder="Search…"
-                  aria-label="Search LifePack"
+                  aria-label="Search ReadiNes"
                 />
                 {query ? (
-                  <button type="button" onClick={() => setQuery("")} aria-label="Clear search">
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    aria-label="Clear search"
+                  >
                     <X size={15} />
                   </button>
                 ) : null}
               </label>
               <div className="lp-user-menu">
                 <span>{user?.name}</span>
-                <button type="button" onClick={handleLogout}>Logout</button>
+                <button type="button" onClick={handleLogout}>
+                  Logout
+                </button>
               </div>
             </div>
           ) : null}
@@ -255,7 +294,6 @@ export default function AppShell({ children }: AppShellProps) {
             onClose={() => setLockedModule(null)}
           />
         ) : null}
-        
       </main>
     </div>
   );

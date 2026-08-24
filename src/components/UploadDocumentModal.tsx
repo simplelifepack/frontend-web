@@ -215,9 +215,9 @@ export default function UploadDocumentModal({ open, stayOnSave = false, onClose 
             </label>
             <div style={{ color: T.muted, fontSize: 11, lineHeight: 1.5, marginBottom: 16 }}>
               {aiAnalysisConsent
-                ? "AI mode: after LifePack validates the document, its content may be sent to the configured AI provider for analysis."
-                : "Private mode: LifePack uses its rule-based analyzer and does not send the document to an AI provider."}
-              {" "}In both modes, your browser encrypts the file first and uploads only ciphertext to LifePack for security validation and saving.
+                ? "AI mode: after ReadiNes validates the document, its content may be sent to the configured AI provider for analysis."
+                : "Private mode: ReadiNes uses its rule-based analyzer and does not send the document to an AI provider."}
+              {" "}In both modes, your browser encrypts the file first and uploads only ciphertext to ReadiNes for security validation and saving.
             </div>
             <input
               ref={inputRef}

@@ -30,7 +30,7 @@ export default function FamilyPage() {
               <Users size={22} color={T.mint} />
             </span>
             <div style={{ flex: 1 }}>
-              <div style={{ color: T.white, fontSize: 17, fontWeight: 800 }}>4 people in your LifePack</div>
+              <div style={{ color: T.white, fontSize: 17, fontWeight: 800 }}>4 people in your ReadiNes</div>
               <div style={{ color: T.muted, fontSize: 13, marginTop: 4 }}>Access stays scoped to each family member.</div>
             </div>
             <button style={btnGold}><Plus size={15} /> Add member</button>

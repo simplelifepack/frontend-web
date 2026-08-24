@@ -142,7 +142,7 @@ export default function PackDetail({
             ) : null}
 
             <section className="lp-pack-check-card">
-              <h3><CheckCircle2 size={17} /> Found in LifePack ({found.length})</h3>
+              <h3><CheckCircle2 size={17} /> Found in ReadiNes ({found.length})</h3>
               {found.map((slot) => {
                 const isOpen = expanded === slot.id;
                 return (

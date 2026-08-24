@@ -3,7 +3,7 @@ const cards = Array.from({ length: 4 });
 
 export default function BootstrapSkeleton() {
   return (
-    <div className="lp-bootstrap-skeleton" aria-busy="true" aria-label="Loading LifePack">
+    <div className="lp-bootstrap-skeleton" aria-busy="true" aria-label="Loading ReadiNes">
       <aside className="lp-bootstrap-skeleton-nav">
         <div className="lp-bootstrap-brand-skeleton">
           <span className="lp-skeleton-block square" />

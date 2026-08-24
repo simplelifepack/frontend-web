@@ -40,7 +40,7 @@ export default function HealthPage() {
     <div className="lp-route lp-health-route">
       <SectionHead
         title="Health"
-        sub="Keep the whole family visit-ready. LifePack organizes and surfaces your records. It never diagnoses."
+        sub="Keep the whole family visit-ready. ReadiNes organizes and surfaces your records. It never diagnoses."
         action={<div className="lp-health-attention"><Users size={15} /> 7 things need attention</div>}
       />
 

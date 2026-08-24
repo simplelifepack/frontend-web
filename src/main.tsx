@@ -9,7 +9,7 @@ import { store } from "./store";
 import "./styles.css";
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
-const googleScriptErrorEvent = "lifepack:google-script-error";
+const googleScriptErrorEvent = "ReadiNes:google-script-error";
 const app = (
   <Provider store={store}>
     <BrowserRouter>
@@ -24,14 +24,20 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <GoogleOAuthProvider
         clientId={googleClientId}
         onScriptLoadSuccess={() => {
-          window.dispatchEvent(new CustomEvent(googleScriptErrorEvent, { detail: false }));
+          window.dispatchEvent(
+            new CustomEvent(googleScriptErrorEvent, { detail: false }),
+          );
         }}
         onScriptLoadError={() => {
-          window.dispatchEvent(new CustomEvent(googleScriptErrorEvent, { detail: true }));
+          window.dispatchEvent(
+            new CustomEvent(googleScriptErrorEvent, { detail: true }),
+          );
         }}
       >
         {app}
       </GoogleOAuthProvider>
-    ) : app}
+    ) : (
+      app
+    )}
   </React.StrictMode>,
 );

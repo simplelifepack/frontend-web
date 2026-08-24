@@ -1,4 +1,12 @@
-import { ChevronRight, Loader2, Plane, Plus, RefreshCw, Search, Sparkles } from "lucide-react";
+import {
+  ChevronRight,
+  Loader2,
+  Plane,
+  Plus,
+  RefreshCw,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Card from "@/components/Card";
@@ -7,8 +15,17 @@ import SectionHead from "@/components/SectionHead";
 import { btnGold, T } from "@/constants/theme";
 import { api } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { makeSelectPackageReadiness, selectPackageCards } from "@/readiness/selectors";
-import { fetchPackageDetail, fetchPackages, setActivePackageQuery, setPackageGenerationStatus, upsertPackage } from "@/store/slices/packagesSlice";
+import {
+  makeSelectPackageReadiness,
+  selectPackageCards,
+} from "@/readiness/selectors";
+import {
+  fetchPackageDetail,
+  fetchPackages,
+  setActivePackageQuery,
+  setPackageGenerationStatus,
+  upsertPackage,
+} from "@/store/slices/packagesSlice";
 import PackDetail from "./pack-detail";
 
 const PACKS_PER_PAGE = 20;
@@ -38,12 +55,14 @@ function matchesCategory(packCategory: string, selectedCategory: string) {
     "Home & Property": ["home", "property", "housing"],
     "Family & Life": ["family", "life"],
   };
-  return (terms[selectedCategory] ?? []).some((term) => category.includes(term));
+  return (terms[selectedCategory] ?? []).some((term) =>
+    category.includes(term),
+  );
 }
 
 function openPackUpload() {
   window.dispatchEvent(
-    new CustomEvent("lifepack:open-upload", { detail: { stayOnSave: true } }),
+    new CustomEvent("ReadiNes:open-upload", { detail: { stayOnSave: true } }),
   );
 }
 
@@ -66,10 +85,10 @@ function readinessText(pack: {
   requirements?: unknown[];
 }) {
   const total = pack.requirements?.length
-    ? pack.requiredDocumentTypes?.length ?? 0
+    ? (pack.requiredDocumentTypes?.length ?? 0)
     : pack.requiredDocumentCount;
   const ready = pack.requirements?.length
-    ? pack.uploadedDocumentTypes?.length ?? 0
+    ? (pack.uploadedDocumentTypes?.length ?? 0)
     : pack.readyDocumentCount;
   const missing = Math.max(0, total - ready);
   return `${missing} missing · ${ready} of ${total} ready`;
@@ -87,14 +106,17 @@ export default function PackagesPage() {
     generationStatus,
     detailStatusBySlug,
   } = useAppSelector((state) => state.packages);
-  const catalogueItems = useAppSelector((state) => state.packages.catalogueItems);
+  const catalogueItems = useAppSelector(
+    (state) => state.packages.catalogueItems,
+  );
   const packs = useAppSelector(selectPackageCards);
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const [detailOpen, setDetailOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [searchError, setSearchError] = useState<string | null>(null);
-  const [category, setCategory] = useState<(typeof PACKAGE_CATEGORIES)[number]>("All");
+  const [category, setCategory] =
+    useState<(typeof PACKAGE_CATEGORIES)[number]>("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadStatus, setDownloadStatus] = useState<
     "idle" | "loading" | "failed"
@@ -108,7 +130,10 @@ export default function PackagesPage() {
   }, [packs, selectedSlug]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedQuery(query), SEARCH_DEBOUNCE_MS);
+    const timer = window.setTimeout(
+      () => setDebouncedQuery(query),
+      SEARCH_DEBOUNCE_MS,
+    );
     return () => window.clearTimeout(timer);
   }, [query]);
 
@@ -118,22 +143,33 @@ export default function PackagesPage() {
       limit: PACKS_PER_PAGE,
       page: currentPage,
       search: debouncedQuery.trim() || undefined,
-      sort: debouncedQuery.trim() ? "relevance" as const : "category" as const,
+      sort: debouncedQuery.trim()
+        ? ("relevance" as const)
+        : ("category" as const),
     };
     dispatch(setActivePackageQuery(request));
     void dispatch(fetchPackages(request));
   }, [category, currentPage, debouncedQuery, dispatch]);
 
-  const filteredPacks = useMemo(() => packs.filter((pack) => matchesCategory(pack.category, category)), [category, packs]);
+  const filteredPacks = useMemo(
+    () => packs.filter((pack) => matchesCategory(pack.category, category)),
+    [category, packs],
+  );
   const suggestions = useMemo(() => filteredPacks.slice(0, 4), [filteredPacks]);
   const hasSearchQuery = Boolean(debouncedQuery.trim());
-  const hasEmptySearch = hasSearchQuery && !filteredPacks.length && searchStatus !== "loading" && status !== "loading";
+  const hasEmptySearch =
+    hasSearchQuery &&
+    !filteredPacks.length &&
+    searchStatus !== "loading" &&
+    status !== "loading";
 
   const totalPages = Math.max(
     1,
     pagination ? Math.ceil(pagination.total / pagination.limit) : 1,
   );
-  const shouldShowPagination = Boolean(pagination && (pagination.hasNextPage || pagination.page > 1));
+  const shouldShowPagination = Boolean(
+    pagination && (pagination.hasNextPage || pagination.page > 1),
+  );
   const paginatedPacks = filteredPacks;
 
   useEffect(() => {
@@ -158,11 +194,20 @@ export default function PackagesPage() {
     };
   }, [detailOpen]);
 
-  const selectedDetail = useAppSelector((state) => selectedSlug ? state.packages.detailsBySlug[selectedSlug] : undefined);
+  const selectedDetail = useAppSelector((state) =>
+    selectedSlug ? state.packages.detailsBySlug[selectedSlug] : undefined,
+  );
   const selectedSummary = packs.find((pack) => pack.slug === selectedSlug);
-  const localReadiness = useAppSelector((state) => readinessSelector(state, selectedSlug));
+  const localReadiness = useAppSelector((state) =>
+    readinessSelector(state, selectedSlug),
+  );
   const readiness = localReadiness?.result ?? null;
-  const readinessStatus = detailStatusBySlug[selectedSlug] === "loading" ? "loading" : detailStatusBySlug[selectedSlug] === "failed" ? "failed" : "idle";
+  const readinessStatus =
+    detailStatusBySlug[selectedSlug] === "loading"
+      ? "loading"
+      : detailStatusBySlug[selectedSlug] === "failed"
+        ? "failed"
+        : "idle";
   const completion = localReadiness?.percentage ?? 0;
   const readyCount = localReadiness?.requiredReadyCount ?? 0;
   const totalCount = localReadiness?.requiredTotalCount ?? 0;
@@ -172,7 +217,9 @@ export default function PackagesPage() {
     if (!selectedDetail) return;
     setDownloadStatus("loading");
     try {
-      const { blob, fileName } = await api.packages.download(selectedDetail.slug);
+      const { blob, fileName } = await api.packages.download(
+        selectedDetail.slug,
+      );
       downloadBlobFile(blob, fileName);
       setDownloadStatus("idle");
     } catch {
@@ -191,13 +238,21 @@ export default function PackagesPage() {
       const result = await api.packages.searchOrGenerate(trimmed);
       if (activeSearchRef.current !== requestId) return;
       dispatch(upsertPackage(result.package));
-      dispatch(setPackageGenerationStatus(result.source === "official_source" ? "succeeded" : "idle"));
+      dispatch(
+        setPackageGenerationStatus(
+          result.source === "official_source" ? "succeeded" : "idle",
+        ),
+      );
       setSelectedSlug(result.package.slug);
       setDetailOpen(true);
     } catch (apiError) {
       if (activeSearchRef.current !== requestId) return;
       dispatch(setPackageGenerationStatus("failed"));
-      setSearchError(apiError instanceof Error ? apiError.message : "Unable to build this package.");
+      setSearchError(
+        apiError instanceof Error
+          ? apiError.message
+          : "Unable to build this package.",
+      );
     }
   };
 
@@ -211,7 +266,7 @@ export default function PackagesPage() {
     <div className="lp-route lp-packages-route">
       <SectionHead
         title="Packages"
-        sub={`${packs.length} real-world situations. LifePack matches your archive against each one and shows how ready you already are.`}
+        sub={`${packs.length} real-world situations. ReadiNes matches your archive against each one and shows how ready you already are.`}
         action={null}
       />
 
@@ -221,7 +276,11 @@ export default function PackagesPage() {
         </div>
       ) : null}
 
-      <button type="button" style={{ ...btnGold, marginBottom: 16 }} onClick={openPackUpload}>
+      <button
+        type="button"
+        style={{ ...btnGold, marginBottom: 16 }}
+        onClick={openPackUpload}
+      >
         <Plus size={16} /> Create a custom pack
       </button>
 
@@ -232,7 +291,8 @@ export default function PackagesPage() {
           onChange={(event) => {
             setQuery(event.target.value);
             setSearchError(null);
-            if (generationStatus !== "loading") dispatch(setPackageGenerationStatus("idle"));
+            if (generationStatus !== "loading")
+              dispatch(setPackageGenerationStatus("idle"));
           }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
@@ -317,15 +377,19 @@ export default function PackagesPage() {
         </div>
       ) : null}
       <div className="lp-pack-grid">
-        {(status === "loading" || searchStatus === "loading") && !paginatedPacks.length ? (
-          Array.from({ length: 6 }, (_, index) => (
-            <div className="lp-pack-result lp-pack-result-skeleton" key={index}>
-              <span />
-              <span />
-              <span />
-            </div>
-          ))
-        ) : null}
+        {(status === "loading" || searchStatus === "loading") &&
+        !paginatedPacks.length
+          ? Array.from({ length: 6 }, (_, index) => (
+              <div
+                className="lp-pack-result lp-pack-result-skeleton"
+                key={index}
+              >
+                <span />
+                <span />
+                <span />
+              </div>
+            ))
+          : null}
         {paginatedPacks.map((pack) => (
           <button
             type="button"
@@ -335,19 +399,45 @@ export default function PackagesPage() {
           >
             <Ring score={Math.round(pack.completion)} size={54} />
             <span className="lp-pack-result-copy">
-              <strong><Plane size={15} /> {pack.title}</strong>
+              <strong>
+                <Plane size={15} /> {pack.title}
+              </strong>
               <span>{readinessText(pack)}</span>
             </span>
             <ChevronRight size={18} color={T.muted} />
           </button>
         ))}
-        {!filteredPacks.length && searchStatus !== "loading" && status !== "loading" ? (
-          <Card style={{ gridColumn: "1 / -1", textAlign: "center", padding: hasSearchQuery ? "56px 34px 52px" : 34 }}>
-            <strong style={{ color: T.white, display: "block", fontSize: hasSearchQuery ? 16 : 14 }}>
-              {hasSearchQuery ? `No pack covers "${debouncedQuery.trim()}" yet` : "No matching packages"}
+        {!filteredPacks.length &&
+        searchStatus !== "loading" &&
+        status !== "loading" ? (
+          <Card
+            style={{
+              gridColumn: "1 / -1",
+              textAlign: "center",
+              padding: hasSearchQuery ? "56px 34px 52px" : 34,
+            }}
+          >
+            <strong
+              style={{
+                color: T.white,
+                display: "block",
+                fontSize: hasSearchQuery ? 16 : 14,
+              }}
+            >
+              {hasSearchQuery
+                ? `No pack covers "${debouncedQuery.trim()}" yet`
+                : "No matching packages"}
             </strong>
-            <div style={{ color: T.muted, fontSize: hasSearchQuery ? 15 : 13, marginTop: 8 }}>
-              {hasSearchQuery ? "Describe it and LifePack drafts the checklist for you." : "Try another search or category."}
+            <div
+              style={{
+                color: T.muted,
+                fontSize: hasSearchQuery ? 15 : 13,
+                marginTop: 8,
+              }}
+            >
+              {hasSearchQuery
+                ? "Describe it and ReadiNes drafts the checklist for you."
+                : "Try another search or category."}
             </div>
             {hasSearchQuery && searchCanGenerate ? (
               <button
@@ -356,8 +446,14 @@ export default function PackagesPage() {
                 disabled={generationStatus === "loading"}
                 onClick={() => void handleSearchOrGenerate()}
               >
-                {generationStatus === "loading" ? <Loader2 size={17} className="lp-spin" /> : <Plus size={17} />}
-                {generationStatus === "loading" ? "Drafting pack..." : "Create a custom pack"}
+                {generationStatus === "loading" ? (
+                  <Loader2 size={17} className="lp-spin" />
+                ) : (
+                  <Plus size={17} />
+                )}
+                {generationStatus === "loading"
+                  ? "Drafting pack..."
+                  : "Create a custom pack"}
               </button>
             ) : null}
           </Card>
@@ -377,7 +473,9 @@ export default function PackagesPage() {
               >
                 <Ring score={0} size={54} />
                 <span className="lp-pack-result-copy">
-                  <strong><Plane size={15} /> {pack.title}</strong>
+                  <strong>
+                    <Plane size={15} /> {pack.title}
+                  </strong>
                   <span>{readinessText(pack)}</span>
                 </span>
                 <ChevronRight size={18} color={T.muted} />
@@ -389,16 +487,35 @@ export default function PackagesPage() {
 
       {shouldShowPagination ? (
         <div className="lp-pack-pages">
-          <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Previous</button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Next</button>
+          <button
+            type="button"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            disabled={currentPage === totalPages}
+            onClick={() =>
+              setCurrentPage((page) => Math.min(totalPages, page + 1))
+            }
+          >
+            Next
+          </button>
         </div>
       ) : null}
 
       {detailOpen && (selectedDetail || selectedSummary) ? (
-        <div className="lp-pack-drawer-backdrop" onMouseDown={(event) => {
-          if (event.target === event.currentTarget) setDetailOpen(false);
-        }}>
+        <div
+          className="lp-pack-drawer-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setDetailOpen(false);
+          }}
+        >
           <aside
             className="lp-pack-drawer"
             role="dialog"
@@ -420,7 +537,9 @@ export default function PackagesPage() {
                 onUpload={openPackUpload}
               />
             ) : (
-              <div className="lp-pack-drawer-message">Loading package details...</div>
+              <div className="lp-pack-drawer-message">
+                Loading package details...
+              </div>
             )}
           </aside>
         </div>

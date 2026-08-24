@@ -12,11 +12,15 @@ import Pill from "@/components/Pill";
 import Ring from "@/components/Ring";
 import Stamp from "@/components/Stamp";
 import { btnGhost, btnGold, T } from "@/constants/theme";
-import { api, type ReadinessRequirement, type ReadinessResult } from "@/lib/api";
+import {
+  api,
+  type ReadinessRequirement,
+  type ReadinessResult,
+} from "@/lib/api";
 
 export function openReadinessUpload() {
   window.dispatchEvent(
-    new CustomEvent("lifepack:open-upload", { detail: { stayOnSave: true } }),
+    new CustomEvent("ReadiNes:open-upload", { detail: { stayOnSave: true } }),
   );
 }
 
@@ -60,18 +64,20 @@ function RequirementRow({
           {partial && requirement.reason
             ? requirement.reason
             : satisfied
-            ? [
-                requirement.matchedDocument?.originalName,
-                requirement.alternatives.length
-                  ? `${requirement.alternatives.length} alternative${requirement.alternatives.length === 1 ? "" : "s"}`
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" . ")
-            : (requirement.alternativeLabels.length
-                ? requirement.alternativeLabels
-                : requirement.acceptedDocumentTypes
-              ).slice(0, 5).join(", ")}
+              ? [
+                  requirement.matchedDocument?.originalName,
+                  requirement.alternatives.length
+                    ? `${requirement.alternatives.length} alternative${requirement.alternatives.length === 1 ? "" : "s"}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" . ")
+              : (requirement.alternativeLabels.length
+                  ? requirement.alternativeLabels
+                  : requirement.acceptedDocumentTypes
+                )
+                  .slice(0, 5)
+                  .join(", ")}
         </div>
       </div>
       <div
@@ -132,7 +138,14 @@ export function ReadinessPanel({ result }: { result: ReadinessResult }) {
 
   return (
     <Card style={{ marginBottom: 22 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 16,
+          marginBottom: 14,
+        }}
+      >
         <Ring score={result.readiness.percentage} />
         <div style={{ flex: 1 }}>
           <div style={{ color: T.white, fontSize: 18, fontWeight: 800 }}>
@@ -149,7 +162,9 @@ export function ReadinessPanel({ result }: { result: ReadinessResult }) {
         {result.readiness.percentage === 100 ? <Stamp /> : null}
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+      <div
+        style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}
+      >
         {result.readiness.percentage === 100 ? (
           <button
             type="button"

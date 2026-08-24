@@ -53,7 +53,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md">
       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300 lg:hidden">
-        LifePack
+        ReadiNes
       </p>
       <h2 className="mt-4 text-3xl font-semibold text-white">Log in</h2>
       <p className="mt-2 text-sm text-slate-400">Use your email and password to continue.</p>
