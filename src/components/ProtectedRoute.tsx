@@ -7,8 +7,10 @@ import BootstrapSkeleton from "./BootstrapSkeleton";
 export default function ProtectedRoute() {
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const { token, user, status, initialized, initializationStatus, initializationError } =
+  const { token, user, status, initialized, initializationStatus, initializationError, sessionStatus } =
     useAppSelector((state) => state.auth);
+
+  if (sessionStatus === "idle" || sessionStatus === "loading") return <BootstrapSkeleton />;
 
   if (token && (!initialized || !user) && (status === "loading" || initializationStatus === "loading" || initializationStatus === "idle")) {
     return <BootstrapSkeleton />;
@@ -17,7 +19,7 @@ export default function ProtectedRoute() {
   if (token && initializationStatus === "failed") {
     return (
       <div role="alert">
-        {initializationError ?? "Unable to initialize LifePack."}{" "}
+        {initializationError ?? "Unable to initialize Readiness."}{" "}
         <button type="button" onClick={() => void dispatch(initializeApp())}>
           Retry
         </button>

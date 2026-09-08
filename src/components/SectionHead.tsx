@@ -10,7 +10,7 @@ type SectionHeadProps = {
 
 export default function SectionHead({ title, sub, action }: SectionHeadProps) {
   const openUpload = () => {
-    window.dispatchEvent(new CustomEvent("lifepack:open-upload"));
+    window.dispatchEvent(new CustomEvent("readiness:open-upload"));
   };
 
   return (

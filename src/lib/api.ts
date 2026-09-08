@@ -1,3 +1,6 @@
+import { publicDocumentLabels } from "./public-document-labels";
+import type { AccountUsage } from "./api.types";
+import { streamRequest } from "./http-client";
 import { buildEncryptedDocumentFormData } from "./document-upload-api";
 import { API_URL, downloadBlob, request } from "./http-client";
 import type {
@@ -20,7 +23,6 @@ import type {
   PackageListResponse,
   PackageLookup,
   PackageSearchOrGenerateResponse,
-  ReadinessResult,
   ResetPasswordResponse,
   SaveDocumentPayload,
   TrustCenterResponse,
@@ -47,14 +49,6 @@ function toQueryString(params: Record<string, string | number | undefined>) {
 }
 
 export const api = {
-  ai: {
-    analyzeIntent: (query: string) =>
-      request<ReadinessResult>("/api/ai/analyzeIntent", {
-        method: "POST",
-        body: { query },
-        requiresAuth: true,
-      }),
-  },
   auth: {
     signup: (payload: { name: string; email: string; password: string }) =>
       request<AuthResponse>("/auth/signup", { method: "POST", body: payload }),
@@ -62,10 +56,9 @@ export const api = {
       request<AuthResponse>("/auth/login", { method: "POST", body: payload }),
     google: (payload: { credential: string }) =>
       request<AuthResponse>("/auth/google", { method: "POST", body: payload }),
-    refresh: (payload: { refreshToken: string }) =>
-      request<AuthResponse>("/auth/refresh", { method: "POST", body: payload }),
-    logout: (payload: { refreshToken: string }) =>
-      request<ForgotPasswordResponse>("/auth/logout", { method: "POST", body: payload }),
+    refresh: () => request<AuthResponse>("/auth/refresh", { method: "POST" }),
+    logout: () => request<ForgotPasswordResponse>("/auth/logout", { method: "POST" }),
+    logoutAll: () => request<ForgotPasswordResponse>("/auth/logout-all", { method: "POST", requiresAuth: true }),
     forgotPassword: (payload: { email: string }) =>
       request<ForgotPasswordResponse>("/auth/forgot-password", { method: "POST", body: payload }),
     resetPassword: (payload: { token: string; password: string }) =>
@@ -99,8 +92,8 @@ export const api = {
       downloadBlob(`/documents/${encodeURIComponent(id)}/preview`, { requiresAuth: true }),
     download: (id: string) =>
       downloadBlob(`/documents/${encodeURIComponent(id)}/download`, { requiresAuth: true }),
-    analyze: async (file: File, aiAnalysisConsent = false) => {
-      const formData = await buildEncryptedDocumentFormData(file, aiAnalysisConsent, request);
+    analyze: async (files: File[], aiAnalysisConsent = false) => {
+      const formData = await buildEncryptedDocumentFormData(files, aiAnalysisConsent, request);
       return request<AnalyzeDocumentResponse>("/documents/analyze", {
         method: "POST",
         body: formData,
@@ -113,8 +106,8 @@ export const api = {
         body: payload,
         requiresAuth: true,
       }),
-    upload: async (file: File, aiAnalysisConsent = false) => {
-      const formData = await buildEncryptedDocumentFormData(file, aiAnalysisConsent, request);
+    upload: async (files: File[], aiAnalysisConsent = false) => {
+      const formData = await buildEncryptedDocumentFormData(files, aiAnalysisConsent, request);
       return request<UploadDocumentResponse>("/documents/upload", {
         method: "POST",
         body: formData,
@@ -127,6 +120,7 @@ export const api = {
         requiresAuth: true,
       }),
   },
+  usage: () => request<AccountUsage>("/api/bootstrap/usage", { requiresAuth: true, dedupeMs: 0 }),
   bootstrap: () => request<BootstrapResponse>("/api/bootstrap", { requiresAuth: true }),
   trust: {
     get: () => request<TrustCenterResponse>("/api/trust", { requiresAuth: true, dedupeMs: 1_000 }),
@@ -189,35 +183,20 @@ export const api = {
         location: query.location,
         page: query.page ?? 1,
         provider: query.provider,
-        search: query.search,
+        search: query.search?.slice(0, 160),
         sort: query.sort,
       })}`, { requiresAuth: true, dedupeMs: 5_000 }),
     get: (slug: string) =>
-      request<PackSummary>(`/api/packages/${encodeURIComponent(slug)}`, { requiresAuth: true, dedupeMs: 5_000 }),
-    search: (query: string) =>
-      request<ReadinessResult>(`/packages/search?q=${encodeURIComponent(query)}`, { requiresAuth: true }),
-    searchOrGenerate: (query: string) =>
+      request<PackSummary>(`/api/packages/${encodeURIComponent(slug)}`, { requiresAuth: true }),
+    streamSearchOrGenerate: (packageType: string, documentLabels: string[], onDelta: (text: string) => void, signal?: AbortSignal) =>
+      streamRequest<PackageSearchOrGenerateResponse>("/api/packages/search-or-generate", { packageType, documentLabels: publicDocumentLabels(documentLabels) }, onDelta, signal),
+    searchOrGenerate: (packageType: string, documentLabels: string[]) =>
       request<PackageSearchOrGenerateResponse>("/api/packages/search-or-generate", {
         method: "POST",
-        body: { query },
+        body: { packageType, documentLabels: publicDocumentLabels(documentLabels) },
         requiresAuth: true,
       }),
     getByIds: (ids: string[]) =>
       request<PackageLookup[]>(`/packages?ids=${encodeURIComponent(ids.join(","))}`, { requiresAuth: true }),
-    download: (slug: string) => downloadBlob(`/packs/${encodeURIComponent(slug)}/download`, { requiresAuth: true }),
-  },
-  readiness: {
-    search: (query: string) =>
-      request<ReadinessResult["suggestions"]>(`/readiness/search?q=${encodeURIComponent(query)}`, {
-        requiresAuth: true,
-      }),
-    check: (query: string) =>
-      request<ReadinessResult>(`/readiness/check?q=${encodeURIComponent(query)}`, {
-        requiresAuth: true,
-      }),
-    getBySlug: (slug: string) =>
-      request<ReadinessResult>(`/readiness/${encodeURIComponent(slug)}`, {
-        requiresAuth: true,
-      }),
   },
 };

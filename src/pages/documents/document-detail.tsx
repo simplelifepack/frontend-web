@@ -79,7 +79,6 @@ export default function DocumentDetail({ doc }: { doc: DocumentRecord }) {
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
           <Pill tone="flat">{labelize(category)}</Pill>
           <Pill tone="flat">{labelize(doc.documentType)}</Pill>
-          <Pill tone="ready">{Math.round(doc.confidence)}% confidence</Pill>
           <Pill tone="flat">{sourceLabel(doc)}</Pill>
         </div>
         <div style={{ color: T.muted, fontSize: 13, marginTop: 12 }}>

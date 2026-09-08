@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import Card from "@/components/Card";
+import { StorageUsage } from "@/components/AccountUsage";
+import type { AccountUsage } from "@/lib/api.types";
 import SectionHead from "@/components/SectionHead";
 import { btnGhost, btnGold, T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
@@ -11,6 +13,7 @@ import { openUpload, type Source } from "./document-utils";
 
 type DocumentsOverviewProps = {
   documents: DocumentRecord[];
+  storage?: AccountUsage["storage"];
   error: string | null;
   sources: Source[];
   status: "idle" | "loading" | "succeeded" | "failed";
@@ -19,6 +22,7 @@ type DocumentsOverviewProps = {
 
 export default function DocumentsOverview({
   documents,
+  storage,
   error,
   sources,
   status,
@@ -41,7 +45,8 @@ export default function DocumentsOverview({
         title="Documents"
         sub={`${documents.length} records in your archive. Search, filter, and open any row for full context.`}
         action={
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {storage && <StorageUsage storage={storage} circular />}
             <button type="button" onClick={openUpload} style={btnGold}><UploadCloud size={15} /> Upload</button>
             <button type="button" onClick={openUpload} style={btnGhost}><Camera size={15} /> Scan</button>
           </div>

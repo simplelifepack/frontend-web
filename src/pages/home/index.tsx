@@ -126,7 +126,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <div className="lp-eyebrow">Ready when you need them . private . on-device</div>
+      <div className="lp-eyebrow">Ready when you need them . private . encrypted storage</div>
       <SectionHead
         title={`${greeting()}, ${firstName}`}
         sub="Your archive at a glance, and what needs attention today."
@@ -188,7 +188,7 @@ export default function HomePage() {
         <Card>
           <div className="lp-insight-title">
             <ShieldCheck size={16} color={T.gold} />
-            <b>Connected across LifePack</b>
+            <b>Connected across Readiness</b>
           </div>
           <p className="lp-insight-copy">What your modules mean together, not what they already show apart.</p>
           {insights.map((insight, index) => (

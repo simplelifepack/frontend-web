@@ -1,3 +1,4 @@
+import SettingsPage from "./pages/settings";
 import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
@@ -5,10 +6,13 @@ import AppShell from "@/components/AppShell";
 import AuthLayout from "@/components/AuthLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import BootstrapSkeleton from "@/components/BootstrapSkeleton";
-import PlanGate from "@/components/PlanGate";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializeApp } from "@/store/bootstrap";
 import { fetchPackages } from "@/store/slices/packagesSlice";
+import { restoreSession } from "@/store/slices/authSlice";
+
+const RecoveryPage = lazy(() => import("@/pages/recovery"));
+const RecoverySettings = lazy(() => import("@/pages/recovery/settings"));
 
 const DocumentsPage = lazy(() => import("@/pages/documents"));
 const FamilyPage = lazy(() => import("@/pages/family"));
@@ -27,7 +31,9 @@ const WealthPage = lazy(() => import("@/pages/wealth"));
 
 function LandingRoute() {
   const navigate = useNavigate();
-  const { token, user, initialized } = useAppSelector((state) => state.auth);
+  const { token, user, initialized, sessionStatus } = useAppSelector((state) => state.auth);
+
+  if (sessionStatus === "idle" || sessionStatus === "loading") return <BootstrapSkeleton />;
 
   if (token && user) {
     if (!initialized) return <BootstrapSkeleton />;
@@ -43,7 +49,11 @@ function LandingRoute() {
 
 export default function App() {
   const dispatch = useAppDispatch();
-  const { token, initialized, initializationStatus } = useAppSelector((state) => state.auth);
+  const { token, initialized, initializationStatus, sessionStatus } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (sessionStatus === "idle") void dispatch(restoreSession());
+  }, [dispatch, sessionStatus]);
 
   useEffect(() => {
     if (token && !initialized && initializationStatus === "idle") {
@@ -60,6 +70,7 @@ export default function App() {
   return (
     <Suspense fallback={null}>
       <Routes>
+        <Route path="/recover" element={<AuthLayout><RecoveryPage /></AuthLayout>} />
         <Route path="/" element={<LandingRoute />} />
         <Route path="/landing" element={<LandingRoute />} />
         <Route
@@ -105,6 +116,8 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route element={<AppShell />}>
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/recovery" element={<RecoverySettings />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/packages" element={<PackagesPage />} />
             <Route path="/documents" element={<DocumentsPage />} />
@@ -113,9 +126,9 @@ export default function App() {
               path="/documents/:category/:documentId"
               element={<DocumentsPage />}
             />
-            <Route path="/health" element={<PlanGate module="health"><HealthPage /></PlanGate>} />
+            <Route path="/health" element={<HealthPage />} />
             <Route path="/family" element={<FamilyPage />} />
-            <Route path="/wealth" element={<PlanGate module="wealth"><WealthPage /></PlanGate>} />
+            <Route path="/wealth" element={<WealthPage />} />
             <Route path="/legacy" element={<LegacyPage />} />
             <Route path="/trust" element={<TrustPage />} />
           </Route>

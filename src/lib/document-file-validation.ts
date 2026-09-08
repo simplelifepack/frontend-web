@@ -1,3 +1,4 @@
+import { documentValidationMessages, fileTooLargeMessage } from "./documentValidationMessages";
 import {
   getDocument,
   GlobalWorkerOptions,
@@ -36,10 +37,12 @@ export class DocumentFileValidationError extends Error {
       | "FILE_SIGNATURE_MISMATCH"
       | "FILE_CORRUPTED"
       | "PASSWORD_PROTECTED_FILE"
-      | "UNSAFE_FILE",
+      | "UNSAFE_FILE"
+      | "IMAGE_DIMENSIONS_EXCEEDED"
+      | "PDF_PAGE_LIMIT_EXCEEDED",
     message: string,
   ) {
-    super(message);
+    super(documentValidationMessages[code] ?? message);
     this.name = "DocumentFileValidationError";
   }
 }
@@ -113,7 +116,7 @@ async function parsePdf(bytes: Uint8Array) {
     document = await task.promise;
     if (document.numPages < 1 || document.numPages > MAX_PDF_PAGES) {
       throw new DocumentFileValidationError(
-        "UNSAFE_FILE",
+        "PDF_PAGE_LIMIT_EXCEEDED",
         `PDFs must contain between 1 and ${MAX_PDF_PAGES} pages.`,
       );
     }
@@ -165,8 +168,8 @@ async function decodeImage(bytes: Uint8Array, mimeType: SupportedDocumentMimeTyp
       bitmap.width * bitmap.height > MAX_IMAGE_PIXELS
     ) {
       throw new DocumentFileValidationError(
-        "UNSAFE_FILE",
-        "The image dimensions exceed LifePack's safe decoding limits.",
+        "IMAGE_DIMENSIONS_EXCEEDED",
+        `This image is too large. Please resize it to at most ${MAX_IMAGE_WIDTH} × ${MAX_IMAGE_HEIGHT} pixels and ${MAX_IMAGE_PIXELS / 1_000_000} megapixels.`,
       );
     }
   } catch (error) {
@@ -184,7 +187,7 @@ export async function validateDocumentFile(file: File) {
   if (file.size > MAX_ORIGINAL_FILE_SIZE) {
     throw new DocumentFileValidationError(
       "FILE_TOO_LARGE",
-      `Documents must be ${Math.floor(MAX_ORIGINAL_FILE_SIZE / MB)} MB or smaller.`,
+      fileTooLargeMessage(MAX_ORIGINAL_FILE_SIZE),
     );
   }
 

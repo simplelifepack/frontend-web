@@ -52,7 +52,7 @@ export default function InvitePage() {
   };
 
   const reject = async () => {
-    if (!window.confirm("Reject this LifePack invitation?")) return;
+    if (!window.confirm("Reject this Readiness invitation?")) return;
     setWorking(true);
     setError(null);
     try {
@@ -72,7 +72,7 @@ export default function InvitePage() {
     <Card style={{ maxWidth: 520, margin: "72px auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
         <ShieldCheck color={T.gold} size={20} />
-        <h1 style={{ color: T.white, fontSize: 24, margin: 0 }}>LifePack Invitation</h1>
+        <h1 style={{ color: T.white, fontSize: 24, margin: 0 }}>Readiness Invitation</h1>
       </div>
 
       {done ? <p style={{ color: T.mint, margin: 0 }}>{done}</p> : null}
@@ -81,7 +81,7 @@ export default function InvitePage() {
       {invitation ? (
         <>
           <p style={{ color: T.text, fontSize: 15, lineHeight: 1.6, margin: "0 0 16px" }}>
-            {invitation.ownerName} invited you to join their LifePack.
+            {invitation.ownerName} invited you to join their Readiness.
           </p>
           <div style={{ display: "grid", gap: 10, marginBottom: 18 }}>
             <Info label="Invited person" value={invitation.memberName} />

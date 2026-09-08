@@ -1,58 +1,43 @@
 import { createSelector } from "@reduxjs/toolkit";
 
-import type { PackageListItem, PackSummary } from "@/lib/api";
+import type { PackageListItem } from "@/lib/api";
 import type { RootState } from "@/store";
-import { calculatePackageReadiness } from "./calculatePackageReadiness";
+import { calculatePackReadiness } from "./calculatePackageReadiness";
 
 const selectPackages = (state: RootState) => state.packages.items;
-const selectPackageDetails = (state: RootState) => state.packages.detailsBySlug;
+const selectCataloguePackages = (state: RootState) => state.packages.catalogueItems;
 const selectDocuments = (state: RootState) => state.documents.items;
-const selectUser = (state: RootState) => state.auth.user;
-const selectFamily = (state: RootState) => state.family.members;
 
 export type DerivedPackSummary = PackageListItem & {
   completion: number;
   requiredDocumentTypes: string[];
   uploadedDocumentTypes: string[];
   missingDocumentTypes: string[];
-  requirements: PackSummary["requirements"];
 };
 
-export const selectPackageCards = createSelector(
-  [selectPackages, selectPackageDetails, selectDocuments, selectUser, selectFamily],
-  (packages, detailsBySlug, documents, user, familyMembers): DerivedPackSummary[] => {
-    if (!user) return [];
-    return packages.map((packageData) => {
-      const detail = detailsBySlug[packageData.slug];
-      const readiness = detail
-        ? calculatePackageReadiness({ packageData: detail, documents, user, familyMembers })
-        : null;
-      return {
-        ...packageData,
-        requirements: detail?.requirements ?? [],
-        completion: readiness?.percentage ?? 0,
-        requiredDocumentTypes: detail?.requirements.filter((requirement) => requirement.required).map((requirement) => requirement.title) ?? [],
-        uploadedDocumentTypes: readiness?.matchedRequirements.filter((requirement) => requirement.required).map((requirement) => requirement.title) ?? [],
-        missingDocumentTypes: readiness?.missingRequirements.filter((requirement) => requirement.required).map((requirement) => requirement.title) ?? [],
-      };
-    });
-  },
-);
+function derivePackageCards(packages: PackageListItem[], documents: RootState["documents"]["items"]): DerivedPackSummary[] {
+  return packages.map((pack) => {
+    const readiness = calculatePackReadiness(pack.requirements, documents);
+    const required = readiness.requirements.filter((requirement) => requirement.required);
+    return {
+      ...pack,
+      completion: readiness.percentage,
+      requiredDocumentTypes: required.map((requirement) => requirement.title),
+      uploadedDocumentTypes: required.filter((requirement) => requirement.status === "ready").map((requirement) => requirement.title),
+      missingDocumentTypes: required.filter((requirement) => requirement.status === "missing").map((requirement) => requirement.title),
+    };
+  });
+}
+
+export const selectPackageCards = createSelector([selectPackages, selectDocuments], derivePackageCards);
+export const selectCataloguePackageCards = createSelector([selectCataloguePackages, selectDocuments], derivePackageCards);
 
 export function makeSelectPackageReadiness() {
   return createSelector(
-    [
-      selectPackages,
-      selectPackageDetails,
-      selectDocuments,
-      selectUser,
-      selectFamily,
-      (_state: RootState, slug: string) => slug,
-    ],
-    (_packages, detailsBySlug, documents, user, familyMembers, slug) => {
-      const packageData = detailsBySlug[slug];
-      if (!packageData || !user) return null;
-      return calculatePackageReadiness({ packageData, documents, user, familyMembers });
+    [selectPackages, selectDocuments, (_state: RootState, slug: string) => slug],
+    (packages, documents, slug) => {
+      const pack = packages.find((item) => item.slug === slug);
+      return pack ? calculatePackReadiness(pack.requirements, documents) : null;
     },
   );
 }

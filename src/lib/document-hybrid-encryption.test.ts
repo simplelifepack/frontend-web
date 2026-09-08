@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   encryptDocumentForUpload,
   toEncryptedDocumentFormData,
+  toEncryptedDocumentsFormData,
 } from "./document-hybrid-encryption";
 import {
   DocumentFileValidationError,
@@ -82,6 +83,13 @@ describe("client-side document hybrid encryption", () => {
     expect(formData.get("encryptedFile")).toBeInstanceOf(Blob);
     expect(formData.has("file")).toBe(false);
     expect(formData.get("originalFilename")).toBe("identity.png");
+
+    const multiFormData = toEncryptedDocumentsFormData([envelope, envelope], true);
+    expect(multiFormData.getAll("encryptedFiles")).toHaveLength(2);
+    const metadata = JSON.parse(String(multiFormData.get("envelopes")));
+    expect(metadata).toHaveLength(2);
+    expect(metadata[0].originalFilename).toBe("identity.png");
+    expect(multiFormData.get("aiAnalysisConsent")).toBe("true");
   });
 
   it("rejects mismatched and empty files before encryption", async () => {

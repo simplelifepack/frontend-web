@@ -1,3 +1,4 @@
+import usageReducer from "./slices/usageSlice";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 
 import authReducer from "./slices/authSlice";
@@ -7,6 +8,7 @@ import familyReducer from "./slices/familySlice";
 
 const combinedReducer = combineReducers({
   auth: authReducer,
+  usage: usageReducer,
   documents: documentsReducer,
   packages: packagesReducer,
   family: familyReducer,

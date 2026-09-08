@@ -2,6 +2,7 @@ import type { PublicEncryptionKey } from "./document-envelope";
 import {
   encryptDocumentForUpload,
   toEncryptedDocumentFormData,
+  toEncryptedDocumentsFormData,
 } from "./document-hybrid-encryption";
 
 type AuthenticatedRequest = <T>(
@@ -34,11 +35,11 @@ function getDocumentEncryptionKey(request: AuthenticatedRequest) {
 }
 
 export async function buildEncryptedDocumentFormData(
-  file: File,
+  files: File[],
   aiAnalysisConsent: boolean,
   request: AuthenticatedRequest,
 ) {
   const key = await getDocumentEncryptionKey(request);
-  const envelope = await encryptDocumentForUpload(file, key);
-  return toEncryptedDocumentFormData(envelope, aiAnalysisConsent);
+  const envelopes = await Promise.all(files.map((file) => encryptDocumentForUpload(file, key)));
+  return toEncryptedDocumentsFormData(envelopes, aiAnalysisConsent);
 }

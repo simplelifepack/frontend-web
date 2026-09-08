@@ -1,5 +1,6 @@
 /* eslint-disable max-lines */
 export type AuthUser = {
+  accountTier?: "free" | "paid";
   id?: string;
   name: string;
   email: string;
@@ -8,7 +9,6 @@ export type AuthUser = {
 export type AuthResponse = {
   token: string;
   accessToken?: string;
-  refreshToken: string;
   user: AuthUser;
 };
 
@@ -41,6 +41,10 @@ export type DocumentRecord = {
   classificationStatus: "pending" | "detected" | "verified" | "rejected";
   classificationConfidence: number;
   ownershipStatus: "pending" | "verified" | "mismatch" | "unknown";
+  owner?: string;
+  expiryDate?: string | null;
+  documentDate?: string | null;
+  capabilities?: string[];
   readinessEligible: boolean;
   fields: unknown;
   createdAt: string;
@@ -158,32 +162,18 @@ export type DocumentAIResult = {
   documentType: string;
   uniqueNumber: string | null;
   nameOnDocument: string | null;
+  expiryDate: string | null;
 };
 
 export type AnalyzeDocumentResponse = {
-  success?: boolean;
-  documentType?: string;
-  normalizedType?: string;
-  confidence?: number;
-  suggestedCategory?: string;
-  extractedFields?: DocumentAnalysis["fields"];
-  reviewFields: ReviewField[];
-  validation?: DocumentValidationResult;
-  title: string;
-  extractedText: string;
-  preview: string | null;
-  warnings?: Array<{ code: string; message: string }>;
-  extraction?: unknown;
-  tempFileId: string;
-  file: {
+  success: true;
+  document: DocumentAIResult & { title: string; ownership: "mine" | "other" | "unknown" };
+  files: Array<{ tempFileId: string;
     originalName: string;
     mimeType: string;
     size: number;
-  };
-  analysis: DocumentAIResult;
-  warning?: string;
-  extractedTextPreview: string | null;
-  analysisSource?: "rules" | "manual" | "ai";
+  }>;
+  warnings: Array<{ code: string; message: string }>;
 };
 
 export type { GmailCandidate, GmailImportResult, GmailStatus } from "./gmail.types";
@@ -193,7 +183,7 @@ export type UploadDocumentResponse = AnalyzeDocumentResponse & {
 };
 
 export type SaveDocumentPayload = {
-  tempFileId: string;
+  tempFileIds: string[];
   originalName: string;
   mimeType: string;
   size: number;
@@ -220,22 +210,14 @@ export type PackSummary = {
   id: string;
   slug: string;
   title: string;
-  subtitle?: string | null;
   category: string;
   description: string;
-  aliases: string[];
-  keywords: string[];
-  sourceType?: string;
-  sourceName?: string | null;
-  sourceTitle?: string | null;
-  sourceUrl?: string | null;
-  lastCheckedAt?: string | null;
-  verificationSources?: VerificationSource[];
-  lastVerifiedAt?: string | null;
-  verificationStatus?: "verified" | "needs_review";
-  createdAt?: string;
-  createdBy?: string;
-  version: number;
+  source?: {
+    name?: string;
+    title?: string;
+    url?: string;
+    lastCheckedAt?: string;
+  };
   requirements: PackageRequirement[];
 };
 
@@ -250,29 +232,20 @@ export type VerificationSource = {
 export type PackageListItem = {
   id: string;
   slug: string;
-  name: string;
   title: string;
-  subtitle: string | null;
   category: string;
-  provider: string | null;
-  location: string | null;
   description: string;
-  shortDescription: string;
-  icon: string | null;
-  sourceType: string;
-  sourceName: string | null;
-  sourceTitle: string | null;
-  sourceUrl: string | null;
-  lastCheckedAt: string | null;
-  verificationSources: VerificationSource[];
-  lastVerifiedAt: string | null;
-  verificationStatus: "verified" | "needs_review";
-  createdAt: string;
-  requiredDocumentCount: number;
-  readyDocumentCount: number;
-  source: string;
-  generationSource: string;
-  version: number;
+  source?: PackSummary["source"];
+  requirements: PackageRequirement[];
+};
+
+export type PackageSearchMetadata = {
+  intent?: string;
+  searchPhrases: string[];
+  jurisdiction?: string;
+  destination?: string;
+  purpose?: string;
+  subject?: string;
 };
 
 export type PackageListResponse = {
@@ -310,71 +283,18 @@ export type PackageListQuery = {
 export type PackageRequirement = {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   required: boolean;
-  group: string;
-  documentType: string;
-  owner: string;
+  group?: string;
+  owner?: string;
   metadata?: Record<string, string | number | boolean | null> | null;
   acceptedDocumentTypes: string[];
-  alternativeLabels: string[];
-  sortOrder: number;
 };
 
 export type FamilyMember = {
   id: string;
   name: string;
   relationship?: string;
-};
-
-export type SubscriptionTier = "FREE" | "PAID";
-export type BillingInterval = "MONTHLY" | "YEARLY" | null;
-export type PlanCode = SubscriptionTier;
-
-export type PlanEntitlements = {
-  plan: { id: string; code: PlanCode; name: string };
-  subscription: {
-    id: string;
-    tier: SubscriptionTier;
-    billingInterval: BillingInterval;
-    status: string;
-    currentPeriodStart: string | null;
-    currentPeriodEnd: string | null;
-    provider: string | null;
-    providerCustomerId: string | null;
-    providerSubscriptionId: string | null;
-  };
-  tier: SubscriptionTier;
-  billingInterval: BillingInterval;
-  rules: {
-    memberLimit: number;
-    storageBytes: number;
-    storageLimitBytes: number;
-    unknownPackSearchLimit: number;
-    aiSearchMonthlyLimit: number;
-    modules: {
-      home: boolean;
-      packages: boolean;
-      documents: boolean;
-      health: boolean;
-      wealth: boolean;
-      trustCenter: boolean;
-      legacy: boolean;
-    };
-    emergencyAccess: boolean;
-    wealthEnabled: boolean;
-    healthEnabled: boolean;
-  };
-  usage: {
-    period: string;
-    periodStart: string;
-    periodEnd: string;
-    unknownPackSearches: number;
-    aiPackSearchesUsed: number;
-    storageBytesUsed: number;
-    aiSearchesRemaining: number;
-    resetAt: string;
-  };
 };
 
 export type TrustAccessType = {
@@ -451,15 +371,10 @@ export type TrustInvitation = {
 export type TrustCenterResponse = {
   role: "OWNER" | "BOTH";
   owner: { id: string; name: string; email: string; accessType: "OWNER"; note: string };
-  plan: PlanEntitlements["plan"];
-  entitlements: PlanEntitlements;
-  memberLimit: number;
   memberCount: number;
-  remainingSlots: number;
   members: TrustMember[];
   connections: TrustConnection[];
   accessTypes: TrustAccessType[];
-  modules: PlanEntitlements["rules"]["modules"];
 };
 
 export type WealthHandoffRecipient = {
@@ -578,16 +493,13 @@ export type WealthHandoffSendResponse = {
   }>;
 };
 
-export type BootstrapResponse = {
+export type BootstrapResponse = Partial<AccountUsage> & {
   user: AuthUser;
-  entitlements: PlanEntitlements;
   familyMembers: FamilyMember[];
   documents: DocumentRecord[];
   savedPackages: string[];
   version: string;
 };
-
-export type ReadinessRequirementStatus = "ready" | "partial" | "missing";
 
 export type ReadinessMatchedDocument = {
   id: string;
@@ -599,61 +511,17 @@ export type ReadinessMatchedDocument = {
   confidence?: number;
 };
 
-export type ReadinessRequirement = {
-  id: string;
-  key: string;
-  label: string;
-  title: string;
-  description: string;
-  required: boolean;
-  documentType: string;
-  owner: string;
-  status: ReadinessRequirementStatus;
-  reason: string | null;
-  matchedDocument: ReadinessMatchedDocument | null;
-  matchedDocuments: ReadinessMatchedDocument[];
-  alternatives: ReadinessMatchedDocument[];
-  acceptedDocumentTypes: string[];
-  alternativeLabels: string[];
-};
-
-export type ReadinessResult = {
-  query: string;
-  matchedPack: {
-    id: string;
-    slug: string;
-    title: string;
-    category: string;
-    description: string;
-    requiredSlots: ReadinessRequirement[];
-    optionalSlots: ReadinessRequirement[];
-  } | null;
-  readiness: {
-    totalRequired: number;
-    satisfiedRequired: number;
-    missingRequired: number;
-    percentage: number;
-  };
-  groups: Array<{
-    group: string;
-    requirements: ReadinessRequirement[];
-  }>;
-  missing: ReadinessRequirement[];
-  suggestions: Array<{
-    id: string;
-    title: string;
-    slug: string;
-    category: string;
-    description: string;
-  }>;
-};
-
-export type PackageLookup = ReadinessResult["suggestions"][number];
+export type PackageLookup = Pick<PackSummary, "id" | "title" | "slug" | "category" | "description">;
 
 export type PackageSearchOrGenerateResponse = {
   source: "existing" | "official_source";
   confidence: number | null;
   matchReason: string | null;
   package: PackSummary;
-  readiness: ReadinessResult;
+};
+
+export type AccountUsage = {
+  accountTier: "free" | "paid";
+  storage: { usedBytes: number; limitBytes: number | null; unlimited: boolean };
+  aiUsage: { used: number | null; limit: number | null; remaining: number | null; unlimited: boolean; period: string };
 };

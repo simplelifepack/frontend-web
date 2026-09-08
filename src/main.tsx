@@ -5,15 +5,17 @@ import { Provider } from "react-redux";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import App from "./App";
+import { Toaster } from "./components/ui/sonner";
 import { store } from "./store";
 import "./styles.css";
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
-const googleScriptErrorEvent = "lifepack:google-script-error";
+const googleScriptErrorEvent = "readiness:google-script-error";
 const app = (
   <Provider store={store}>
     <BrowserRouter>
       <App />
+      <Toaster position="bottom-right" closeButton />
     </BrowserRouter>
   </Provider>
 );

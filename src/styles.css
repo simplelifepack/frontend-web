@@ -3265,12 +3265,15 @@ button.lp-pack-check-row:hover {
 
   .lp-topbar {
     align-items: stretch;
+    flex-wrap: wrap;
   }
   .lp-global-search {
     width: 100%;
   }
   .lp-user-menu {
-    display: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
   .lp-home-stats {
     grid-template-columns: 1fr 1fr;
@@ -3561,3 +3564,6 @@ button.lp-pack-check-row:hover {
     padding: 26px 16px;
   }
 }
+
+.lp-pack-pages { flex-wrap: wrap; }
+.lp-pack-pages button:disabled { opacity: 0.45; cursor: not-allowed; }

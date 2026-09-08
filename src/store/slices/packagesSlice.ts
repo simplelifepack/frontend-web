@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 
 import { api, type PackageListItem, type PackageListQuery, type PackageListResponse, type PackSummary } from "@/lib/api";
 import type { RootState } from "../index";
+import { packagePageCacheKey, readAllPackagePages, readPackagePage, writePackagePage, type CachedPackagePage } from "@/packages/packageCatalogueCache";
 
 const DEFAULT_LIMIT = 20;
 
@@ -12,13 +13,13 @@ type PackagesState = {
   detailsBySlug: Record<string, PackSummary>;
   pageKeys: Record<string, string[]>;
   pagination: PackageListResponse["pagination"] | null;
+  paginationByKey: Record<string, PackageListResponse["pagination"]>;
   searchCanGenerate: boolean;
   searchHasConfidentMatch: boolean;
   activeKey: string;
   status: "idle" | "loading" | "succeeded" | "failed";
   searchStatus: "idle" | "loading" | "succeeded" | "failed";
   generationStatus: "idle" | "loading" | "succeeded" | "failed";
-  detailStatusBySlug: Record<string, "idle" | "loading" | "succeeded" | "failed">;
   error: string | null;
   loaded: boolean;
 };
@@ -30,37 +31,38 @@ const initialState: PackagesState = {
   detailsBySlug: {},
   pageKeys: {},
   pagination: null,
+  paginationByKey: {},
   searchCanGenerate: false,
   searchHasConfidentMatch: false,
   activeKey: "",
   status: "idle",
   searchStatus: "idle",
   generationStatus: "idle",
-  detailStatusBySlug: {},
   error: null,
   loaded: false,
 };
 
 function queryKey(query: PackageListQuery = {}) {
-  return JSON.stringify({
-    category: query.category ?? "",
-    limit: query.limit ?? DEFAULT_LIMIT,
-    location: query.location ?? "",
-    page: query.page ?? 1,
-    provider: query.provider ?? "",
-    search: query.search ?? "",
-    sort: query.sort ?? "category",
-  });
+  return packagePageCacheKey(query);
 }
 
 export const fetchPackages = createAsyncThunk(
   "packages/fetchPackages",
   async (query: PackageListQuery | undefined) => {
     const resolved = { limit: DEFAULT_LIMIT, page: 1, sort: "category" as const, ...query };
+    const key = queryKey(resolved);
+    const hydratedPages = await readAllPackagePages().catch(() => []);
+    const cached = hydratedPages.find((page) => page.key === key) ?? await readPackagePage(key).catch(() => null);
+    if (cached) return { key, query: resolved, response: cached.response, hydratedPages, source: "cache" as const };
+    const response = await api.packages.list(resolved);
+    const page: CachedPackagePage = { key, query: resolved, response };
+    await writePackagePage(page).catch(() => undefined);
     return {
-      key: queryKey(resolved),
+      key,
       query: resolved,
-      response: await api.packages.list(resolved),
+      response,
+      hydratedPages,
+      source: "api" as const,
     };
   },
   {
@@ -68,17 +70,6 @@ export const fetchPackages = createAsyncThunk(
       const state = (getState() as RootState).packages;
       const key = queryKey({ limit: DEFAULT_LIMIT, page: 1, sort: "category", ...query });
       return state.status !== "loading" && !state.pageKeys[key];
-    },
-  },
-);
-
-export const fetchPackageDetail = createAsyncThunk(
-  "packages/fetchPackageDetail",
-  async (slug: string) => api.packages.get(slug),
-  {
-    condition: (slug, { getState }) => {
-      const state = (getState() as RootState).packages;
-      return !state.detailsBySlug[slug] && state.detailStatusBySlug[slug] !== "loading";
     },
   },
 );
@@ -91,6 +82,7 @@ const packagesSlice = createSlice({
       const key = queryKey({ limit: DEFAULT_LIMIT, page: 1, sort: "category", ...action.payload });
       state.activeKey = key;
       state.items = (state.pageKeys[key] ?? []).flatMap((slug) => state.summariesBySlug[slug] ? [state.summariesBySlug[slug]] : []);
+      state.pagination = state.paginationByKey[key] ?? null;
     },
     upsertPackage: (state, action: PayloadAction<PackSummary>) => {
       state.detailsBySlug[action.payload.slug] = action.payload;
@@ -116,14 +108,17 @@ const packagesSlice = createSlice({
         state[isSearch ? "searchStatus" : "status"] = "loading";
       })
       .addCase(fetchPackages.fulfilled, (state, action) => {
-        const { key, query, response } = action.payload;
+        const { key, query, response, hydratedPages } = action.payload;
+        hydratePages(state, hydratedPages);
         response.items.forEach((item) => {
           state.summariesBySlug[item.slug] = item;
+          state.detailsBySlug[item.slug] = item;
         });
-        if (!query.search && query.page === 1) {
-          state.catalogueItems = response.items;
+        if (!query.search) {
+          state.catalogueItems = mergeUniquePackages(state.catalogueItems, response.items);
         }
         state.pageKeys[key] = response.items.map((item) => item.slug);
+        state.paginationByKey[key] = response.pagination;
         if (state.activeKey === key) {
           state.items = response.items;
           state.pagination = response.pagination;
@@ -139,47 +134,27 @@ const packagesSlice = createSlice({
         state.searchStatus = "failed";
         state.error = action.error.message ?? "Unable to fetch packages.";
       })
-      .addCase(fetchPackageDetail.pending, (state, action) => {
-        state.detailStatusBySlug[action.meta.arg] = "loading";
-      })
-      .addCase(fetchPackageDetail.fulfilled, (state, action) => {
-        state.detailsBySlug[action.payload.slug] = action.payload;
-        state.detailStatusBySlug[action.payload.slug] = "succeeded";
-      })
-      .addCase(fetchPackageDetail.rejected, (state, action) => {
-        state.detailStatusBySlug[action.meta.arg] = "failed";
-      });
+      ;
   },
 });
 
 function toListItem(pack: PackSummary): PackageListItem {
-  return {
-    id: pack.id,
-    slug: pack.slug,
-    name: pack.title,
-    title: pack.title,
-    subtitle: pack.subtitle ?? null,
-    category: pack.category,
-    provider: null,
-    location: null,
-    description: pack.description,
-    shortDescription: pack.description,
-    icon: null,
-    sourceType: pack.sourceType ?? "official",
-    sourceName: pack.sourceName ?? null,
-    sourceTitle: pack.sourceTitle ?? null,
-    sourceUrl: pack.sourceUrl ?? null,
-    lastCheckedAt: pack.lastCheckedAt ?? null,
-    verificationSources: pack.verificationSources ?? [],
-    lastVerifiedAt: pack.lastVerifiedAt ?? null,
-    verificationStatus: pack.verificationStatus ?? "verified",
-    createdAt: pack.createdAt ?? new Date().toISOString(),
-    requiredDocumentCount: pack.requirements.filter((requirement) => requirement.required).length,
-    readyDocumentCount: 0,
-    source: pack.sourceType ?? "official",
-    generationSource: "ai",
-    version: pack.version,
-  };
+  return pack;
+}
+
+function mergeUniquePackages(existing: PackageListItem[], incoming: PackageListItem[]) {
+  const byId = new Map(existing.map((item) => [item.id, item]));
+  incoming.forEach((item) => byId.set(item.id, item));
+  return [...byId.values()];
+}
+
+function hydratePages(state: PackagesState, pages: CachedPackagePage[]) {
+  pages.forEach((page) => {
+    page.response.items.forEach((item) => { state.summariesBySlug[item.slug] = item; state.detailsBySlug[item.slug] = item; });
+    state.pageKeys[page.key] = page.response.items.map((item) => item.slug);
+    state.paginationByKey[page.key] = page.response.pagination;
+    if (!page.query.search) state.catalogueItems = mergeUniquePackages(state.catalogueItems, page.response.items);
+  });
 }
 
 export const { setActivePackageQuery, setPackageGenerationStatus, upsertPackage } = packagesSlice.actions;

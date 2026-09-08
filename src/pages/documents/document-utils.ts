@@ -128,5 +128,5 @@ export function sourceLabel(doc: DocumentRecord) {
 }
 
 export function openUpload() {
-  window.dispatchEvent(new CustomEvent("lifepack:open-upload"));
+  window.dispatchEvent(new CustomEvent("readiness:open-upload"));
 }

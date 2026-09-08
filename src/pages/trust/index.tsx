@@ -1,5 +1,5 @@
 import type { CSSProperties, FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { KeyRound, LockKeyhole, Pencil, Plus, RotateCcw, ShieldCheck, Users, X } from "lucide-react";
 
 import Card from "@/components/Card";
@@ -54,15 +54,11 @@ export default function TrustPage() {
     void load();
   }, []);
 
-  const enabledModules = useMemo(
-    () => modules.filter((module) => data?.modules[module.toLowerCase() as "documents" | "health" | "wealth"]),
-    [data],
-  );
+  const enabledModules = modules;
 
   if (loading) return <SectionHead title="Trust center" sub="Loading trusted access..." />;
   if (error || !data) return <TrustError message={error ?? "Unable to load Trust Center."} onRetry={() => void load()} />;
 
-  const limitReached = data.remainingSlots <= 0;
   const refreshAfter = async (action: Promise<unknown>) => {
     const result = await action;
     if (isTrustMember(result)) setNotice(invitationNotice(result));
@@ -96,15 +92,15 @@ export default function TrustPage() {
   };
 
   const leaveConnection = async (connectionId: string, ownerName: string) => {
-    if (!window.confirm(`Leave ${ownerName}'s LifePack? Your access will be removed immediately.`)) return;
+    if (!window.confirm(`Leave ${ownerName}'s Readiness? Your access will be removed immediately.`)) return;
     setLeavingId(connectionId);
     setNotice(null);
     try {
       await api.trust.leaveConnection(connectionId);
       await load();
-      setNotice(`You left ${ownerName}'s LifePack.`);
+      setNotice(`You left ${ownerName}'s Readiness.`);
     } catch (leaveError) {
-      setError(leaveError instanceof Error ? leaveError.message : "Unable to leave LifePack.");
+      setError(leaveError instanceof Error ? leaveError.message : "Unable to leave Readiness.");
     } finally {
       setLeavingId(null);
     }
@@ -118,15 +114,14 @@ export default function TrustPage() {
       />
 
       <div className="lp-trust-stats">
-        <Card><span><LockKeyhole size={17} color={T.mint} /></span><div>Encrypted on device</div><p>Your archive is encrypted locally. Even we cannot read it.</p></Card>
-        <Card><span><ShieldCheck size={17} color={T.mint} /></span><div>{data.plan.name} plan</div><p>Plan access and limits come from the backend.</p></Card>
+        <Card><span><LockKeyhole size={17} color={T.mint} /></span><div>Encrypted storage</div><p>Documents use encrypted storage. The current backend can decrypt them for processing.</p></Card>
         <Card><span><Users size={17} color={T.mint} /></span><div>{data.memberCount + 1} people</div><p>Have some level of access, set by you.</p></Card>
       </div>
 
       <Card style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
         <div className="lp-trust-family-head">
           <span>Family &amp; access</span>
-          <button type="button" disabled={limitReached} onClick={() => setAddOpen(true)} style={{ ...btnGold, opacity: limitReached ? 0.45 : 1 }}>
+          <button type="button" onClick={() => setAddOpen(true)} style={btnGold}>
             <Plus size={15} /> Add member
           </button>
         </div>
@@ -152,12 +147,6 @@ export default function TrustPage() {
         </Card>
       ) : null}
 
-      {limitReached ? (
-        <Card style={{ marginBottom: 16, borderColor: `${T.gold}66` }}>
-          <b style={{ color: T.white }}>Member limit reached</b>
-          <p style={{ color: T.muted, margin: "6px 0 0", fontSize: 13 }}>Your current plan allows {data.memberLimit} trusted members.</p>
-        </Card>
-      ) : null}
 
       {data.connections.length ? (
         <Card style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
@@ -175,7 +164,7 @@ export default function TrustPage() {
                 onClick={() => void leaveConnection(connection.id, connection.owner.name)}
                 style={{ ...btnGhost, color: T.coral, borderColor: `${T.coral}55`, opacity: leavingId === connection.id ? 0.55 : 1 }}
               >
-                Leave LifePack
+                Leave Readiness
               </button>
             </div>
           ))}
@@ -255,7 +244,7 @@ function MemberRow({
       <select value={member.accessType.code} onChange={(event) => onChange(event.target.value as TrustMemberPayload["accessTypeCode"])} style={selectStyle} aria-label={`${member.name} access`}>
         {accessTypes.map((accessType) => <option key={accessType} value={accessType}>{accessLabels[accessType]}</option>)}
       </select>
-      <button type="button" aria-label={`Edit ${member.name}`} title={`Edit ${member.name}`} onClick={() => onChange(member.accessType.code)} style={iconButtonStyle}>
+      <button type="button" aria-label={`Edit ${member.name}`} title={`Edit ${member.name}`} onClick={() => { if (member.accessType.code !== "OWNER") onChange(member.accessType.code); }} style={iconButtonStyle}>
         <Pencil size={14} />
       </button>
       {member.status === "INVITED" || member.invitationStatus === "EXPIRED" ? (

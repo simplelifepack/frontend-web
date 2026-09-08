@@ -5,18 +5,18 @@ import reducer, { clearPendingAnalysis, setImportedAnalyses } from "./documentsS
 
 function analysis(id: string): AnalyzeDocumentResponse {
   return {
-    title: id, extractedText: "", preview: null, reviewFields: [], tempFileId: id,
-    file: { originalName: `${id}.pdf`, mimeType: "application/pdf", size: 10 },
-    analysis: { category: "Finance", documentType: "Bank Statement", uniqueNumber: null, nameOnDocument: null },
-    extractedTextPreview: null, analysisSource: "rules",
+    success: true,
+    document: { title: id, category: "Finance", documentType: "Bank Statement", uniqueNumber: null, nameOnDocument: null, expiryDate: null, ownership: "unknown" },
+    files: [{ tempFileId: id, originalName: `${id}.pdf`, mimeType: "application/pdf", size: 10 }],
+    warnings: [],
   };
 }
 
 describe("Gmail import review queue", () => {
   it("queues selected imports without auto-saving them", () => {
     const state = reducer(undefined, setImportedAnalyses([analysis("first"), analysis("second")]));
-    expect(state.pendingAnalysis?.tempFileId).toBe("first");
-    expect(state.pendingAnalysisQueue.map((item) => item.tempFileId)).toEqual(["second"]);
+    expect(state.pendingAnalysis?.files[0]?.tempFileId).toBe("first");
+    expect(state.pendingAnalysisQueue.map((item) => item.files[0]?.tempFileId)).toEqual(["second"]);
     expect(state.items).toEqual([]);
   });
 

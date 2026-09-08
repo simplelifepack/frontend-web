@@ -3,7 +3,6 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
-  Download,
   FileText,
   FolderOpen,
   Lock,
@@ -16,22 +15,17 @@ import { useState } from "react";
 import Ring from "@/components/Ring";
 import Stamp from "@/components/Stamp";
 import { T } from "@/constants/theme";
-import type {
-  PackSummary,
-  ReadinessResult,
-} from "@/lib/api";
+import type { PackSummary } from "@/lib/api";
+import type { PackReadiness } from "@/readiness/calculatePackageReadiness";
 
 type PackDetailProps = {
   completion: number;
-  downloadStatus: "idle" | "loading" | "failed";
   isComplete: boolean;
   pack: PackSummary | undefined;
-  readiness: ReadinessResult | null;
-  readinessStatus: "idle" | "loading" | "failed";
+  readiness: PackReadiness | null;
   readyCount: number;
   totalCount: number;
   onClose: () => void;
-  onDownload: () => void;
   onUpload: () => void;
 };
 
@@ -47,32 +41,31 @@ function formatPackageDate(value?: string | null) {
 }
 
 function packageSource(pack: PackSummary) {
-  const [firstSource] = pack.verificationSources ?? [];
   return {
-    title: pack.sourceTitle ?? firstSource?.title ?? firstSource?.organization ?? "Official source",
-    url: pack.sourceUrl ?? firstSource?.url ?? "",
-    checked: formatPackageDate(pack.lastCheckedAt ?? pack.lastVerifiedAt ?? firstSource?.retrievedAt),
+    title: pack.source?.title ?? pack.source?.name ?? "Official source",
+    url: pack.source?.url ?? "",
+    checked: formatPackageDate(pack.source?.lastCheckedAt),
   };
+}
+
+function isStale(pack: PackSummary) {
+  const value = pack.source?.lastCheckedAt;
+  return Boolean(value && Date.now() - Date.parse(value) > 30 * 24 * 60 * 60 * 1000);
 }
 
 export default function PackDetail({
   completion,
-  downloadStatus,
   isComplete,
   pack,
   readiness,
-  readinessStatus,
   readyCount,
   totalCount,
   onClose,
-  onDownload,
   onUpload,
 }: PackDetailProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [addFor, setAddFor] = useState<string | null>(null);
-  const requirements = (readiness?.groups ?? []).flatMap(
-    (group) => group.requirements,
-  );
+  const requirements = readiness?.requirements ?? [];
   const found = requirements.filter((slot) => slot.status === "ready");
   const needed = requirements.filter((slot) => slot.required && slot.status !== "ready");
 
@@ -97,7 +90,7 @@ export default function PackDetail({
               <span><Plane size={23} /></span>
               <div>
                 <h2>{pack.title}</h2>
-                <p>{pack.subtitle || pack.description || pack.category}</p>
+                <p>{pack.description || pack.category}</p>
               </div>
             </div>
             <div className="lp-pack-drawer-source">
@@ -128,21 +121,14 @@ export default function PackDetail({
             </div>
           </header>
 
-          <div className="lp-pack-drawer-body">
-            {readinessStatus === "loading" ? (
+            <div className="lp-pack-drawer-body">
+            {isStale(pack) ? (
               <div className="lp-pack-drawer-message">
-              Checking document matches...
+                Requirements are from {formatPackageDate(pack.source?.lastCheckedAt) ?? "an an earlier check"}. Refresh to verify current requirements.
               </div>
             ) : null}
-
-            {readinessStatus === "failed" ? (
-              <div className="lp-pack-drawer-message error">
-                Unable to load readiness for this pack.
-              </div>
-            ) : null}
-
             <section className="lp-pack-check-card">
-              <h3><CheckCircle2 size={17} /> Found in LifePack ({found.length})</h3>
+              <h3><CheckCircle2 size={17} /> Found in Readiness ({found.length})</h3>
               {found.map((slot) => {
                 const isOpen = expanded === slot.id;
                 return (
@@ -153,19 +139,15 @@ export default function PackDetail({
                       onClick={() => setExpanded(isOpen ? null : slot.id)}
                     >
                       <span className="lp-pack-status-icon found"><Check size={13} /></span>
-                      <span>{slot.label}</span>
+                      <span>{slot.title}</span>
                       <ChevronRight className={isOpen ? "open" : ""} size={15} />
                     </button>
                     {isOpen ? (
                       <div className="lp-pack-check-detail">
                         <FileText size={14} />
                         <div>
-                          <strong>{slot.matchedDocument?.originalName || slot.label}</strong>
-                          <span>
-                            {slot.alternatives.length
-                              ? `${slot.alternatives.length} alternative match${slot.alternatives.length === 1 ? "" : "es"}`
-                              : "Saved in your document archive"}
-                          </span>
+                          <strong>{slot.matchedDocument?.originalName || slot.title}</strong>
+                          <span>Saved in your document archive</span>
                         </div>
                       </div>
                     ) : null}
@@ -184,7 +166,7 @@ export default function PackDetail({
                       <div className="lp-pack-check-row">
                         <span className="lp-pack-status-icon needed"><X size={13} /></span>
                         <span>
-                          {slot.label}
+                          {slot.title} not added
                           {!slot.required ? <small>Optional</small> : null}
                         </span>
                         <button
@@ -211,18 +193,6 @@ export default function PackDetail({
               </section>
             ) : null}
 
-            <button
-              type="button"
-              className="lp-pack-export-button"
-              onClick={onDownload}
-              disabled={downloadStatus === "loading"}
-            >
-              <Download size={17} />
-              {downloadStatus === "loading" ? "Preparing..." : "Export pack"}
-            </button>
-            {downloadStatus === "failed" ? (
-              <div className="lp-pack-drawer-message error">Download failed.</div>
-            ) : null}
             <p className="lp-pack-disclaimer">
               <Lock size={13} />
               Checklist based on stored requirements; completeness and eligibility are not guaranteed.

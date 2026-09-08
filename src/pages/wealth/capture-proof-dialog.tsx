@@ -86,24 +86,29 @@ export default function CaptureProofDialog({ onClose, onSaved }: Props) {
       const selected = files[field.id] ?? [];
       if (!selected.length) continue;
       const ids: string[] = [];
-      for (const file of selected) {
-        const analysis = await api.documents.analyze(file, false);
+      {
+        const analysis = await api.documents.analyze(selected, false);
+        const primaryFile = analysis.files[0]!;
         const saved = await api.documents.save({
-          tempFileId: analysis.tempFileId,
-          originalName: analysis.file.originalName,
-          mimeType: analysis.file.mimeType,
-          size: analysis.file.size,
-          title: baseValues.title.trim() || analysis.title || analysis.file.originalName,
+          tempFileIds: analysis.files.map((item) => item.tempFileId),
+          originalName: primaryFile.originalName,
+          mimeType: primaryFile.mimeType,
+          size: analysis.files.reduce((sum, item) => sum + item.size, 0),
+          title: baseValues.title.trim() || analysis.document.title || primaryFile.originalName,
           category: schema.category.label,
           documentType: schema.subtype.label,
-          confidence: analysis.confidence ?? 90,
-          fields: { ...(analysis.extractedFields ?? {}), ...baseValues },
-          reviewFields: analysis.reviewFields ?? [],
-          rawExtractedText: analysis.extractedText ?? "",
+          confidence: 90,
+          fields: {
+            uniqueNumber: analysis.document.uniqueNumber ?? undefined,
+            nameOnDocument: analysis.document.nameOnDocument ?? undefined,
+            ...baseValues,
+          },
+          reviewFields: [],
+          rawExtractedText: "",
           warnings: analysis.warnings ?? [],
-          extraction: analysis.extraction,
-          evidence: analysis.evidence ?? [],
-          analysisSource: analysis.analysisSource ?? "rules",
+          extraction: null,
+          evidence: [],
+          analysisSource: "ai",
           userConfirmedUnknown: true,
         });
         ids.push(saved.document.id);
@@ -133,7 +138,7 @@ export default function CaptureProofDialog({ onClose, onSaved }: Props) {
     <div className="lp-sos-backdrop" role="presentation">
       <div className="lp-sos-dialog lp-capture-dialog" role="dialog" aria-modal="true">
         <div className="lp-sos-head">
-          <div><span><FileCheck size={16} /> Wealth vault</span><h2>Capture proof</h2><p>Capture the core details, choose the record type, then LifePack renders the rest from backend form metadata.</p></div>
+          <div><span><FileCheck size={16} /> Wealth vault</span><h2>Capture proof</h2><p>Capture the core details, choose the record type, then Readiness renders the rest from backend form metadata.</p></div>
           <button type="button" onClick={onClose} aria-label="Close"><X size={18} /></button>
         </div>
         <div className="lp-capture-steps"><span className={step === 1 ? "active" : ""}>1</span><span className={step === 2 ? "active" : ""}>2</span><span className={step === 3 ? "active" : ""}>3</span></div>
@@ -169,6 +174,6 @@ function DynamicFields(props: { fields: DynamicFormField[]; values: Record<strin
 function DynamicField({ field, value, files, setFiles, setValue }: { field: DynamicFormField; value: Value | undefined; files: File[]; setFiles: (files: File[]) => void; setValue: (value: Value) => void }) {
   if (field.inputType === "file") return <label className="lp-wealth-field wide">{field.label}<span className="lp-wealth-proof-drop"><Paperclip size={22} /><b>{files.length ? `${files.length} file${files.length === 1 ? "" : "s"} selected` : "Attach documents"}</b><small>{field.placeholder ?? "Photo · screenshot · receipt · PDF"}</small><input type="file" hidden multiple accept="image/*,application/pdf" onChange={(event) => setFiles(Array.from(event.target.files ?? []))} /></span></label>;
   if (field.inputType === "textarea") return <label className="lp-wealth-field wide">{field.label}<textarea required={field.required} placeholder={field.placeholder ?? ""} value={String(value ?? "")} onChange={(event) => setValue(event.target.value)} /></label>;
-  if (field.inputType === "select") return <label className="lp-wealth-field">{field.label}<select required={field.required} value={String(value ?? "")} onChange={(event) => setValue(event.target.value)}><option value="">Select</option>{Array.isArray(field.options) ? field.options.map(optionValue).filter(Boolean).map((option) => <option key={option.value} value={option.value}>{option.label}</option>) : null}</select></label>;
+  if (field.inputType === "select") return <label className="lp-wealth-field">{field.label}<select required={field.required} value={String(value ?? "")} onChange={(event) => setValue(event.target.value)}><option value="">Select</option>{Array.isArray(field.options) ? field.options.map(optionValue).filter((option): option is { label: string; value: string } => option !== null).map((option) => <option key={option.value} value={option.value}>{option.label}</option>) : null}</select></label>;
   return <label className="lp-wealth-field">{field.label}<input type={field.inputType === "number" ? "number" : field.inputType === "date" ? "date" : "text"} required={field.required} placeholder={field.placeholder ?? ""} value={String(value ?? "")} onChange={(event) => setValue(event.target.value)} /></label>;
 }

@@ -23,7 +23,7 @@ function isTrustedOAuthMessage(event: MessageEvent<OAuthPopupMessage>) {
 }
 
 function isOAuthMessage(payload: OAuthPopupMessage, provider: OAuthPopupProvider) {
-  return payload?.type === `lifepack:${provider}-oauth`
+  return payload?.type === `readiness:${provider}-oauth`
     && payload.provider === provider
     && (payload.status === "connected" || payload.status === "error");
 }
@@ -54,6 +54,8 @@ type UseGoogleOAuthPopupInput = {
 export function useGoogleOAuthPopup({ provider, popupName, onResult, onCancel }: UseGoogleOAuthPopupInput) {
   const popupRef = useRef<Window | null>(null);
   const handledRef = useRef(false);
+  const callbacksRef = useRef({ onResult, onCancel });
+  useEffect(() => { callbacksRef.current = { onResult, onCancel }; }, [onResult, onCancel]);
   const closeWatcherRef = useRef<number | null>(null);
 
   const clearCloseWatcher = useCallback(() => {
@@ -73,14 +75,14 @@ export function useGoogleOAuthPopup({ provider, popupName, onResult, onCancel }:
       if (!isTrustedOAuthMessage(event) || !isOAuthMessage(event.data, provider) || handledRef.current) return;
       handledRef.current = true;
       cleanupPopup(true);
-      onResult(event.data as Required<Pick<OAuthPopupMessage, "provider" | "status">> & OAuthPopupMessage);
+      callbacksRef.current.onResult(event.data as Required<Pick<OAuthPopupMessage, "provider" | "status">> & OAuthPopupMessage);
     };
     window.addEventListener("message", listener);
     return () => {
       window.removeEventListener("message", listener);
       cleanupPopup(false);
     };
-  }, [cleanupPopup, onResult, provider]);
+  }, [cleanupPopup, provider]);
 
   const openPopup = useCallback((authorizationUrl: string) => {
     handledRef.current = false;
@@ -94,10 +96,16 @@ export function useGoogleOAuthPopup({ provider, popupName, onResult, onCancel }:
       clearCloseWatcher();
       if (handledRef.current) return;
       popupRef.current = null;
-      onCancel();
+      callbacksRef.current.onCancel();
     }, 500);
     return true;
-  }, [cleanupPopup, clearCloseWatcher, onCancel, popupName]);
+  }, [cleanupPopup, clearCloseWatcher, popupName]);
 
-  return { openPopup };
+  const navigatePopup = useCallback((authorizationUrl: string) => {
+    if (!popupRef.current || popupRef.current.closed) return false;
+    popupRef.current.location.href = authorizationUrl;
+    return true;
+  }, []);
+
+  return { openPopup, navigatePopup, closePopup: () => cleanupPopup(true) };
 }

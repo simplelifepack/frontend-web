@@ -5,11 +5,13 @@ import { T } from "@/constants/theme";
 type CardProps = {
   children: ReactNode;
   style?: CSSProperties;
+  className?: string;
 };
 
-export default function Card({ children, style }: CardProps) {
+export default function Card({ children, style, className }: CardProps) {
   return (
     <div
+      className={className}
       style={{
         background: T.panel,
         border: `1px solid ${T.border}`,

@@ -17,11 +17,11 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
       const failed = event instanceof CustomEvent ? Boolean(event.detail) : true;
       setScriptFailed(failed);
       if (failed) {
-        onError("Google sign-in could not load. Open LifePack at http://localhost:5173 and disable any blocker for accounts.google.com.");
+        onError("Google sign-in could not load. Open Readiness at http://localhost:5173 and disable any blocker for accounts.google.com.");
       }
     };
-    window.addEventListener("lifepack:google-script-error", handleScriptError);
-    return () => window.removeEventListener("lifepack:google-script-error", handleScriptError);
+    window.addEventListener("readiness:google-script-error", handleScriptError);
+    return () => window.removeEventListener("readiness:google-script-error", handleScriptError);
   }, [onError]);
 
   if (!configured) {
@@ -49,7 +49,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
         </button>
         <p className="mt-2 text-center text-xs text-slate-400">
           {isLoopbackIp
-            ? "Open LifePack at http://localhost:5173 to use Google sign-in."
+            ? "Open Readiness at http://localhost:5173 to use Google sign-in."
             : "Google sign-in could not load. Disable blockers for accounts.google.com and try again."}
         </p>
       </div>

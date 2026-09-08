@@ -1,3 +1,4 @@
+import { refreshUsage } from "./usageSlice";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { api, type AnalyzeDocumentResponse, type DocumentRecord, type SaveDocumentPayload } from "@/lib/api";
@@ -37,23 +38,24 @@ export const fetchDocumentById = createAsyncThunk("documents/fetchDocumentById",
 });
 
 export const uploadDocument = createAsyncThunk("documents/uploadDocument", async (input: {
-  file: File;
+  files: File[];
   aiAnalysisConsent?: boolean;
 }) => {
-  return api.documents.upload(input.file, input.aiAnalysisConsent);
+  return api.documents.upload(input.files, input.aiAnalysisConsent);
 });
 
 export const analyzeDocument = createAsyncThunk("documents/analyzeDocument", async (input: {
-  file: File;
+  files: File[];
   aiAnalysisConsent?: boolean;
 }) => {
-  return api.documents.analyze(input.file, input.aiAnalysisConsent);
+  return api.documents.analyze(input.files, input.aiAnalysisConsent);
 });
 
 export const saveDocument = createAsyncThunk(
   "documents/saveDocument",
-  async (payload: SaveDocumentPayload, { getState }) => {
+  async (payload: SaveDocumentPayload, { getState, dispatch }) => {
     const response = await api.documents.save(payload);
+    void dispatch(refreshUsage());
     const currentUserId = (getState() as RootState).auth.user?.id;
     return {
       document: {
@@ -64,8 +66,9 @@ export const saveDocument = createAsyncThunk(
   },
 );
 
-export const deleteDocument = createAsyncThunk("documents/deleteDocument", async (id: string) => {
+export const deleteDocument = createAsyncThunk("documents/deleteDocument", async (id: string, { dispatch }) => {
   await api.documents.delete(id);
+  void dispatch(refreshUsage());
   return id;
 });
 

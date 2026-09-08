@@ -1,39 +1,42 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-import { api, type AuthUser, type PlanEntitlements } from "@/lib/api";
+import { api, type AuthUser } from "@/lib/api";
 import {
-  clearStoredAuth,
-  getStoredRefreshToken,
-  getStoredToken,
-  getStoredUser,
-  setStoredAuth,
-  setStoredUser,
+  clearInMemoryAuth,
+  setAccessToken,
 } from "@/lib/auth";
 import { initializeApp } from "../bootstrap";
 
 type AuthState = {
   token: string | null;
-  refreshToken: string | null;
   user: AuthUser | null;
-  entitlements: PlanEntitlements | null;
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   initialized: boolean;
   initializationStatus: "idle" | "loading" | "succeeded" | "failed";
   initializationError: string | null;
+  sessionStatus: "idle" | "loading" | "authenticated" | "anonymous";
 };
 
 const initialState: AuthState = {
-  token: getStoredToken(),
-  refreshToken: getStoredRefreshToken(),
-  user: getStoredUser(),
-  entitlements: null,
+  token: null,
+  user: null,
   status: "idle",
   error: null,
   initialized: false,
   initializationStatus: "idle",
   initializationError: null,
+  sessionStatus: "idle",
 };
+
+export const restoreSession = createAsyncThunk(
+  "auth/restoreSession",
+  async () => api.auth.refresh(),
+  {
+    condition: (_, { getState }) =>
+      (getState() as { auth: AuthState }).auth.sessionStatus === "idle",
+  },
+);
 
 export const login = createAsyncThunk(
   "auth/login",
@@ -55,15 +58,7 @@ export const forgotPassword = createAsyncThunk(
   async (payload: { email: string }) => api.auth.forgotPassword(payload),
 );
 
-export const fetchMe = createAsyncThunk("auth/fetchMe", async () => {
-  const response = await api.auth.me();
-
-  return {
-    ...response,
-    token: getStoredToken(),
-    refreshToken: getStoredRefreshToken(),
-  };
-});
+export const fetchMe = createAsyncThunk("auth/fetchMe", async () => api.auth.me());
 
 const authSlice = createSlice({
   name: "auth",
@@ -71,15 +66,14 @@ const authSlice = createSlice({
   reducers: {
     logout(state) {
       state.token = null;
-      state.refreshToken = null;
       state.user = null;
-      state.entitlements = null;
       state.status = "idle";
       state.error = null;
       state.initialized = false;
       state.initializationStatus = "idle";
       state.initializationError = null;
-      clearStoredAuth();
+      state.sessionStatus = "anonymous";
+      clearInMemoryAuth();
     },
   },
   extraReducers: (builder) => {
@@ -91,10 +85,9 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.token = action.payload.accessToken ?? action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
         state.user = action.payload.user;
-        state.entitlements = null;
-        setStoredAuth(state.token, action.payload.refreshToken, action.payload.user);
+        setAccessToken(state.token);
+        state.sessionStatus = "authenticated";
         state.initialized = false;
       })
       .addCase(login.rejected, (state, action) => {
@@ -108,10 +101,9 @@ const authSlice = createSlice({
       .addCase(signup.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.token = action.payload.accessToken ?? action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
         state.user = action.payload.user;
-        state.entitlements = null;
-        setStoredAuth(state.token, action.payload.refreshToken, action.payload.user);
+        setAccessToken(state.token);
+        state.sessionStatus = "authenticated";
         state.initialized = false;
       })
       .addCase(signup.rejected, (state, action) => {
@@ -125,10 +117,9 @@ const authSlice = createSlice({
       .addCase(googleLogin.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.token = action.payload.accessToken ?? action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
         state.user = action.payload.user;
-        state.entitlements = null;
-        setStoredAuth(state.token, action.payload.refreshToken, action.payload.user);
+        setAccessToken(state.token);
+        state.sessionStatus = "authenticated";
         state.initialized = false;
       })
       .addCase(googleLogin.rejected, (state) => {
@@ -141,19 +132,14 @@ const authSlice = createSlice({
       })
       .addCase(fetchMe.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.token = action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
         state.user = action.payload.user;
-        setStoredUser(action.payload.user);
       })
       .addCase(fetchMe.rejected, (state, action) => {
         state.status = "failed";
         state.token = null;
-        state.refreshToken = null;
         state.user = null;
-        state.entitlements = null;
         state.error = action.error.message ?? "Unable to load profile.";
-        clearStoredAuth();
+        clearInMemoryAuth();
       })
       .addCase(initializeApp.pending, (state) => {
         state.initializationStatus = "loading";
@@ -161,14 +147,28 @@ const authSlice = createSlice({
       })
       .addCase(initializeApp.fulfilled, (state, action) => {
         state.user = action.payload.user;
-        state.entitlements = action.payload.entitlements;
         state.initialized = true;
         state.initializationStatus = "succeeded";
-        setStoredUser(action.payload.user);
       })
       .addCase(initializeApp.rejected, (state, action) => {
         state.initializationStatus = "failed";
-        state.initializationError = action.error.message ?? "Unable to initialize LifePack.";
+        state.initializationError = action.error.message ?? "Unable to initialize Readiness.";
+      })
+      .addCase(restoreSession.pending, (state) => {
+        state.sessionStatus = "loading";
+      })
+      .addCase(restoreSession.fulfilled, (state, action) => {
+        state.token = action.payload.accessToken ?? action.payload.token;
+        state.user = action.payload.user;
+        state.sessionStatus = "authenticated";
+        state.status = "succeeded";
+        setAccessToken(state.token);
+      })
+      .addCase(restoreSession.rejected, (state) => {
+        state.token = null;
+        state.user = null;
+        state.sessionStatus = "anonymous";
+        clearInMemoryAuth();
       });
   },
 });

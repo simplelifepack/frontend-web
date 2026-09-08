@@ -120,3 +120,17 @@ export function toEncryptedDocumentFormData(
   formData.append("aiAnalysisConsent", String(aiAnalysisConsent));
   return formData;
 }
+
+export function toEncryptedDocumentsFormData(envelopes: EncryptedDocumentEnvelope[], aiAnalysisConsent: boolean) {
+  const formData = new FormData();
+  envelopes.forEach((envelope) => formData.append("encryptedFiles", envelope.file.encryptedBytes, "document.bin"));
+  formData.append("envelopes", JSON.stringify(envelopes.map((envelope) => ({
+    wrappedKey: envelope.encryption.wrappedKey, iv: envelope.encryption.iv, encryptionVersion: envelope.version,
+    keyId: envelope.encryption.keyId, keyVersion: envelope.encryption.keyVersion, contentAlgorithm: envelope.encryption.contentAlgorithm,
+    keyAlgorithm: envelope.encryption.keyAlgorithm, originalFilename: envelope.originalMetadata.filename,
+    originalMimeType: envelope.originalMetadata.mimeType, originalSize: envelope.originalMetadata.size,
+    originalSha256: envelope.originalMetadata.sha256, encryptedSha256: envelope.file.encryptedSha256,
+  }))));
+  formData.append("aiAnalysisConsent", String(aiAnalysisConsent));
+  return formData;
+}

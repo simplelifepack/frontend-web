@@ -121,7 +121,6 @@ export default function DocumentContextPanel({ doc, onClose }: Props) {
               }),
             )}
             {fact("Size", `${Math.max(1, Math.round(doc.size / 1024)).toLocaleString()} KB`)}
-            {fact("Confidence", `${Math.round(doc.confidence)}%`)}
           </div>
 
           <span className="lp-document-drawer-label">Review fields</span>

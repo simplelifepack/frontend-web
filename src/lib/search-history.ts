@@ -5,13 +5,12 @@ export type SearchHistoryItem = {
   updatedAt: string;
 };
 
-const SEARCH_HISTORY_KEY = "lifepack_readiness_search_history";
+const SEARCH_HISTORY_KEY = "readiness_readiness_search_history";
 const MAX_SEARCH_HISTORY = 4;
 const HASH_VERSION = "sha256:v1";
+const memoryHistory = new Map<string, SearchHistoryItem[]>();
 
-function storageKey(userKey?: string | null) {
-  return userKey ? `${SEARCH_HISTORY_KEY}:${userKey}` : SEARCH_HISTORY_KEY;
-}
+function storageKey(userKey?: string | null) { return userKey ? `${SEARCH_HISTORY_KEY}:${userKey}` : SEARCH_HISTORY_KEY; }
 
 function normalizeQuery(query: string) {
   return query.trim().replace(/\s+/g, " ");
@@ -44,69 +43,17 @@ async function hashQuery(query: string) {
   return hashFallback(normalized);
 }
 
-function isStoredSearchHistoryItem(
-  value: unknown,
-): value is SearchHistoryItem {
-  if (!value || typeof value !== "object") return false;
-  const item = value as Record<string, unknown>;
-  return (
-    typeof item.queryHash === "string" &&
-    (item.query === undefined || typeof item.query === "string") &&
-    typeof item.createdAt === "string" &&
-    typeof item.updatedAt === "string"
-  );
-}
-
-function isLegacySearchHistoryItem(
-  value: unknown,
-): value is { query: string; createdAt: string; updatedAt: string } {
-  if (!value || typeof value !== "object") return false;
-  const item = value as Record<string, unknown>;
-  return (
-    typeof item.query === "string" &&
-    typeof item.createdAt === "string" &&
-    typeof item.updatedAt === "string"
-  );
-}
-
 function persistSearchHistory(
   userKey: string | null | undefined,
   items: SearchHistoryItem[],
 ) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(storageKey(userKey), JSON.stringify(items));
+  memoryHistory.set(storageKey(userKey), items);
 }
 
 export async function getSearchHistory(
   userKey?: string | null,
 ): Promise<SearchHistoryItem[]> {
-  if (typeof window === "undefined") return [];
-
-  const raw = window.localStorage.getItem(storageKey(userKey));
-  if (!raw) return [];
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    const storedItems = parsed.filter(isStoredSearchHistoryItem).filter((item) => item.query);
-    if (storedItems.length) return storedItems.slice(0, MAX_SEARCH_HISTORY);
-
-    const legacyItems = parsed.filter(isLegacySearchHistoryItem);
-    if (!legacyItems.length) return [];
-
-    const migrated = await Promise.all(
-      legacyItems.slice(0, MAX_SEARCH_HISTORY).map(async (item) => ({
-        queryHash: await hashQuery(item.query),
-        query: normalizeQuery(item.query),
-        createdAt: item.createdAt,
-        updatedAt: item.updatedAt,
-      })),
-    );
-    persistSearchHistory(userKey, migrated);
-    return migrated;
-  } catch {
-    return [];
-  }
+  return memoryHistory.get(storageKey(userKey)) ?? [];
 }
 
 export async function recordSearch(

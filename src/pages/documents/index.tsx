@@ -27,6 +27,7 @@ function DocumentsFallback() {
 
 export default function DocumentsPage() {
   const dispatch = useAppDispatch();
+  const usage = useAppSelector(state => state.usage?.data);
   const navigate = useNavigate();
   const { category: categoryParam, documentId } = useParams();
   const { items: documents, status, error } = useAppSelector(
@@ -79,7 +80,7 @@ export default function DocumentsPage() {
   const selectSource = (id: string) => {
     if (id === "gmail") setGmailOpen(true);
     if (id === "drive") setDriveOpen(true);
-    if (id === "upload") window.dispatchEvent(new CustomEvent("lifepack:open-upload"));
+    if (id === "upload") window.dispatchEvent(new CustomEvent("readiness:open-upload"));
   };
 
   if (documentId) {
@@ -121,6 +122,7 @@ export default function DocumentsPage() {
     <>
     <Suspense fallback={<DocumentsFallback />}>
       <DocumentsOverview
+        storage={usage?.storage}
         documents={documents}
         error={error}
         sources={sources}

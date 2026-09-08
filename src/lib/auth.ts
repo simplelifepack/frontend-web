@@ -1,50 +1,22 @@
-const TOKEN_KEY = "lifepack_token";
-const REFRESH_TOKEN_KEY = "lifepack_refresh_token";
-const USER_KEY = "lifepack_auth_user";
+const LEGACY_AUTH_KEYS = ["lifepack_token", "lifepack_refresh_token", "lifepack_auth_user"];
+const LEGACY_SEARCH_PREFIX = "lifepack_readiness_search_history";
+let accessToken: string | null = null;
 
-export type StoredUser = {
-  id?: string;
-  email: string;
-  name: string;
-};
-
-export function getStoredToken() {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
-}
-
-export function getStoredRefreshToken() {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(REFRESH_TOKEN_KEY);
-}
-
-export function getStoredUser(): StoredUser | null {
-  if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(USER_KEY);
-  if (!raw) return null;
-
-  try {
-    return JSON.parse(raw) as StoredUser;
-  } catch {
-    return null;
+export function clearLegacyBrowserAuth() {
+  if (typeof window === "undefined") return;
+  for (const storage of [window.localStorage, window.sessionStorage]) {
+    try {
+      LEGACY_AUTH_KEYS.forEach((key) => storage.removeItem(key));
+      for (let index = storage.length - 1; index >= 0; index -= 1) {
+        const key = storage.key(index);
+        if (key?.startsWith(LEGACY_SEARCH_PREFIX)) storage.removeItem(key);
+      }
+    } catch { /* unavailable storage must not block session startup */ }
   }
 }
 
-export function setStoredAuth(token: string, refreshToken: string, user: StoredUser) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(TOKEN_KEY, token);
-  window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-  window.localStorage.setItem(USER_KEY, JSON.stringify(user));
-}
+export function getAccessToken() { return accessToken; }
+export function setAccessToken(token: string | null) { accessToken = token; }
+export function clearInMemoryAuth() { accessToken = null; clearLegacyBrowserAuth(); }
 
-export function setStoredUser(user: StoredUser) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(USER_KEY, JSON.stringify(user));
-}
-
-export function clearStoredAuth() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem(TOKEN_KEY);
-  window.localStorage.removeItem(REFRESH_TOKEN_KEY);
-  window.localStorage.removeItem(USER_KEY);
-}
+clearLegacyBrowserAuth();

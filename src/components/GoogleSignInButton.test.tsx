@@ -42,10 +42,10 @@ describe("GoogleSignInButton", () => {
     vi.stubEnv("VITE_GOOGLE_CLIENT_ID", "test-client-id");
     const onError = vi.fn();
     render(<GoogleSignInButton disabled={false} onCredential={vi.fn()} onError={onError} />);
-    window.dispatchEvent(new CustomEvent("lifepack:google-script-error", { detail: true }));
+    window.dispatchEvent(new CustomEvent("readiness:google-script-error", { detail: true }));
     await expect(screen.findByText(/Google sign-in could not load/)).resolves.toBeInTheDocument();
     expect(onError).toHaveBeenCalledWith(
-      "Google sign-in could not load. Open LifePack at http://localhost:5173 and disable any blocker for accounts.google.com.",
+      "Google sign-in could not load. Open Readiness at http://localhost:5173 and disable any blocker for accounts.google.com.",
     );
   });
 

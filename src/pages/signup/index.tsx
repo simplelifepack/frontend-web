@@ -1,3 +1,4 @@
+import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
@@ -58,11 +59,9 @@ export default function SignupPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300 lg:hidden">
-        LifePack
-      </p>
+      <div className="lg:hidden"><BrandLogo height={64} /></div>
       <h2 className="mt-4 text-3xl font-semibold text-white">Create account</h2>
-      <p className="mt-2 text-sm text-slate-400">Set up your LifePack login.</p>
+      <p className="mt-2 text-sm text-slate-400">Set up your Readiness login.</p>
 
       <div className="mt-8">
         <GoogleSignInButton disabled={isSubmitting} onCredential={handleGoogleCredential} onError={setError} />

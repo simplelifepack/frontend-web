@@ -1,3 +1,4 @@
+import BrandLogo from "@/components/BrandLogo";
 import { useMemo, useState, type FormEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
@@ -52,12 +53,10 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300 lg:hidden">
-        LifePack
-      </p>
+      <div className="lg:hidden"><BrandLogo height={64} /></div>
       <h2 className="mt-4 text-3xl font-semibold text-white">Reset password</h2>
       <p className="mt-2 text-sm text-slate-400">
-        Create a new password for your LifePack account.
+        Create a new password for your Readiness account.
       </p>
 
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>

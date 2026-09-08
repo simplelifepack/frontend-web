@@ -1,3 +1,4 @@
+import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
@@ -37,9 +38,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-300 lg:hidden">
-        LifePack
-      </p>
+      <div className="lg:hidden"><BrandLogo height={64} /></div>
       <h2 className="mt-4 text-3xl font-semibold text-white">Forgot password</h2>
       <p className="mt-2 text-sm text-slate-400">
         Enter your email and we will send reset instructions if the account exists.
@@ -71,6 +70,7 @@ export default function ForgotPasswordPage() {
       </form>
 
       <div className="mt-6 text-sm">
+        <button type="button" onClick={() => navigate("/recover")}>Use recovery key</button>
         <button
           type="button"
           onClick={() => navigate("/login")}

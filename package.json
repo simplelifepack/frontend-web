@@ -1,5 +1,5 @@
 {
-  "name": "lifepack-fe",
+  "name": "readiness-fe",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -11,11 +11,15 @@
     "lint": "eslint .",
     "test:search": "tsx ../tests/hybrid-search.test.ts",
     "test:google-auth": "vitest run src/components/GoogleSignInButton.test.tsx",
+    "test:auth-storage": "vitest run src/store/slices/authStorage.test.ts",
     "test:gmail": "vitest run src/store/slices/documentsSlice.gmail.test.ts",
     "test:readiness": "vitest run src/readiness/calculatePackageReadiness.test.ts",
+    "test:requirements-cache": "vitest run src/readiness/requirementsCache.test.ts",
+    "test:package-catalogue": "vitest run src/store/slices/packagesSlice.catalogue.test.ts src/packages/packageCatalogueSearch.test.ts",
     "test:documents-readiness": "vitest run src/store/slices/documentsSlice.readiness.test.ts",
     "test:document-encryption": "vitest run src/lib/document-hybrid-encryption.test.ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test:usage": "vitest run src/components/AccountUsage.test.tsx src/lib/http-client.stream.test.ts src/lib/client-secrets.test.ts src/lib/public-document-labels.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

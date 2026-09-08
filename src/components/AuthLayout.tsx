@@ -1,3 +1,4 @@
+import BrandLogo from "./BrandLogo";
 import type { ReactNode } from "react";
 
 type AuthLayoutProps = {
@@ -12,9 +13,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           <section className="relative hidden overflow-hidden border-r border-[#E3D8C2] bg-[#F3EBDA] p-10 lg:flex lg:flex-col lg:justify-between">
             <div className="lp-auth-radar" aria-hidden />
             <div>
-              <p className="relative font-mono text-xs font-semibold uppercase tracking-[0.3em] text-[#A87C22]">
-                LifePack AI
-              </p>
+              <BrandLogo height={64} className="relative" />
               <h1 className="relative mt-6 max-w-md font-display text-4xl font-bold leading-tight tracking-tight text-[#221E17]">
                 Your documents, ready when life asks.
               </h1>

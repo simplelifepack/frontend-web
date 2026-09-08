@@ -1,3 +1,6 @@
+import CustomPackButton from "@/components/CustomPackButton";
+import AccountUsage from "@/components/AccountUsage";
+import { refreshUsage } from "@/store/slices/usageSlice";
 import { ChevronRight, Loader2, Plane, Plus, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -7,8 +10,8 @@ import SectionHead from "@/components/SectionHead";
 import { btnGold, T } from "@/constants/theme";
 import { api } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { makeSelectPackageReadiness, selectPackageCards } from "@/readiness/selectors";
-import { fetchPackageDetail, fetchPackages, setActivePackageQuery, setPackageGenerationStatus, upsertPackage } from "@/store/slices/packagesSlice";
+import { makeSelectPackageReadiness, selectCataloguePackageCards, selectPackageCards } from "@/readiness/selectors";
+import { fetchPackages, setActivePackageQuery, setPackageGenerationStatus, upsertPackage } from "@/store/slices/packagesSlice";
 import PackDetail from "./pack-detail";
 
 const PACKS_PER_PAGE = 20;
@@ -24,6 +27,8 @@ const PACKAGE_CATEGORIES = [
   "Family & Life",
 ] as const;
 const SEARCH_DEBOUNCE_MS = 350;
+const MAX_PACKAGE_QUERY_LENGTH = 160;
+const PACKAGE_GENERATION_WAIT_MS = 40_000;
 
 function matchesCategory(packCategory: string, selectedCategory: string) {
   if (selectedCategory === "All") return true;
@@ -43,40 +48,27 @@ function matchesCategory(packCategory: string, selectedCategory: string) {
 
 function openPackUpload() {
   window.dispatchEvent(
-    new CustomEvent("lifepack:open-upload", { detail: { stayOnSave: true } }),
+    new CustomEvent("readiness:open-upload", { detail: { stayOnSave: true } }),
   );
 }
 
-function downloadBlobFile(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
-}
-
 function readinessText(pack: {
-  readyDocumentCount: number;
-  requiredDocumentCount: number;
-  requiredDocumentTypes?: string[];
-  uploadedDocumentTypes?: string[];
-  requirements?: unknown[];
+  requiredDocumentTypes: string[];
+  uploadedDocumentTypes: string[];
 }) {
-  const total = pack.requirements?.length
-    ? pack.requiredDocumentTypes?.length ?? 0
-    : pack.requiredDocumentCount;
-  const ready = pack.requirements?.length
-    ? pack.uploadedDocumentTypes?.length ?? 0
-    : pack.readyDocumentCount;
+  const total = pack.requiredDocumentTypes.length;
+  const ready = pack.uploadedDocumentTypes.length;
   const missing = Math.max(0, total - ready);
   return `${missing} missing · ${ready} of ${total} ready`;
 }
 
 export default function PackagesPage() {
   const dispatch = useAppDispatch();
+  const usage = useAppSelector(state => state.usage?.data);
+  const quotaReached = usage?.accountTier === "free" && usage.aiUsage.remaining === 0;
+  const streamController = useRef<AbortController | null>(null);
+  const [streamPreview, setStreamPreview] = useState("");
+  useEffect(() => { void dispatch(refreshUsage()); return () => streamController.current?.abort(); }, [dispatch]);
   const readinessSelector = useMemo(makeSelectPackageReadiness, []);
   const {
     status,
@@ -85,10 +77,11 @@ export default function PackagesPage() {
     searchCanGenerate,
     searchStatus,
     generationStatus,
-    detailStatusBySlug,
   } = useAppSelector((state) => state.packages);
-  const catalogueItems = useAppSelector((state) => state.packages.catalogueItems);
+  const documentLabels = useAppSelector((state) => state.documents.items.map((document) =>
+    document.normalizedType || document.documentType).filter(Boolean));
   const packs = useAppSelector(selectPackageCards);
+  const cachedCataloguePacks = useAppSelector(selectCataloguePackageCards);
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const [detailOpen, setDetailOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -96,9 +89,6 @@ export default function PackagesPage() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [category, setCategory] = useState<(typeof PACKAGE_CATEGORIES)[number]>("All");
   const [currentPage, setCurrentPage] = useState(1);
-  const [downloadStatus, setDownloadStatus] = useState<
-    "idle" | "loading" | "failed"
-  >("idle");
   const activeSearchRef = useRef(0);
 
   useEffect(() => {
@@ -108,7 +98,10 @@ export default function PackagesPage() {
   }, [packs, selectedSlug]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setDebouncedQuery(query), SEARCH_DEBOUNCE_MS);
+    const timer = window.setTimeout(() => {
+      setDebouncedQuery(query);
+      setCurrentPage(1);
+    }, SEARCH_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
   }, [query]);
 
@@ -125,24 +118,22 @@ export default function PackagesPage() {
   }, [category, currentPage, debouncedQuery, dispatch]);
 
   const filteredPacks = useMemo(() => packs.filter((pack) => matchesCategory(pack.category, category)), [category, packs]);
-  const suggestions = useMemo(() => filteredPacks.slice(0, 4), [filteredPacks]);
+  const displayedPacks = filteredPacks;
+  const suggestions = useMemo(() => displayedPacks.slice(0, 4), [displayedPacks]);
   const hasSearchQuery = Boolean(debouncedQuery.trim());
-  const hasEmptySearch = hasSearchQuery && !filteredPacks.length && searchStatus !== "loading" && status !== "loading";
+  const hasEmptySearch = hasSearchQuery && !displayedPacks.length && searchStatus !== "loading" && status !== "loading";
 
   const totalPages = Math.max(
     1,
     pagination ? Math.ceil(pagination.total / pagination.limit) : 1,
   );
-  const shouldShowPagination = Boolean(pagination && (pagination.hasNextPage || pagination.page > 1));
-  const paginatedPacks = filteredPacks;
+  const shouldShowPagination = Boolean(pagination) || currentPage > 1;
+  const isPageLoading = status === "loading" || searchStatus === "loading" || !pagination;
+  const paginatedPacks = displayedPacks;
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [category, debouncedQuery]);
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages));
-  }, [totalPages]);
+    if (pagination) setCurrentPage((page) => Math.min(page, totalPages));
+  }, [pagination, totalPages]);
 
   useEffect(() => {
     if (!detailOpen) return;
@@ -161,84 +152,89 @@ export default function PackagesPage() {
   const selectedDetail = useAppSelector((state) => selectedSlug ? state.packages.detailsBySlug[selectedSlug] : undefined);
   const selectedSummary = packs.find((pack) => pack.slug === selectedSlug);
   const localReadiness = useAppSelector((state) => readinessSelector(state, selectedSlug));
-  const readiness = localReadiness?.result ?? null;
-  const readinessStatus = detailStatusBySlug[selectedSlug] === "loading" ? "loading" : detailStatusBySlug[selectedSlug] === "failed" ? "failed" : "idle";
+  const readiness = localReadiness;
   const completion = localReadiness?.percentage ?? 0;
-  const readyCount = localReadiness?.requiredReadyCount ?? 0;
-  const totalCount = localReadiness?.requiredTotalCount ?? 0;
+  const readyCount = localReadiness?.satisfiedRequired ?? 0;
+  const totalCount = localReadiness?.totalRequired ?? 0;
   const isComplete = totalCount > 0 && readyCount === totalCount;
-
-  const handleDownload = async () => {
-    if (!selectedDetail) return;
-    setDownloadStatus("loading");
-    try {
-      const { blob, fileName } = await api.packages.download(selectedDetail.slug);
-      downloadBlobFile(blob, fileName);
-      setDownloadStatus("idle");
-    } catch {
-      setDownloadStatus("failed");
-    }
-  };
 
   const handleSearchOrGenerate = async () => {
     const trimmed = query.trim();
-    if (!trimmed || generationStatus === "loading") return;
+    if (!trimmed || generationStatus === "loading" || quotaReached) return;
     const requestId = activeSearchRef.current + 1;
     activeSearchRef.current = requestId;
     dispatch(setPackageGenerationStatus("loading"));
     setSearchError(null);
+    streamController.current?.abort();
+    const controller = new AbortController();
+    streamController.current = controller;
+    setStreamPreview("");
+    const waitTimer = window.setTimeout(() => {
+      if (activeSearchRef.current !== requestId) return;
+      dispatch(setPackageGenerationStatus("failed"));
+      controller.abort();
+      setSearchError("Requirements verification timed out. Please retry.");
+    }, PACKAGE_GENERATION_WAIT_MS);
     try {
-      const result = await api.packages.searchOrGenerate(trimmed);
+      let partial = "";
+      const result = await api.packages.streamSearchOrGenerate(trimmed, [...new Set(documentLabels)], delta => {
+        partial += delta;
+        const title = partial.match(/"packageName"\s*:\s*"([^"\\]*)/);
+        if (title) setStreamPreview(title[1]);
+      }, controller.signal);
+      window.clearTimeout(waitTimer);
       if (activeSearchRef.current !== requestId) return;
       dispatch(upsertPackage(result.package));
       dispatch(setPackageGenerationStatus(result.source === "official_source" ? "succeeded" : "idle"));
       setSelectedSlug(result.package.slug);
       setDetailOpen(true);
     } catch (apiError) {
+      window.clearTimeout(waitTimer);
+      if (controller.signal.aborted) return;
       if (activeSearchRef.current !== requestId) return;
       dispatch(setPackageGenerationStatus("failed"));
       setSearchError(apiError instanceof Error ? apiError.message : "Unable to build this package.");
-    }
+    } finally { void dispatch(refreshUsage()); }
   };
 
   const openPackage = (slug: string) => {
     setSelectedSlug(slug);
     setDetailOpen(true);
-    void dispatch(fetchPackageDetail(slug));
   };
 
   return (
     <div className="lp-route lp-packages-route">
       <SectionHead
         title="Packages"
-        sub={`${packs.length} real-world situations. LifePack matches your archive against each one and shows how ready you already are.`}
+        sub={`${packs.length} real-world situations. Readiness matches your archive against each one and shows how ready you already are.`}
         action={null}
       />
 
+      {usage && <AccountUsage usage={usage} only="ai" />}
       {error ? (
         <div style={{ color: T.coral, fontSize: 13, marginBottom: 12 }}>
           {error}
         </div>
       ) : null}
 
-      <button type="button" style={{ ...btnGold, marginBottom: 16 }} onClick={openPackUpload}>
+      <CustomPackButton quotaReached={quotaReached} style={{ ...btnGold, marginBottom: 16 }} onClick={openPackUpload}>
         <Plus size={16} /> Create a custom pack
-      </button>
+      </CustomPackButton>
 
       <label className="lp-pack-search">
         <Search size={17} color={T.muted} />
         <input
           value={query}
           onChange={(event) => {
-            setQuery(event.target.value);
+            setQuery(event.target.value.slice(0, MAX_PACKAGE_QUERY_LENGTH));
             setSearchError(null);
             if (generationStatus !== "loading") dispatch(setPackageGenerationStatus("idle"));
           }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               event.preventDefault();
-              if (filteredPacks[0]) {
-                openPackage(filteredPacks[0].slug);
+              if (displayedPacks[0]) {
+                openPackage(displayedPacks[0].slug);
               } else {
                 void handleSearchOrGenerate();
               }
@@ -246,6 +242,7 @@ export default function PackagesPage() {
           }}
           placeholder="Schengen visa, home loan, hospital admission, school admission, passport renewal"
           aria-label="Search packages"
+          maxLength={MAX_PACKAGE_QUERY_LENGTH}
         />
       </label>
 
@@ -275,7 +272,7 @@ export default function PackagesPage() {
       {generationStatus === "loading" ? (
         <div className="lp-pack-generation-state">
           <Loader2 size={15} className="lp-spin" />
-          Building your package...
+          {streamPreview ? `Verifying ${streamPreview}…` : "Building your package..."}
         </div>
       ) : null}
 
@@ -301,7 +298,7 @@ export default function PackagesPage() {
             type="button"
             className={category === item ? "active" : ""}
             key={item}
-            onClick={() => setCategory(item)}
+            onClick={() => { setCategory(item); setCurrentPage(1); }}
           >
             {item}
           </button>
@@ -347,35 +344,35 @@ export default function PackagesPage() {
               {hasSearchQuery ? `No pack covers "${debouncedQuery.trim()}" yet` : "No matching packages"}
             </strong>
             <div style={{ color: T.muted, fontSize: hasSearchQuery ? 15 : 13, marginTop: 8 }}>
-              {hasSearchQuery ? "Describe it and LifePack drafts the checklist for you." : "Try another search or category."}
+              {hasSearchQuery ? "Describe it and Readiness drafts the checklist for you." : "Try another search or category."}
             </div>
             {hasSearchQuery && searchCanGenerate ? (
-              <button
-                type="button"
+              <CustomPackButton
+                quotaReached={quotaReached}
                 className="lp-pack-create-ai"
                 disabled={generationStatus === "loading"}
                 onClick={() => void handleSearchOrGenerate()}
               >
                 {generationStatus === "loading" ? <Loader2 size={17} className="lp-spin" /> : <Plus size={17} />}
                 {generationStatus === "loading" ? "Drafting pack..." : "Create a custom pack"}
-              </button>
+              </CustomPackButton>
             ) : null}
           </Card>
         ) : null}
       </div>
 
-      {hasSearchQuery && filteredPacks.length && catalogueItems.length ? (
+      {hasSearchQuery && filteredPacks.length && cachedCataloguePacks.length ? (
         <>
           <div className="lp-pack-section-label all">All packages</div>
           <div className="lp-pack-grid">
-            {catalogueItems.map((pack) => (
+            {cachedCataloguePacks.map((pack) => (
               <button
                 type="button"
                 className="lp-pack-result"
                 key={pack.slug}
                 onClick={() => openPackage(pack.slug)}
               >
-                <Ring score={0} size={54} />
+                <Ring score={Math.round(pack.completion)} size={54} />
                 <span className="lp-pack-result-copy">
                   <strong><Plane size={15} /> {pack.title}</strong>
                   <span>{readinessText(pack)}</span>
@@ -388,11 +385,11 @@ export default function PackagesPage() {
       ) : null}
 
       {shouldShowPagination ? (
-        <div className="lp-pack-pages">
-          <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Previous</button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Next</button>
-        </div>
+        <nav className="lp-pack-pages" aria-label="Package pagination" aria-busy={isPageLoading}>
+          <button type="button" disabled={isPageLoading || currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Previous</button>
+          <span aria-live="polite">{pagination ? `Page ${currentPage} of ${totalPages} · ${pagination.total} packages` : `Loading page ${currentPage}…`}</span>
+          <button type="button" disabled={isPageLoading || !pagination?.hasNextPage} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Next</button>
+        </nav>
       ) : null}
 
       {detailOpen && (selectedDetail || selectedSummary) ? (
@@ -408,15 +405,12 @@ export default function PackagesPage() {
             {selectedDetail ? (
               <PackDetail
                 completion={completion}
-                downloadStatus={downloadStatus}
                 isComplete={isComplete}
                 pack={selectedDetail}
                 readiness={readiness}
-                readinessStatus={readinessStatus}
                 readyCount={readyCount}
                 totalCount={totalCount}
                 onClose={() => setDetailOpen(false)}
-                onDownload={() => void handleDownload()}
                 onUpload={openPackUpload}
               />
             ) : (
