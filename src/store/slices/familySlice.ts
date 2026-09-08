@@ -18,8 +18,7 @@ const familySlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(initializeApp.fulfilled, (state, action) => {
-      state.members = action.payload.familyMembers;
+    builder.addCase(initializeApp.fulfilled, (state) => {
       state.loaded = true;
     });
   },

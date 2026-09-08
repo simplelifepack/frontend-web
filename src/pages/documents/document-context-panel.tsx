@@ -17,10 +17,11 @@ import FilePreview from "./file-preview";
 
 type Props = {
   doc: DocumentRecord;
+  loading?: boolean;
   onClose: () => void;
 };
 
-export default function DocumentContextPanel({ doc, onClose }: Props) {
+export default function DocumentContextPanel({ doc, loading = false, onClose }: Props) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const category = safeCategory(doc.category);
   const categoryMeta =
@@ -124,7 +125,10 @@ export default function DocumentContextPanel({ doc, onClose }: Props) {
           </div>
 
           <span className="lp-document-drawer-label">Review fields</span>
-          {approvedFields.length ? (
+          {loading ? (
+            <p className="lp-document-drawer-empty">Loading document details...</p>
+          ) : null}
+          {!loading && approvedFields.length ? (
             <div>
               {approvedFields.map((field, index) => (
                 <div className="lp-document-drawer-fact" key={field.id ?? `${field.key}-${index}`}>
@@ -133,15 +137,16 @@ export default function DocumentContextPanel({ doc, onClose }: Props) {
                 </div>
               ))}
             </div>
-          ) : (
+          ) : !loading ? (
             <p className="lp-document-drawer-empty">No reviewed fields saved for this document.</p>
-          )}
+          ) : null}
 
         </div>
 
         <footer className="lp-document-drawer-footer">
           <button
             type="button"
+            disabled={loading}
             onClick={() => setPreviewOpen((current) => !current)}
             style={{ ...btnGold, flex: 1, justifyContent: "center" }}
           >

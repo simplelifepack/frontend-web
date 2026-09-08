@@ -8,9 +8,11 @@ import type { RootState } from "../index";
 type DocumentsState = {
   items: DocumentRecord[];
   selected: DocumentRecord | null;
+  documentCount: number;
   pendingAnalysis: AnalyzeDocumentResponse | null;
   pendingAnalysisQueue: AnalyzeDocumentResponse[];
   status: "idle" | "loading" | "succeeded" | "failed";
+  detailStatus: "idle" | "loading" | "succeeded" | "failed";
   analyzeStatus: "idle" | "loading" | "succeeded" | "failed";
   uploadStatus: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
@@ -20,9 +22,11 @@ type DocumentsState = {
 const initialState: DocumentsState = {
   items: [],
   selected: null,
+  documentCount: 0,
   pendingAnalysis: null,
   pendingAnalysisQueue: [],
   status: "idle",
+  detailStatus: "idle",
   analyzeStatus: "idle",
   uploadStatus: "idle",
   error: null,
@@ -89,16 +93,20 @@ const documentsSlice = createSlice({
       state.error = null;
     },
     documentAdded(state, action: { payload: DocumentRecord }) {
+      const existed = state.items.some((document) => document.id === action.payload.id);
       state.items = state.items.filter((document) => document.id !== action.payload.id);
       state.items.unshift(action.payload);
+      if (!existed) state.documentCount += 1;
     },
     documentUpdated(state, action: { payload: DocumentRecord }) {
       const index = state.items.findIndex((document) => document.id === action.payload.id);
       if (index >= 0) state.items[index] = action.payload;
     },
     documentRemoved(state, action: { payload: string }) {
+      const existed = state.items.some((document) => document.id === action.payload);
       state.items = state.items.filter((document) => document.id !== action.payload);
       if (state.selected?.id === action.payload) state.selected = null;
+      if (existed) state.documentCount = Math.max(0, state.documentCount - 1);
     },
   },
   extraReducers: (builder) => {
@@ -110,6 +118,7 @@ const documentsSlice = createSlice({
       .addCase(fetchDocuments.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.items = action.payload;
+        state.documentCount = action.payload.length;
         state.loaded = true;
       })
       .addCase(fetchDocuments.rejected, (state, action) => {
@@ -117,7 +126,18 @@ const documentsSlice = createSlice({
         state.error = action.error.message ?? "Unable to fetch documents.";
       })
       .addCase(fetchDocumentById.fulfilled, (state, action) => {
+        state.detailStatus = "succeeded";
         state.selected = action.payload;
+        const index = state.items.findIndex((document) => document.id === action.payload.id);
+        if (index >= 0) state.items[index] = { ...state.items[index], ...action.payload };
+      })
+      .addCase(fetchDocumentById.pending, (state) => {
+        state.detailStatus = "loading";
+        state.error = null;
+      })
+      .addCase(fetchDocumentById.rejected, (state, action) => {
+        state.detailStatus = "failed";
+        state.error = action.error.message ?? "Unable to load document.";
       })
       .addCase(uploadDocument.pending, (state) => {
         state.uploadStatus = "loading";
@@ -127,6 +147,7 @@ const documentsSlice = createSlice({
         state.uploadStatus = "succeeded";
         if (action.payload.document) {
           state.items.unshift(action.payload.document);
+          state.documentCount += 1;
         } else {
           state.pendingAnalysis = action.payload as AnalyzeDocumentResponse;
         }
@@ -154,21 +175,23 @@ const documentsSlice = createSlice({
       .addCase(saveDocument.fulfilled, (state, action) => {
         state.uploadStatus = "succeeded";
         state.pendingAnalysis = state.pendingAnalysisQueue.shift() ?? null;
+        const existed = state.items.some((document) => document.id === action.payload.document.id);
         state.items = state.items.filter((document) => document.id !== action.payload.document.id);
         state.items.unshift(action.payload.document);
+        if (!existed) state.documentCount += 1;
       })
       .addCase(saveDocument.rejected, (state, action) => {
         state.uploadStatus = "failed";
         state.error = action.error.message ?? "Unable to save document.";
       })
       .addCase(deleteDocument.fulfilled, (state, action) => {
+        const existed = state.items.some((document) => document.id === action.payload);
         state.items = state.items.filter((document) => document.id !== action.payload);
         if (state.selected?.id === action.payload) state.selected = null;
+        if (existed) state.documentCount = Math.max(0, state.documentCount - 1);
       })
       .addCase(initializeApp.fulfilled, (state, action) => {
-        state.items = action.payload.documents;
-        state.loaded = true;
-        state.status = "succeeded";
+        state.documentCount = action.payload.documentCount;
       });
   },
 });

@@ -5,6 +5,8 @@ import Card from "@/components/Card";
 import { T } from "@/constants/theme";
 import { daysUntil } from "@/data/demoData";
 import type { DocumentRecord } from "@/lib/api";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchDocumentById } from "@/store/slices/documentsSlice";
 import {
   categories,
   documentTitle,
@@ -26,6 +28,8 @@ export default function DocumentRows({
   documents,
   showCategory = true,
 }: DocumentRowsProps) {
+  const dispatch = useAppDispatch();
+  const { selected: selectedDocument, detailStatus } = useAppSelector((state) => state.documents);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openDocument, setOpenDocument] = useState<DocumentRecord | null>(null);
   const columns = showCategory
@@ -35,6 +39,11 @@ export default function DocumentRows({
 
   const toggleAll = () => {
     setSelected(allSelected ? new Set() : new Set(documents.map((doc) => doc.id)));
+  };
+
+  const openDetails = (doc: DocumentRecord) => {
+    setOpenDocument(doc);
+    void dispatch(fetchDocumentById(doc.id));
   };
 
   return (
@@ -112,11 +121,11 @@ export default function DocumentRows({
             role="button"
             tabIndex={0}
             className="lp-document-row"
-            onClick={() => setOpenDocument(doc)}
+            onClick={() => openDetails(doc)}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
-                setOpenDocument(doc);
+                openDetails(doc);
               }
             }}
             style={{
@@ -188,7 +197,8 @@ export default function DocumentRows({
     </Card>
     {openDocument ? (
       <DocumentContextPanel
-        doc={openDocument}
+        doc={selectedDocument?.id === openDocument.id ? selectedDocument : openDocument}
+        loading={selectedDocument?.id !== openDocument.id && detailStatus === "loading"}
         onClose={() => setOpenDocument(null)}
       />
     ) : null}

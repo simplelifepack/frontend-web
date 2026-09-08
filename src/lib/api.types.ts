@@ -495,9 +495,7 @@ export type WealthHandoffSendResponse = {
 
 export type BootstrapResponse = Partial<AccountUsage> & {
   user: AuthUser;
-  familyMembers: FamilyMember[];
-  documents: DocumentRecord[];
-  savedPackages: string[];
+  documentCount: number;
   version: string;
 };
 

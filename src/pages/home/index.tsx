@@ -52,7 +52,7 @@ type ActionItem = {
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { items: documents, status } = useAppSelector((state) => state.documents);
+  const { items: documents, documentCount } = useAppSelector((state) => state.documents);
   const user = useAppSelector((state) => state.auth.user);
 
   const firstName = user?.name.trim().split(/\s+/)[0] || "there";
@@ -79,8 +79,8 @@ export default function HomePage() {
     () => documents.filter((document) => document.documentType === "Unknown"),
     [documents],
   );
-  const readiness = documents.length
-    ? Math.round(((documents.length - unknown.length) / documents.length) * 100)
+  const readiness = documentCount
+    ? Math.round(((documentCount - unknown.length) / documentCount) * 100)
     : 0;
   const documentActions: ActionItem[] = expiring.map(({ document, days }) => ({
     id: document.id,
@@ -96,7 +96,7 @@ export default function HomePage() {
   }));
   const actions = [...documentActions, ...reviewActions];
   const stats = [
-    { label: "Documents", value: documents.length, icon: FolderOpen, color: A.blue, route: "/documents" },
+    { label: "Documents", value: documentCount, icon: FolderOpen, color: A.blue, route: "/documents" },
     { label: "Overall readiness", value: `${readiness}%`, icon: ShieldCheck, color: A.green, route: "/packages" },
     { label: "Expiring < 60d", value: expiring.length, icon: Clock, color: A.gold, route: "/documents" },
     { label: "Needs attention", value: actions.length, icon: Bell, color: A.pink, route: "/documents" },
@@ -104,7 +104,7 @@ export default function HomePage() {
   const insights = [
     {
       icons: [FolderOpen, Plane],
-      text: `${documents.length} records are available across your document vault and readiness packages.`,
+      text: `${documentCount} records are available across your document vault and readiness packages.`,
       route: "/packages",
       tone: A.green,
     },
