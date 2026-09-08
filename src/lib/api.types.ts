@@ -496,6 +496,7 @@ export type WealthHandoffSendResponse = {
 export type BootstrapResponse = Partial<AccountUsage> & {
   user: AuthUser;
   documentCount: number;
+  recoverySetupComplete: boolean;
   version: string;
 };
 
