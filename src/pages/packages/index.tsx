@@ -217,10 +217,6 @@ export default function PackagesPage() {
         </div>
       ) : null}
 
-      <CustomPackButton quotaReached={quotaReached} style={{ ...btnGold, marginBottom: 16 }} onClick={openPackUpload}>
-        <Plus size={16} /> Create a custom pack
-      </CustomPackButton>
-
       <label className="lp-pack-search">
         <Search size={17} color={T.muted} />
         <input
