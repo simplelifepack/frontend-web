@@ -1,18 +1,11 @@
-import BrandLogo from "./BrandLogo";
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useState } from "react";
-import {
-  ChevronsLeft,
-  ChevronsRight,
-  Search,
-  X,
-} from "lucide-react";
+import { ChevronsLeft, ChevronsRight, FileText, Settings, Search, X } from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { T } from "@/constants/theme";
-import { api } from "@/lib/api";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logout } from "@/store/slices/authSlice";
+import { useAppSelector } from "@/store/hooks";
+import AccountMenu from "./AccountMenu";
 import RecoveryGate from "./RecoveryGate";
 import { ROUTE_PATHS, SHELL_NAV, routeFromPath } from "./appShellNav";
 
@@ -23,7 +16,6 @@ type AppShellProps = {
 };
 
 export default function AppShell({ children }: AppShellProps) {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAppSelector((state) => state.auth.user);
@@ -44,12 +36,6 @@ export default function AppShell({ children }: AppShellProps) {
     window.addEventListener("readiness:open-upload", openUpload);
     return () => window.removeEventListener("readiness:open-upload", openUpload);
   }, []);
-
-  const handleLogout = async () => {
-    await api.auth.logout().catch(() => undefined);
-    dispatch(logout());
-    navigate("/login", { replace: true });
-  };
 
   return (
     <div
@@ -86,7 +72,7 @@ export default function AppShell({ children }: AppShellProps) {
             justifyContent: navOpen ? "flex-start" : "center",
           }}
         >
-          <BrandLogo height={navOpen ? 48 : 32} />
+          <div className="lp-shell-brand"><span><FileText size={22} /></span>{navOpen && <div><b>ReadiNes</b><small>READY FOR LIFE</small></div>}</div>
         </div>
 
         <nav style={{ display: "grid", gap: 3 }}>
@@ -123,6 +109,7 @@ export default function AppShell({ children }: AppShellProps) {
               </NavLink>
             );
           })}
+          <NavLink to="/settings" className="lp-shell-settings"><Settings size={18} />{navOpen && 'Settings'}</NavLink>
         </nav>
 
         <button
@@ -145,7 +132,7 @@ export default function AppShell({ children }: AppShellProps) {
             fontWeight: 600,
           }}
         >
-          {navOpen ? <><ChevronsLeft size={16} /> Collapse</> : <ChevronsRight size={16} />}
+          {navOpen ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
         </button>
       </aside>
       <main
@@ -181,11 +168,7 @@ export default function AppShell({ children }: AppShellProps) {
                 </button>
               ) : null}
             </label>
-            <div className="lp-user-menu">
-              <span>{user?.name}</span>
-              <button type="button" onClick={() => navigate("/settings")}>Settings & usage</button>
-              <button type="button" onClick={handleLogout}>Logout</button>
-            </div>
+            <AccountMenu user={user} />
           </div>
           <RecoveryGate key={user?.id}>{children ?? <Outlet />}</RecoveryGate>
         </div>

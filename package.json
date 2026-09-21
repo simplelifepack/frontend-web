@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "npm run lint && vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "lint": "eslint .",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "test:search": "tsx ../tests/hybrid-search.test.ts",
     "test:google-auth": "vitest run src/components/GoogleSignInButton.test.tsx",
     "test:auth-storage": "vitest run src/store/slices/authStorage.test.ts",
@@ -19,6 +19,7 @@
     "test:documents-readiness": "vitest run src/store/slices/documentsSlice.readiness.test.ts",
     "test:document-encryption": "vitest run src/lib/document-hybrid-encryption.test.ts",
     "format": "prettier --write .",
+    "prepare": "git config core.hooksPath .githooks",
     "test:usage": "vitest run src/components/AccountUsage.test.tsx src/lib/http-client.stream.test.ts src/lib/client-secrets.test.ts src/lib/public-document-labels.test.ts"
   },
   "dependencies": {

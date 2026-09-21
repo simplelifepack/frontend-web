@@ -182,12 +182,139 @@ export type UploadDocumentResponse = AnalyzeDocumentResponse & {
   document?: DocumentRecord;
 };
 
+export type HealthMember = {
+  id: string;
+  name: string;
+  relation: string;
+  bloodGroup?: string | null;
+  dateOfBirth?: string | null;
+  conditions?: string | null;
+  allergies?: string | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
+  primaryDoctor?: string | null;
+  insuranceProvider?: string | null;
+  insurancePolicyNumber?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type HealthMeasurement = {
+  id: string;
+  sourceDocumentId: string;
+  recordId: string;
+  metricKey: string;
+  displayName: string;
+  originalName: string;
+  value: number;
+  secondaryValue?: number | null;
+  unit: string;
+  context?: string | null;
+  bodySite?: string | null;
+  referenceMin?: number | null;
+  referenceMax?: number | null;
+  referenceText?: string | null;
+  measuredAt: string | null;
+  sourceType: string;
+  isTracked?: boolean;
+  aliases?: string[];
+};
+
+export type HealthRecord = {
+  id: string;
+  memberId: string;
+  documentId: string;
+  type: "lab_report" | "medical_report" | "prescription";
+  documentDate: string | null;
+  provider?: string | null;
+  doctor?: string | null;
+  processingStatus: string;
+  processingError?: string | null;
+  measurementCount: number;
+  trackedMeasurementCount: number;
+  medicationCount: number;
+  followUpCount: number;
+  createdAt: string;
+  processedAt?: string | null;
+};
+
+export type HealthRecordDetail = HealthRecord & {
+  measurements: HealthMeasurement[];
+  medications: Array<{ id: string; name: string; dose?: string | null; frequency?: string | null; duration?: string | null; quantity?: string | null }>;
+  followUps: Array<{ id: string; title: string; dueDate?: string | null; explicitDate?: string | null; sourceText?: string | null }>;
+  reminders: Array<{ id: string; title: string; dueDate: string | null; origin: string; status: string }>;
+};
+
+export type HealthHomeReminder = {
+  id: string;
+  title: string;
+  dueDate: string | null;
+  memberName: string;
+  origin: string;
+};
+
+export type HealthMemberResolution = {
+  type: "lab_report" | "medical_report" | "prescription";
+  documentId: string;
+  processingStatus: "awaiting_profile_match";
+  patient: { name?: string | null; dateOfBirth?: string | null; age?: number | null; gender?: string | null } | null;
+  memberMatch: { status: "missing" | "unmatched" | "ambiguous"; candidates: HealthMember[] };
+  measurements: [];
+};
+
+export type HealthProcessResponse = HealthRecordDetail & { patient?: HealthMemberResolution["patient"]; matchedMember?: HealthMember | null } | HealthMemberResolution;
+
+export type TrackedHealthMetric = {
+  id: string;
+  memberId: string;
+  metricKey: string;
+  displayName: string;
+  context?: string | null;
+  bodySite?: string | null;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type HealthAvailableMetric = {
+  metricKey: string;
+  displayName: string;
+  context?: string | null;
+  bodySite?: string | null;
+  historicalReadingCount: number;
+  isTracked: boolean;
+  latestValue: number;
+  secondaryValue?: number | null;
+  unit: string;
+};
+
+export type HealthOverview = {
+  member: HealthMember;
+  upcoming: Array<{ id: string; title: string; dueDate: string | null; origin: string; status: string; sourceDocumentId?: string | null }>;
+  trackedMetrics: Array<TrackedHealthMetric & { measurements: HealthMeasurement[]; latest: HealthMeasurement | null }>;
+  recentRecords: HealthRecord[];
+};
+
+export type HealthTimelineEvent = {
+  id: string;
+  eventType: "measurement" | "medication";
+  recordId: string;
+  occurredAt: string | null;
+  title: string;
+  value?: number;
+  secondaryValue?: number | null;
+  unit?: string;
+  detail?: string | null;
+  source: string;
+  sourceType: string;
+};
+
 export type SaveDocumentPayload = {
   tempFileIds: string[];
   originalName: string;
   mimeType: string;
   size: number;
-  title: string;
+  title?: string;
   category: string;
   documentType: string;
   confidence: number;

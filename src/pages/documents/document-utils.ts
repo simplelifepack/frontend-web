@@ -124,6 +124,7 @@ export function importantDetail(doc: DocumentRecord) {
 export function sourceLabel(doc: DocumentRecord) {
   if (doc.source === "GOOGLE_DRIVE") return "Google Drive";
   if (doc.source === "GMAIL") return "Gmail";
+  if (String(doc.source) === "SCAN" || doc.sourceProvider === "SCAN") return "Scanned";
   return "Manual Upload";
 }
 

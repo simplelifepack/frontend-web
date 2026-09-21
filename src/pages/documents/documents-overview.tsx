@@ -1,43 +1,89 @@
-import { Camera, Check, Link2, Search, UploadCloud } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Camera, ChevronDown, Search, UploadCloud } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import Card from "@/components/Card";
-import { StorageUsage } from "@/components/AccountUsage";
-import type { AccountUsage } from "@/lib/api.types";
 import SectionHead from "@/components/SectionHead";
 import { btnGhost, btnGold, T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
+import { useAppSelector } from "@/store/hooks";
+import { categories, openUpload } from "./document-utils";
+import {
+  documentPerson,
+  documentSource,
+  filterDocuments,
+  matchesQuickFilter,
+  sourceNames,
+  type DocumentSort,
+  type QuickFilter,
+} from "./document-filters";
 import DocumentRows from "./document-rows";
-import { openUpload, type Source } from "./document-utils";
 
 type DocumentsOverviewProps = {
   documents: DocumentRecord[];
-  storage?: AccountUsage["storage"];
   error: string | null;
-  sources: Source[];
   status: "idle" | "loading" | "succeeded" | "failed";
-  onSelectSource: (id: string) => void;
 };
 
 export default function DocumentsOverview({
   documents,
-  storage,
   error,
-  sources,
   status,
-  onSelectSource,
 }: DocumentsOverviewProps) {
   const [searchParams] = useSearchParams();
+  const currentUserName = useAppSelector((state) => state.auth.user?.name);
   const [query, setQuery] = useState(() => searchParams.get("search") ?? "");
-  const visibleDocuments = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return documents;
-    return documents.filter((document) => [
-      document.title, document.displayName, document.originalName, document.documentType,
-      document.category, document.uniqueIdentifier, document.source,
-    ].some((value) => String(value ?? "").toLowerCase().includes(normalized)));
-  }, [documents, query]);
+  const [category, setCategory] = useState("all");
+  const [person, setPerson] = useState("all");
+  const [source, setSource] = useState("all");
+  const [sort, setSort] = useState<DocumentSort>("newest");
+  const [quick, setQuick] = useState<QuickFilter>("all");
+
+  useEffect(() => {
+    setQuery(searchParams.get("search") ?? "");
+  }, [searchParams]);
+
+  const people = useMemo(
+    () =>
+      [
+        ...new Set(
+          documents.map((document) =>
+            documentPerson(document, currentUserName),
+          ),
+        ),
+      ].sort(),
+    [documents, currentUserName],
+  );
+  const sources = useMemo(
+    () => [...new Set(documents.map(documentSource))],
+    [documents],
+  );
+  const visibleDocuments = useMemo(
+    () =>
+      filterDocuments(documents, {
+        query,
+        category,
+        person,
+        source,
+        sort,
+        quick,
+        currentUserName,
+      }),
+    [documents, query, category, person, source, sort, quick, currentUserName],
+  );
+  const quickCounts = useMemo(
+    () => ({
+      all: documents.length,
+      soon: documents.filter((document) => matchesQuickFilter(document, "soon"))
+        .length,
+      expired: documents.filter((document) =>
+        matchesQuickFilter(document, "expired"),
+      ).length,
+      week: documents.filter((document) => matchesQuickFilter(document, "week"))
+        .length,
+    }),
+    [documents],
+  );
 
   return (
     <div className="lp-route lp-documents-route">
@@ -45,24 +91,40 @@ export default function DocumentsOverview({
         title="Documents"
         sub={`${documents.length} records in your archive. Search, filter, and open any row for full context.`}
         action={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {storage && <StorageUsage storage={storage} circular />}
-            <button type="button" onClick={openUpload} style={btnGold}><UploadCloud size={15} /> Upload</button>
-            <button type="button" onClick={openUpload} style={btnGhost}><Camera size={15} /> Scan</button>
+          <div className="lp-document-add-actions">
+            <button type="button" onClick={openUpload} style={btnGold}>
+              <UploadCloud size={16} /> Upload <ChevronDown size={15} />
+            </button>
+            <button type="button" onClick={openUpload} style={btnGhost}>
+              <Camera size={16} /> Scan
+            </button>
           </div>
         }
       />
 
       <div className="lp-doc-quick">
-        <button type="button" className="active">All <b>{documents.length}</b></button>
-        <button type="button">Expiring soon <b>0</b></button>
-        <button type="button">Expired <b>0</b></button>
-        <button type="button">Added this week <b>0</b></button>
+        {(
+          [
+            ["all", "All"],
+            ["soon", "Expiring soon"],
+            ["expired", "Expired"],
+            ["week", "Added this week"],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            className={quick === key ? "active" : ""}
+            onClick={() => setQuick(key)}
+          >
+            {label} <b>{quickCounts[key]}</b>
+          </button>
+        ))}
       </div>
 
       <div className="lp-doc-toolbar">
-        <label>
-          <Search size={15} color={T.muted} />
+        <label className="lp-doc-search">
+          <Search size={16} color={T.muted} />
           <input
             type="search"
             value={query}
@@ -71,28 +133,55 @@ export default function DocumentsOverview({
             aria-label="Search documents"
           />
         </label>
-        {sources.map((source) => (
-          <button
-            key={source.id}
-            onClick={() => onSelectSource(source.id)}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: source.connected ? "rgba(79,203,149,0.1)" : T.panel,
-              color: source.connected ? T.mint : T.muted,
-              border: `1px solid ${source.connected ? "rgba(79,203,149,0.4)" : T.border}`,
-              borderRadius: 10,
-              padding: "8px 11px",
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            {source.connected ? <Check size={14} /> : <Link2 size={14} />}
-            <span>{source.name}</span>
-          </button>
-        ))}
+        <select
+          aria-label="Category"
+          value={category}
+          onChange={(event) => setCategory(event.target.value)}
+        >
+          <option value="all">All</option>
+          {categories.map((item) => (
+            <option key={item.key} value={item.key}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Person"
+          value={person}
+          onChange={(event) => setPerson(event.target.value)}
+        >
+          <option value="all">Everyone</option>
+          {people.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+        <select
+          aria-label="Source"
+          value={source}
+          onChange={(event) => setSource(event.target.value)}
+        >
+          <option value="all">All</option>
+          <option value="uploaded">Uploaded</option>
+          {sources
+            .filter((value) => value !== "uploaded")
+            .map((value) => (
+              <option key={value} value={value}>
+                {sourceNames[value] ?? value}
+              </option>
+            ))}
+        </select>
+        <select
+          aria-label="Sort"
+          value={sort}
+          onChange={(event) => setSort(event.target.value as DocumentSort)}
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+        </select>
       </div>
 
       {error ? (
@@ -100,17 +189,20 @@ export default function DocumentsOverview({
           {error}
         </div>
       ) : null}
-
       {status === "loading" ? (
         <Card>
           <div style={{ color: T.muted, fontSize: 13 }}>
             Loading documents from backend...
           </div>
         </Card>
+      ) : visibleDocuments.length ? (
+        <DocumentRows documents={visibleDocuments} />
       ) : (
-        visibleDocuments.length ? <DocumentRows documents={visibleDocuments} /> : (
-          <Card><div style={{ color: T.muted, fontSize: 13 }}>No documents match “{query}”.</div></Card>
-        )
+        <Card>
+          <div style={{ color: T.muted, fontSize: 13 }}>
+            No documents match the selected filters.
+          </div>
+        </Card>
       )}
     </div>
   );

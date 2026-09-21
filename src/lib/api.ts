@@ -18,6 +18,15 @@ import type {
   GmailCandidate,
   GmailImportResult,
   GmailStatus,
+  HealthAvailableMetric,
+  HealthHomeReminder,
+  HealthMember,
+  HealthOverview,
+  HealthProcessResponse,
+  HealthRecord,
+  HealthRecordDetail,
+  HealthTimelineEvent,
+  TrackedHealthMetric,
   PackSummary,
   PackageListQuery,
   PackageListResponse,
@@ -174,6 +183,40 @@ export const api = {
         body: payload,
         requiresAuth: true,
       }),
+  },
+  health: {
+    reminders: () => request<HealthHomeReminder[]>("/api/health/reminders", { requiresAuth: true, dedupeMs: 0 }),
+    createReminder: (payload: { memberId: string; title: string; dueDate: string }) =>
+      request('/api/health/reminders', { method: 'POST', body: payload, requiresAuth: true }),
+    members: () => request<HealthMember[]>("/api/health/members", { requiresAuth: true, dedupeMs: 0 }),
+    createMember: (payload: { name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null }) =>
+      request<HealthMember>("/api/health/members", { method: "POST", body: payload, requiresAuth: true }),
+    updateMember: (memberId: string, payload: Partial<{ name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null; conditions?: string | null; allergies?: string | null; emergencyContactName?: string | null; emergencyContactPhone?: string | null; primaryDoctor?: string | null; insuranceProvider?: string | null; insurancePolicyNumber?: string | null }>) =>
+      request<HealthMember>(`/api/health/members/${encodeURIComponent(memberId)}`, { method: "PATCH", body: payload, requiresAuth: true }),
+    deleteMember: (memberId: string) =>
+      request<void>(`/api/health/members/${encodeURIComponent(memberId)}`, { method: "DELETE", requiresAuth: true }),
+    overview: (memberId: string) =>
+      request<HealthOverview>(`/api/health/members/${encodeURIComponent(memberId)}/overview`, { requiresAuth: true, dedupeMs: 0 }),
+    records: (memberId: string) =>
+      request<HealthRecord[]>(`/api/health/members/${encodeURIComponent(memberId)}/records`, { requiresAuth: true, dedupeMs: 0 }),
+    createRecord: (payload: { memberId?: string; documentId: string; type: "lab_report" | "medical_report" | "prescription" }) =>
+      request<HealthProcessResponse>("/api/health/records", { method: "POST", body: payload, requiresAuth: true }),
+    record: (recordId: string) =>
+      request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}`, { requiresAuth: true, dedupeMs: 0 }),
+    deleteRecord: (recordId: string) =>
+      request<void>(`/api/health/records/${encodeURIComponent(recordId)}`, { method: "DELETE", requiresAuth: true }),
+    measurements: (memberId: string, metric?: string) =>
+      request(`/api/health/members/${encodeURIComponent(memberId)}/measurements${metric ? `?metric=${encodeURIComponent(metric)}` : ""}`, { requiresAuth: true, dedupeMs: 0 }),
+    trackedMetrics: (memberId: string) =>
+      request<TrackedHealthMetric[]>(`/api/health/members/${encodeURIComponent(memberId)}/tracked-metrics`, { requiresAuth: true, dedupeMs: 0 }),
+    trackMetric: (memberId: string, payload: { metricKey: string; displayName: string; context?: string | null; bodySite?: string | null }) =>
+      request<TrackedHealthMetric>(`/api/health/members/${encodeURIComponent(memberId)}/tracked-metrics`, { method: "POST", body: payload, requiresAuth: true }),
+    untrackMetric: (memberId: string, trackedId: string) =>
+      request<void>(`/api/health/members/${encodeURIComponent(memberId)}/tracked-metrics/${encodeURIComponent(trackedId)}`, { method: "DELETE", requiresAuth: true }),
+    availableMetrics: (memberId: string, search = "") =>
+      request<HealthAvailableMetric[]>(`/api/health/members/${encodeURIComponent(memberId)}/available-metrics?${toQueryString({ search })}`, { requiresAuth: true, dedupeMs: 0 }),
+    timeline: (memberId: string) =>
+      request<HealthTimelineEvent[]>(`/api/health/members/${encodeURIComponent(memberId)}/timeline`, { requiresAuth: true, dedupeMs: 0 }),
   },
   packages: {
     list: (query: PackageListQuery = {}) =>

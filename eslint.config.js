@@ -5,10 +5,20 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+  {
+    ignores: [
+      "dist",
+      "build",
+      ".output",
+      ".vinxi",
+      "node_modules",
+      "**/generated/**",
+      "**/*.generated.{ts,tsx,js,jsx}",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx,js,jsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -17,15 +27,15 @@ export default tseslint.config(
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
     },
-		rules: {
-			...reactHooks.configs.recommended.rules,
-			"max-lines": [
-				"error",
-				{ max: 250, skipBlankLines: true, skipComments: true },
-			],
-			"no-restricted-imports": [
-				"error",
-				{
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "max-lines": [
+        "error",
+        { max: 250, skipBlankLines: true, skipComments: true },
+      ],
+      "no-restricted-imports": [
+        "error",
+        {
           paths: [
             {
               name: "server-only",
@@ -38,5 +48,5 @@ export default tseslint.config(
       "react-refresh/only-export-components": "off",
       "@typescript-eslint/no-unused-vars": "off",
     },
-	},
+  },
 );

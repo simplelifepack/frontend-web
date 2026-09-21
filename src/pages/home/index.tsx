@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -19,7 +19,8 @@ import Card from "@/components/Card";
 import Ring from "@/components/Ring";
 import SectionHead from "@/components/SectionHead";
 import { A, btnGhost, T } from "@/constants/theme";
-import type { DocumentRecord } from "@/lib/api";
+import { api, type DocumentRecord } from "@/lib/api";
+import type { HealthHomeReminder } from "@/lib/api.types";
 import { useAppSelector } from "@/store/hooks";
 
 function fieldValue(document: DocumentRecord, keys: string[]) {
@@ -43,6 +44,13 @@ function greeting() {
   return "Good evening";
 }
 
+function reminderWhen(value: string | null) {
+  if (!value) return "upcoming";
+  const days = daysUntil(value);
+  if (days <= 0) return days < 0 ? `${Math.abs(days)}d overdue` : "today";
+  return `in ${days} day${days === 1 ? "" : "s"}`;
+}
+
 type ActionItem = {
   id: string;
   label: string;
@@ -54,6 +62,13 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { items: documents, documentCount } = useAppSelector((state) => state.documents);
   const user = useAppSelector((state) => state.auth.user);
+  const [healthReminders, setHealthReminders] = useState<HealthHomeReminder[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    void api.health.reminders().then((reminders) => { if (active) setHealthReminders(reminders); }).catch(() => { if (active) setHealthReminders([]); });
+    return () => { active = false; };
+  }, []);
 
   const firstName = user?.name.trim().split(/\s+/)[0] || "there";
   const expiring = useMemo(
@@ -99,7 +114,7 @@ export default function HomePage() {
     { label: "Documents", value: documentCount, icon: FolderOpen, color: A.blue, route: "/documents" },
     { label: "Overall readiness", value: `${readiness}%`, icon: ShieldCheck, color: A.green, route: "/packages" },
     { label: "Expiring < 60d", value: expiring.length, icon: Clock, color: A.gold, route: "/documents" },
-    { label: "Needs attention", value: actions.length, icon: Bell, color: A.pink, route: "/documents" },
+    { label: "Needs attention", value: actions.length + healthReminders.length, icon: Bell, color: A.pink, route: healthReminders.length ? "/health" : "/documents" },
   ];
   const insights = [
     {
@@ -150,7 +165,7 @@ export default function HomePage() {
           <div className="lp-action-title">
             <AlertTriangle size={16} color={actions.length ? T.gold : T.mint} />
             <b>Action center</b>
-            <span>{actions.length || "all clear"}</span>
+            <span>{actions.length + healthReminders.length || "all clear"}</span>
           </div>
           <button type="button" className="lp-action-group" onClick={() => navigate("/documents")}>
             <FolderOpen size={14} color={A.blue} />
@@ -178,6 +193,20 @@ export default function HomePage() {
               <span>Nothing pressing across your documents. Nicely handled.</span>
             </div>
           )}
+          <button type="button" className="lp-action-group" onClick={() => navigate("/health")}>
+            <HeartPulse size={14} color={A.pink} />
+            <strong>Health</strong>
+            <span>{healthReminders.length}</span>
+            <ChevronRight size={14} />
+          </button>
+          {healthReminders.map((reminder) => (
+            <button type="button" className="lp-action-row" key={reminder.id} onClick={() => navigate("/health")}>
+              <i style={{ background: A.pink }} />
+              <span>{reminder.title}{reminder.memberName ? ` · ${reminder.memberName}` : ""}</span>
+              <time style={{ color: A.pink }}>{reminderWhen(reminder.dueDate)}</time>
+              <ChevronRight size={16} color={T.faint} />
+            </button>
+          ))}
           {actions.length > 8 ? (
             <button type="button" className="lp-action-more" onClick={() => navigate("/documents")}>
               +{actions.length - 8} more in Documents

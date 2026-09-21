@@ -1,116 +1,203 @@
-import {
-  Activity,
-  CalendarClock,
-  ChevronDown,
-  HeartPulse,
-  Plus,
-  ShieldAlert,
-  Stethoscope,
-  Users,
-} from "lucide-react";
-
 import Card from "@/components/Card";
-import Pill from "@/components/Pill";
-import SectionHead from "@/components/SectionHead";
-import { btnGhost, btnGold, T, type Tone } from "@/constants/theme";
-
-type Reading = {
-  label: string;
-  value: string;
-  unit: string;
-  status: Tone;
-};
-
-const MEMBERS = [
-  ["A", "Alex", "Up to date", "ready"],
-  ["J", "Jordan", "Up to date", "ready"],
-  ["R", "Richard", "Appointment in 12d", "warn"],
-  ["D", "Diane", "1 due soon", "wax"],
-  ["E", "Ethan", "1 due soon", "warn"],
-] as const;
-
+import { api } from "@/lib/api";
+import HealthDialog from "./HealthDialog";
+import HealthPageHeader from "./components/HealthPageHeader";
+import { useHealthPage } from "./hooks/useHealthPage";
+import Overview from "./overview/Overview";
+import Trends from "./overview/Trends";
+import Timeline from "./timeline/Timeline";
+import MedicationSummary from "./medications/MedicationSummary";
+import Records from "./records/Records";
+import RecordDetailModal from "./records/RecordDetailModal";
+import MeasurementSelectionDialog from "./records/MeasurementSelectionDialog";
+import DeleteRecordDialog from "./records/DeleteRecordDialog";
+import AddRecordDialog from "./records/AddRecordDialog";
+import MemberResolutionDialog from "./members/MemberResolutionDialog";
+import AddMemberDialog from "./members/AddMemberDialog";
 export default function HealthPage() {
-  const readings: Reading[] = [
-    { label: "LDL", value: "118", unit: "mg/dL", status: "warn" },
-    { label: "Blood Pressure · systolic trend", value: "122/80", unit: "mmHg", status: "ready" },
-    { label: "HbA1c", value: "5.5", unit: "%", status: "ready" },
-  ];
-
+  const {
+    healthDialog,
+    setHealthDialog,
+    members,
+    selectedMemberId,
+    setSelectedMemberId,
+    activeTab,
+    setActiveTab,
+    overview,
+    records,
+    timeline,
+    selectedRecord,
+    setSelectedRecord,
+    selectedRecordId,
+    isRecordModalOpen,
+    setIsRecordModalOpen,
+    availableMetrics,
+    search,
+    setSearch,
+    showAddRecord,
+    setShowAddRecord,
+    showAddMember,
+    setShowAddMember,
+    memberPrefill,
+    setMemberPrefill,
+    processedRecord,
+    setProcessedRecord,
+    memberResolution,
+    setMemberResolution,
+    deleteRecord,
+    setDeleteRecord,
+    loading,
+    message,
+    setMessage,
+    selectedMember,
+    tracked,
+    upcoming,
+    refreshMembers,
+    refreshHealth,
+    createRecord,
+    confirmMemberResolution,
+    trackMetric,
+    trackMetrics,
+    toggleRecordMetric,
+    removeRecord,
+    viewOriginalDocument,
+    openHealthRecord,
+    untrackMetric,
+    createMember,
+  } = useHealthPage();
   return (
     <div className="lp-route lp-health-route">
-      <SectionHead
-        title="Health"
-        sub="Keep the whole family visit-ready. Readiness organizes and surfaces your records. It never diagnoses."
-        action={<div className="lp-health-attention"><Users size={15} /> 7 things need attention</div>}
+      <HealthPageHeader
+        members={members}
+        selectedMemberId={selectedMemberId}
+        selectedMember={selectedMember}
+        activeTab={activeTab}
+        upcoming={upcoming}
+        onSelectMember={setSelectedMemberId}
+        onAddMember={() => setShowAddMember(true)}
+        onDialog={setHealthDialog}
+        onTab={setActiveTab}
       />
 
-      <div className="lp-health-members">
-        {MEMBERS.map(([initial, name, status, tone], index) => (
-          <button className={index === 0 ? "active" : ""} key={name} type="button">
-            <span className={`tone-${tone}`}>{initial}</span>
-            <span><b>{name}</b><small>{status}</small></span>
-          </button>
-        ))}
-        <button type="button" className="add"><Users size={16} /><b>Add</b></button>
-      </div>
-
-      <div className="lp-health-profile">
-        <span>A</span>
-        <div>
-          <h2>Alex Morgan</h2>
-          <p>Self · 41 · O+ · Dr. Reyes, Family Medicine</p>
+      {message && activeTab !== "Overview" ? (
+        <div className="lp-health-insight">
+          <span>{message}</span>
         </div>
-        <button type="button" style={btnGhost}><ShieldAlert size={15} /> Emergency card</button>
-        <button type="button" style={btnGhost}><Plus size={15} /> Log reading</button>
-      </div>
-
-      <div className="lp-health-tabs">
-        {["Overview", "Timeline", "Medications", "Records"].map((tab, index) => (
-          <button className={index === 0 ? "active" : ""} key={tab} type="button">{tab}</button>
-        ))}
-      </div>
-
-      <Card style={{ marginBottom: 16, padding: "13px 16px" }}>
-        <div className="lp-health-event">
-          <CalendarClock size={18} color={T.gold} />
-          <div>
-            <b>Annual health checkup · in 70 days · Oct 04, 2026</b>
-            <small>Bring 0 medications, 0 recent reports, insurance card · Readings holding in range</small>
-          </div>
-          <button type="button" style={btnGold}><Stethoscope size={15} /> Prepare for visit</button>
-        </div>
-      </Card>
-
-      <button type="button" className="lp-health-insight">
-        <span><Activity size={15} color={T.gold} /> LDL to review · Blood Pressure, HbA1c in range</span>
-        <ChevronDown size={15} />
-      </button>
-
-      <div className="lp-health-vitals">
-        {readings.map((reading) => (
-          <Card key={reading.label}>
-            <div className="lp-health-vital-head">
-              <span>{reading.label}</span>
-              <Pill tone={reading.status}>{reading.status === "ready" ? "in range" : "watch"}</Pill>
-            </div>
-            <div className="lp-health-vital-value">{reading.value} <small>{reading.unit}</small></div>
-            <div className="lp-health-chart"><i /></div>
-            <div className="lp-health-log">♙ Manually logged · May 02, 2026</div>
-          </Card>
-        ))}
-      </div>
-
-      <div className="lp-two-col lp-health-bottom">
-        <Card>
-          <div className="lp-health-card-title"><CalendarClock size={17} /> Reminders <button type="button">+ Add</button></div>
-          <div className="lp-health-reminder"><CalendarClock size={17} /><span><b>Annual health checkup</b><small>in 70 days</small></span></div>
-        </Card>
-        <Card>
-          <div className="lp-health-card-title"><HeartPulse size={17} /> Medical readiness <button type="button">Edit</button></div>
-          <strong className="lp-health-ready">83%</strong>
-          <span className="lp-health-ready-copy">document completeness, not a health score</span>
-        </Card>
-      </div>
+      ) : null}
+      {loading ? <Card>Loading health records...</Card> : null}
+      {!loading && selectedMember && activeTab === "Overview" ? (
+        <Overview
+          onReminder={() => setHealthDialog("reminder")}
+          onEdit={() => setHealthDialog("profile")}
+          onVisit={() => setHealthDialog("visit")}
+          overview={overview}
+          records={records}
+          onTrack={() => setActiveTab("Trends")}
+        />
+      ) : null}
+      {!loading && selectedMember && activeTab === "Trends" ? (
+        <Trends
+          tracked={tracked}
+          available={availableMetrics}
+          search={search}
+          onSearch={setSearch}
+          onTrack={trackMetric}
+          onUntrack={untrackMetric}
+        />
+      ) : null}
+      {!loading && selectedMember && activeTab === "Timeline" ? (
+        <Timeline events={timeline} />
+      ) : null}
+      {!loading && selectedMember && activeTab === "Medications" ? (
+        <MedicationSummary events={timeline} />
+      ) : null}
+      {!loading && selectedMember && activeTab === "Records" ? (
+        <Records
+          records={records}
+          selectedRecordId={selectedRecordId}
+          onAdd={() => setShowAddRecord(true)}
+          onSelect={(recordId) => void openHealthRecord(recordId)}
+          onDelete={setDeleteRecord}
+        />
+      ) : null}
+      {isRecordModalOpen ? (
+        <RecordDetailModal
+          record={
+            selectedRecord?.id === selectedRecordId ? selectedRecord : null
+          }
+          tracked={tracked}
+          onClose={() => setIsRecordModalOpen(false)}
+          onViewOriginal={viewOriginalDocument}
+          onToggleMetric={toggleRecordMetric}
+        />
+      ) : null}
+      {healthDialog && selectedMember ? (
+        <HealthDialog
+          kind={healthDialog}
+          member={selectedMember}
+          records={records}
+          onClose={() => setHealthDialog(null)}
+          onSaved={async () => {
+            await refreshMembers();
+            await refreshHealth(selectedMember.id);
+          }}
+          onUpload={() => {
+            setHealthDialog(null);
+            setShowAddRecord(true);
+          }}
+          onViewDocument={viewOriginalDocument}
+        />
+      ) : null}
+      {showAddRecord ? (
+        <AddRecordDialog
+          onClose={() => setShowAddRecord(false)}
+          onCreate={createRecord}
+        />
+      ) : null}
+      {showAddMember ? (
+        <AddMemberDialog
+          initial={memberPrefill}
+          onClose={() => setShowAddMember(false)}
+          onCreate={createMember}
+        />
+      ) : null}
+      {processedRecord ? (
+        <MeasurementSelectionDialog
+          record={processedRecord}
+          tracked={tracked}
+          onSkip={async () => {
+            setProcessedRecord(null);
+            setSelectedRecord(await api.health.record(processedRecord.id));
+            setMessage("Health record saved.");
+          }}
+          onSave={async (metrics) => {
+            await trackMetrics(metrics, processedRecord.id);
+            setProcessedRecord(null);
+            setMessage("Tracking preferences saved.");
+          }}
+        />
+      ) : null}
+      {deleteRecord ? (
+        <DeleteRecordDialog
+          onClose={() => setDeleteRecord(null)}
+          onConfirm={() => removeRecord(deleteRecord.id)}
+        />
+      ) : null}
+      {memberResolution ? (
+        <MemberResolutionDialog
+          resolution={memberResolution}
+          members={members}
+          onClose={() => setMemberResolution(null)}
+          onCreateProfile={() => {
+            setMemberPrefill({
+              name: memberResolution.patient?.name ?? "",
+              dateOfBirth: memberResolution.patient?.dateOfBirth ?? null,
+            });
+            setShowAddMember(true);
+          }}
+          onConfirm={confirmMemberResolution}
+        />
+      ) : null}
     </div>
   );
 }
