@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 import Card from "@/components/Card";
 import { api, type TrustInvitation } from "@/lib/api";
-import { btnGhost, btnGold, T } from "@/constants/theme";
+import { btnGhost, btnPrimary, T } from "@/constants/theme";
 
 export default function InvitePage() {
   const { token = "" } = useParams();
@@ -71,7 +71,7 @@ export default function InvitePage() {
   return (
     <Card style={{ maxWidth: 520, margin: "72px auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <ShieldCheck color={T.gold} size={20} />
+        <ShieldCheck color={T.action} size={20} />
         <h1 style={{ color: T.white, fontSize: 24, margin: 0 }}>Readiness Invitation</h1>
       </div>
 
@@ -108,11 +108,11 @@ export default function InvitePage() {
               type="button"
               disabled={working || (accepting && pin.length !== 6)}
               onClick={() => accepting ? void accept() : setAccepting(true)}
-              style={{ ...btnGold, justifyContent: "center", flex: 1 }}
+              style={{ ...btnPrimary, justifyContent: "center", flex: 1 }}
             >
               <Check size={16} /> Accept
             </button>
-            <button type="button" disabled={working} onClick={() => void reject()} style={{ ...btnGhost, color: T.coral, borderColor: `${T.coral}55`, justifyContent: "center", flex: 1 }}>
+            <button type="button" disabled={working} onClick={() => void reject()} style={{ ...btnGhost, color: T.coral, borderColor: T.coralBorder, justifyContent: "center", flex: 1 }}>
               <X size={16} /> Reject
             </button>
           </div>

@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import type {
   HealthAvailableMetric,
+  HealthMeasurement,
   HealthMember,
   HealthMemberResolution,
   HealthOverview,
@@ -23,6 +24,7 @@ export function useHealthData() {
   const [overview, setOverview] = useState<HealthOverview | null>(null);
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [timeline, setTimeline] = useState<HealthTimelineEvent[]>([]);
+  const [measurements, setMeasurements] = useState<HealthMeasurement[]>([]);
   const [selectedRecord, setSelectedRecord] =
     useState<HealthRecordDetail | null>(null);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
@@ -77,22 +79,25 @@ export function useHealthData() {
     setOverview(null);
     setRecords([]);
     setTimeline([]);
+    setMeasurements([]);
     setSelectedRecord(null);
     setSelectedRecordId(null);
     setIsRecordModalOpen(false);
     setMessage("");
     try {
-      const [nextOverview, nextRecords, nextTimeline, nextMetrics] =
+      const [nextOverview, nextRecords, nextTimeline, nextMetrics, nextMeasurements] =
         await Promise.all([
           api.health.overview(memberId),
           api.health.records(memberId),
           api.health.timeline(memberId),
           api.health.availableMetrics(memberId, search),
+          api.health.measurements(memberId),
         ]);
       setOverview(nextOverview);
       setRecords(nextRecords);
       setTimeline(nextTimeline);
       setAvailableMetrics(nextMetrics);
+      setMeasurements(nextMeasurements);
       if (nextRecords[0]) {
         setSelectedRecordId(nextRecords[0].id);
         setSelectedRecord(await api.health.record(nextRecords[0].id));
@@ -141,6 +146,8 @@ export function useHealthData() {
     setRecords,
     timeline,
     setTimeline,
+    measurements,
+    setMeasurements,
     selectedRecord,
     setSelectedRecord,
     selectedRecordId,

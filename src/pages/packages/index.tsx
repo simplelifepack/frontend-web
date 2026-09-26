@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Card from "@/components/Card";
 import Ring from "@/components/Ring";
 import SectionHead from "@/components/SectionHead";
-import { btnGold, T } from "@/constants/theme";
+import { btnPrimary, T } from "@/constants/theme";
 import { api } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { makeSelectPackageReadiness, selectCataloguePackageCards, selectPackageCards } from "@/readiness/selectors";

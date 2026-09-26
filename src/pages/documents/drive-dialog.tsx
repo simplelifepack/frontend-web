@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Check, Cloud, X } from "lucide-react";
 
-import { btnGhost, btnGold, T } from "@/constants/theme";
+import { btnGhost, btnPrimary, T } from "@/constants/theme";
 import { api, type DriveStatus } from "@/lib/api";
 import { useGoogleOAuthPopup, type OAuthPopupMessage } from "@/lib/oauth-popup";
 
@@ -146,8 +146,8 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
         </div>
         {!status.connected ? (
           <div style={{ padding: 16, background: T.raised, borderRadius: 12 }}>
-            <div style={{ display: "flex", gap: 12 }}><Cloud color={T.gold} /><div><b style={{ color: T.white }}>Google Drive is not connected</b><p style={{ color: T.text, fontSize: 13, lineHeight: 1.6 }}>Readiness requests only Drive read-only access, searches only for PDFs, and stores metadata—not PDF copies.</p></div></div>
-            <button style={{ ...btnGold, marginTop: 14 }} disabled={Boolean(busy)} onClick={() => void connect()}>{busy === "connect" ? "Opening Google…" : "Connect Google Drive"}</button>
+            <div style={{ display: "flex", gap: 12 }}><Cloud color={T.action} /><div><b style={{ color: T.white }}>Google Drive is not connected</b><p style={{ color: T.text, fontSize: 13, lineHeight: 1.6 }}>Readiness requests only Drive read-only access, searches only for PDFs, and stores metadata—not PDF copies.</p></div></div>
+            <button style={{ ...btnPrimary, marginTop: 14 }} disabled={Boolean(busy)} onClick={() => void connect()}>{busy === "connect" ? "Opening Google…" : "Connect Google Drive"}</button>
           </div>
         ) : (
           <div style={{ padding: 16, background: T.raised, borderRadius: 12 }}>
@@ -156,9 +156,9 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
               <div style={{ color: T.muted, fontSize: 12 }}>Last Scan<br /><b style={{ color: T.white }}>{status.lastScannedAt ? new Date(status.lastScannedAt).toLocaleString() : "Never"}</b></div>
               <div style={{ color: T.muted, fontSize: 12 }}>PDFs Indexed<br /><b style={{ color: T.white }}>{status.indexedCount}</b></div>
             </div>
-            {status.scanning ? <div style={{ marginTop: 18 }}><div style={{ color: T.gold, fontWeight: 700 }}>{status.phase || "Loading..."}</div><div style={{ color: T.white, marginTop: 6 }}>{status.processed} / {status.total} PDFs</div><progress max={Math.max(status.total, 1)} value={status.processed} style={{ width: "100%", marginTop: 8 }} /></div> : null}
+            {status.scanning ? <div style={{ marginTop: 18 }}><div style={{ color: T.action, fontWeight: 700 }}>{status.phase || "Loading..."}</div><div style={{ color: T.white, marginTop: 6 }}>{status.processed} / {status.total} PDFs</div><progress max={Math.max(status.total, 1)} value={status.processed} style={{ width: "100%", marginTop: 8 }} /></div> : null}
             <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 18 }}>
-              <button style={btnGold} disabled={Boolean(busy) || status.scanning} onClick={() => void scan(false)}>Scan Now</button>
+              <button style={btnPrimary} disabled={Boolean(busy) || status.scanning} onClick={() => void scan(false)}>Scan Now</button>
               <button style={btnGhost} disabled={Boolean(busy) || status.scanning} onClick={() => void scan(true)}>Full Rescan</button>
               <button style={btnGhost} disabled={Boolean(busy) || status.scanning} onClick={() => void disconnect()}>Disconnect</button>
             </div>

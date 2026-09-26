@@ -3,7 +3,6 @@ import {
   HeartPulse,
   LayoutGrid,
   Plane,
-  ShieldCheck,
   Wallet,
 } from "lucide-react";
 
@@ -26,7 +25,6 @@ export const SHELL_NAV = [
   { key: "packages", label: "Packages", icon: Plane },
   { key: "health", label: "Health", icon: HeartPulse },
   { key: "wealth", label: "Wealth", icon: Wallet },
-  { key: "trust", label: "Trust center", icon: ShieldCheck },
 ] as const;
 
 export function routeFromPath(pathname: string): WorkspaceRoute {

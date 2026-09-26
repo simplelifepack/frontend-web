@@ -19,23 +19,11 @@ import Card from "@/components/Card";
 import Ring from "@/components/Ring";
 import SectionHead from "@/components/SectionHead";
 import { A, btnGhost, T } from "@/constants/theme";
-import { api, type DocumentRecord } from "@/lib/api";
+import { api, type DocumentRecord, type WealthRecord } from "@/lib/api";
 import type { HealthHomeReminder } from "@/lib/api.types";
+import { expiryValue } from "@/pages/documents/document-utils";
 import { useAppSelector } from "@/store/hooks";
-
-function fieldValue(document: DocumentRecord, keys: string[]) {
-  if (!document.fields || typeof document.fields !== "object") return undefined;
-  const fields = document.fields as Record<string, unknown>;
-  for (const key of keys) {
-    const value = fields[key];
-    if (typeof value === "string" && value) return value;
-  }
-  return undefined;
-}
-
-function daysUntil(value: string) {
-  return Math.ceil((new Date(value).getTime() - Date.now()) / 86_400_000);
-}
+import { documentAttention, healthAttention, daysUntil, medicationAttention, wealthAttention, type HealthMedicationAttention } from "./attention";
 
 function greeting() {
   const hour = new Date().getHours();
@@ -44,29 +32,25 @@ function greeting() {
   return "Good evening";
 }
 
-function reminderWhen(value: string | null) {
-  if (!value) return "upcoming";
-  const days = daysUntil(value);
-  if (days <= 0) return days < 0 ? `${Math.abs(days)}d overdue` : "today";
-  return `in ${days} day${days === 1 ? "" : "s"}`;
-}
-
-type ActionItem = {
-  id: string;
-  label: string;
-  when: string;
-  tone: string;
-};
-
 export default function HomePage() {
   const navigate = useNavigate();
   const { items: documents, documentCount } = useAppSelector((state) => state.documents);
   const user = useAppSelector((state) => state.auth.user);
   const [healthReminders, setHealthReminders] = useState<HealthHomeReminder[]>([]);
+  const [healthMedications, setHealthMedications] = useState<HealthMedicationAttention[]>([]);
+  const [wealthRecords, setWealthRecords] = useState<WealthRecord[]>([]);
 
   useEffect(() => {
     let active = true;
     void api.health.reminders().then((reminders) => { if (active) setHealthReminders(reminders); }).catch(() => { if (active) setHealthReminders([]); });
+    void api.health.members().then(async (members) => {
+      const timelines = await Promise.all(members.map(async (member) => {
+        const events = await api.health.timeline(member.id);
+        return events.map((event) => ({ ...event, memberId: member.id, memberName: member.name }));
+      }));
+      if (active) setHealthMedications(timelines.flat());
+    }).catch(() => { if (active) setHealthMedications([]); });
+    void api.wealth.records().then((records) => { if (active) setWealthRecords(records); }).catch(() => { if (active) setWealthRecords([]); });
     return () => { active = false; };
   }, []);
 
@@ -75,14 +59,7 @@ export default function HomePage() {
     () =>
       documents
         .map((document) => {
-          const expiry = fieldValue(document, [
-            "dateOfExpiry",
-            "validTill",
-            "validUpto",
-            "tripEndDate",
-            "maturityDate",
-            "dueDate",
-          ]);
+          const expiry = expiryValue(document);
           return expiry ? { document, days: daysUntil(expiry) } : null;
         })
         .filter((item): item is { document: DocumentRecord; days: number } => Boolean(item))
@@ -94,27 +71,20 @@ export default function HomePage() {
     () => documents.filter((document) => document.documentType === "Unknown"),
     [documents],
   );
+  const attentionItems = useMemo(() => [
+    ...documentAttention(documents),
+    ...healthAttention(healthReminders),
+    ...medicationAttention(healthMedications),
+    ...wealthAttention(wealthRecords),
+  ], [documents, healthMedications, healthReminders, wealthRecords]);
   const readiness = documentCount
     ? Math.round(((documentCount - unknown.length) / documentCount) * 100)
     : 0;
-  const documentActions: ActionItem[] = expiring.map(({ document, days }) => ({
-    id: document.id,
-    label: document.displayName || document.title || document.documentType,
-    when: days < 0 ? "expired" : `${days}d left`,
-    tone: days < 0 ? T.coral : T.gold,
-  }));
-  const reviewActions: ActionItem[] = unknown.map((document) => ({
-    id: document.id,
-    label: `${document.displayName || document.originalName || "Document"} · needs classification`,
-    when: "review",
-    tone: T.gold,
-  }));
-  const actions = [...documentActions, ...reviewActions];
   const stats = [
     { label: "Documents", value: documentCount, icon: FolderOpen, color: A.blue, route: "/documents" },
     { label: "Overall readiness", value: `${readiness}%`, icon: ShieldCheck, color: A.green, route: "/packages" },
-    { label: "Expiring < 60d", value: expiring.length, icon: Clock, color: A.gold, route: "/documents" },
-    { label: "Needs attention", value: actions.length + healthReminders.length, icon: Bell, color: A.pink, route: healthReminders.length ? "/health" : "/documents" },
+    { label: "Expiring < 60d", value: expiring.length, icon: Clock, color: T.warning, route: "/documents" },
+    { label: "Needs attention", value: attentionItems.length, icon: Bell, color: A.pink, route: attentionItems[0]?.route ?? "/documents" },
   ];
   const insights = [
     {
@@ -129,7 +99,7 @@ export default function HomePage() {
         ? `${expiring.length} record${expiring.length === 1 ? "" : "s"} need renewal attention before they affect a life-event pack.`
         : "No saved documents currently expire within the next 60 days.",
       route: "/wealth",
-      tone: expiring.length ? T.gold : T.mint,
+      tone: expiring.length ? T.warning : T.mint,
     },
     {
       icons: [Users, HeartPulse],
@@ -163,28 +133,23 @@ export default function HomePage() {
       <div className="lp-cols2">
         <Card style={{ padding: 0, overflow: "hidden" }}>
           <div className="lp-action-title">
-            <AlertTriangle size={16} color={actions.length ? T.gold : T.mint} />
+            <AlertTriangle size={16} color={attentionItems.length ? T.warning : T.mint} />
             <b>Action center</b>
-            <span>{actions.length + healthReminders.length || "all clear"}</span>
+            <span>{attentionItems.length || "all clear"}</span>
           </div>
-          <button type="button" className="lp-action-group" onClick={() => navigate("/documents")}>
-            <FolderOpen size={14} color={A.blue} />
-            <strong>Documents</strong>
-            <span>{actions.length}</span>
-            <ChevronRight size={14} />
-          </button>
-          {actions.length ? (
-            actions.slice(0, 8).map((action) => (
+          {attentionItems.length ? (
+            attentionItems.slice(0, 10).map((action) => (
               <button
                 type="button"
                 className="lp-action-row"
                 key={action.id}
-                onClick={() => navigate(`/documents?search=${encodeURIComponent(action.label)}`)}
+                onClick={() => navigate(action.route)}
               >
                 <i style={{ background: action.tone }} />
+                <em>{action.module}</em>
                 <span>{action.label}</span>
-                <time style={{ color: action.tone }}>{action.when}</time>
-                <CheckCircle2 size={16} color={T.mint} />
+                <time style={{ color: action.tone }}>{action.detail}</time>
+                <ChevronRight size={16} color={T.faint} />
               </button>
             ))
           ) : (
@@ -193,30 +158,16 @@ export default function HomePage() {
               <span>Nothing pressing across your documents. Nicely handled.</span>
             </div>
           )}
-          <button type="button" className="lp-action-group" onClick={() => navigate("/health")}>
-            <HeartPulse size={14} color={A.pink} />
-            <strong>Health</strong>
-            <span>{healthReminders.length}</span>
-            <ChevronRight size={14} />
-          </button>
-          {healthReminders.map((reminder) => (
-            <button type="button" className="lp-action-row" key={reminder.id} onClick={() => navigate("/health")}>
-              <i style={{ background: A.pink }} />
-              <span>{reminder.title}{reminder.memberName ? ` · ${reminder.memberName}` : ""}</span>
-              <time style={{ color: A.pink }}>{reminderWhen(reminder.dueDate)}</time>
-              <ChevronRight size={16} color={T.faint} />
-            </button>
-          ))}
-          {actions.length > 8 ? (
+          {attentionItems.length > 10 ? (
             <button type="button" className="lp-action-more" onClick={() => navigate("/documents")}>
-              +{actions.length - 8} more in Documents
+              +{attentionItems.length - 10} more across Readiness
             </button>
           ) : null}
         </Card>
 
         <Card>
           <div className="lp-insight-title">
-            <ShieldCheck size={16} color={T.gold} />
+            <ShieldCheck size={16} color={T.readiness} />
             <b>Connected across Readiness</b>
           </div>
           <p className="lp-insight-copy">What your modules mean together, not what they already show apart.</p>

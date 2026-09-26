@@ -8,11 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/lib/api";
-import type {
-  HealthMember,
-  HealthRecord,
-  HealthRecordDetail,
-} from "@/lib/api.types";
+import type { HealthMember, HealthRecord, HealthRecordDetail } from "@/lib/api.types";
 import HealthPage from "./index";
 
 vi.mock("@/lib/api", () => ({
@@ -23,7 +19,9 @@ vi.mock("@/lib/api", () => ({
       records: vi.fn(),
       record: vi.fn(),
       timeline: vi.fn(),
+      measurements: vi.fn(),
       availableMetrics: vi.fn(),
+      createMedication: vi.fn(),
     },
     documents: { download: vi.fn() },
   },
@@ -89,6 +87,16 @@ const details: Record<string, HealthRecordDetail> = Object.fromEntries(
     },
   ]),
 );
+const manualMedication = {
+  id: "medication-manual",
+  memberId: "member-a",
+  name: "Metformin",
+  dose: "500 mg",
+  frequency: "Twice daily",
+  repeats: true,
+  runsOutAt: "2026-10-25",
+  createdAt: "2026-09-25",
+};
 
 afterEach(() => {
   cleanup();
@@ -111,6 +119,7 @@ describe("Health page orchestration", () => {
       async (recordId) => details[recordId],
     );
     vi.mocked(api.health.timeline).mockResolvedValue([]);
+    vi.mocked(api.health.measurements).mockResolvedValue([]);
     vi.mocked(api.health.availableMetrics).mockResolvedValue([]);
 
     render(<HealthPage />);
@@ -192,7 +201,9 @@ describe("Health page orchestration", () => {
         sourceType: "prescription",
       },
     ]);
+    vi.mocked(api.health.measurements).mockResolvedValue([]);
     vi.mocked(api.health.availableMetrics).mockResolvedValue([]);
+    vi.mocked(api.health.createMedication).mockResolvedValue(manualMedication);
 
     render(<HealthPage />);
     await screen.findByRole("heading", { name: "Alex Example" });
@@ -200,6 +211,27 @@ describe("Health page orchestration", () => {
     expect(await screen.findByText("Test reading 118 mg/dL")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Medications" }));
     expect(await screen.findByText("Test medication")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Add medication" }));
+    const medicationDialog = await screen.findByRole("dialog", { name: "Add medication" });
+    fireEvent.click(within(medicationDialog).getByRole("button", { name: "Add medication" }));
+    expect(await within(medicationDialog).findByText("Name and dose are required.")).toBeTruthy();
+    fireEvent.change(within(medicationDialog).getByLabelText("Name"), { target: { value: "Metformin" } });
+    fireEvent.change(within(medicationDialog).getByLabelText("Dose"), { target: { value: "500 mg" } });
+    fireEvent.change(within(medicationDialog).getByLabelText("Every"), { target: { value: "2" } });
+    fireEvent.change(within(medicationDialog).getByLabelText("Frequency unit"), { target: { value: "years" } });
+    fireEvent.change(within(medicationDialog).getByLabelText("Runs out"), { target: { value: "2026-10-25" } });
+    fireEvent.click(within(medicationDialog).getByLabelText("Repeats / ongoing"));
+    fireEvent.click(within(medicationDialog).getByRole("button", { name: "Add medication" }));
+    await waitFor(() =>
+      expect(api.health.createMedication).toHaveBeenCalledWith("member-a", {
+        name: "Metformin",
+        dose: "500 mg",
+        frequency: "Every 2 years",
+        repeats: true,
+        runsOutAt: "2026-10-25",
+      }),
+    );
+    expect(api.health.timeline).toHaveBeenCalledTimes(2);
 
     fireEvent.click(screen.getByRole("button", { name: "Emergency card" }));
     expect(

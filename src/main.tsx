@@ -7,7 +7,10 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import App from "./App";
 import { Toaster } from "./components/ui/sonner";
 import { store } from "./store";
+import { applyTheme, getStoredTheme } from "./lib/theme";
 import "./styles.css";
+
+applyTheme(getStoredTheme());
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
 const googleScriptErrorEvent = "readiness:google-script-error";

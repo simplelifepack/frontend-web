@@ -39,42 +39,41 @@ export default function ForgotPasswordPage() {
   return (
     <div className="mx-auto max-w-md">
       <div className="lg:hidden"><BrandLogo height={64} /></div>
-      <h2 className="mt-4 text-3xl font-semibold text-white">Forgot password</h2>
-      <p className="mt-2 text-sm text-slate-400">
+      <h2 className="mt-4 text-3xl font-semibold text-[var(--lp-heading)]">Forgot password</h2>
+      <p className="mt-2 text-sm text-[var(--lp-muted)]">
         Enter your email and we will send reset instructions if the account exists.
       </p>
 
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <label className="block">
-          <span className="mb-2 block text-sm text-slate-300">Email</span>
+          <span className="mb-2 block text-sm text-[var(--lp-text)]">Email</span>
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300"
+            className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
             placeholder="you@example.com"
             required
           />
         </label>
 
-        {error ? <p className="text-sm text-rose-400">{error}</p> : null}
-        {successMessage ? <p className="text-sm text-emerald-400">{successMessage}</p> : null}
+        {error ? <p className="text-sm text-[var(--lp-coral)]">{error}</p> : null}
+        {successMessage ? <p className="text-sm text-[var(--lp-mint)]">{successMessage}</p> : null}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-2xl bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
+          className="w-full rounded-2xl bg-[var(--lp-action)] px-4 py-3 text-sm font-semibold text-[var(--lp-action-text)] transition hover:bg-[var(--lp-action-hover)] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </form>
 
       <div className="mt-6 text-sm">
-        <button type="button" onClick={() => navigate("/recover")}>Use recovery key</button>
         <button
           type="button"
-          onClick={() => navigate("/login")}
-          className="text-slate-300 transition hover:text-white"
+          onClick={() => navigate("/", { state: { authMode: "signin" } })}
+          className="text-[var(--lp-text)] transition hover:text-[var(--lp-heading)]"
         >
           Go to login
         </button>

@@ -240,7 +240,7 @@ export type HealthRecord = {
 
 export type HealthRecordDetail = HealthRecord & {
   measurements: HealthMeasurement[];
-  medications: Array<{ id: string; name: string; dose?: string | null; frequency?: string | null; duration?: string | null; quantity?: string | null }>;
+  medications: Array<{ id: string; name: string; dose?: string | null; frequency?: string | null; duration?: string | null; quantity?: string | null; repeats?: boolean; runsOutAt?: string | null }>;
   followUps: Array<{ id: string; title: string; dueDate?: string | null; explicitDate?: string | null; sourceText?: string | null }>;
   reminders: Array<{ id: string; title: string; dueDate: string | null; origin: string; status: string }>;
 };
@@ -249,6 +249,7 @@ export type HealthHomeReminder = {
   id: string;
   title: string;
   dueDate: string | null;
+  memberId?: string;
   memberName: string;
   origin: string;
 };
@@ -298,7 +299,7 @@ export type HealthOverview = {
 export type HealthTimelineEvent = {
   id: string;
   eventType: "measurement" | "medication";
-  recordId: string;
+  recordId?: string | null;
   occurredAt: string | null;
   title: string;
   value?: number;
@@ -307,6 +308,19 @@ export type HealthTimelineEvent = {
   detail?: string | null;
   source: string;
   sourceType: string;
+};
+
+export type HealthMedication = {
+  id: string;
+  memberId: string;
+  name: string;
+  dose?: string | null;
+  frequency?: string | null;
+  duration?: string | null;
+  quantity?: string | null;
+  repeats: boolean;
+  runsOutAt?: string | null;
+  createdAt: string;
 };
 
 export type SaveDocumentPayload = {
@@ -472,7 +486,7 @@ export type TrustMemberPayload = {
   dateOfBirth: string;
   bloodGroup: "A+" | "A-" | "B+" | "B-" | "O+" | "O-" | "AB+" | "AB-";
   accessTypeCode: "VIEW_ONLY" | "FAMILY_MEMBER" | "EMERGENCY_ACCESS";
-  pin: string;
+  pin?: string;
   permissions: TrustPermission[];
 };
 
@@ -509,6 +523,9 @@ export type WealthHandoffRecipient = {
   name: string;
   email: string;
   relationship: string;
+  accessType: "VIEW_ONLY" | "FAMILY_MEMBER" | "EMERGENCY_ACCESS";
+  accessTypeLabel: string;
+  canReceiveHandoff: boolean;
   verificationStatus: "verified";
   type: "family" | "emergency" | "other";
 };
@@ -518,7 +535,7 @@ export type WealthRecordType = "ASSET" | "LOAN_TAKEN" | "LOAN_GIVEN" | "INSURANC
 export type WealthRecordPayload = {
   type: WealthRecordType;
   title: string;
-  details: Record<string, string | number | boolean | null>;
+  details: Record<string, string | number | boolean | null | string[]>;
   notes?: string;
   followUpDate?: string | null;
   followUpNote?: string;
@@ -597,6 +614,7 @@ export type WealthHandoffSummary = {
   recipients: {
     family: WealthHandoffRecipient[];
     emergency: WealthHandoffRecipient[];
+    other?: WealthHandoffRecipient[];
   };
   handoffTypes: Array<{
     type: "family" | "emergency";
@@ -623,7 +641,6 @@ export type WealthHandoffSendResponse = {
 export type BootstrapResponse = Partial<AccountUsage> & {
   user: AuthUser;
   documentCount: number;
-  recoverySetupComplete: boolean;
   version: string;
 };
 

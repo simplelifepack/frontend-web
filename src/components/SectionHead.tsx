@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { btnGold, T } from "@/constants/theme";
+import { btnPrimary, T } from "@/constants/theme";
 
 type SectionHeadProps = {
   title: string;
@@ -19,7 +19,8 @@ export default function SectionHead({ title, sub, action }: SectionHeadProps) {
         <h2
           style={{
             color: T.white,
-            fontFamily: "Inter, system-ui, sans-serif",
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
             fontSize: 26,
             fontWeight: 800,
             lineHeight: 1.2,
@@ -34,7 +35,7 @@ export default function SectionHead({ title, sub, action }: SectionHeadProps) {
         </p>
       </div>
 
-      {action === undefined ? <button type="button" onClick={openUpload} style={btnGold}>Upload</button> : action}
+      {action === undefined ? <button type="button" onClick={openUpload} style={btnPrimary}>Upload</button> : action}
     </div>
   );
 }

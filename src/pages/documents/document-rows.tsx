@@ -17,6 +17,7 @@ import {
   sourceLabel,
 } from "./document-utils";
 import DocumentContextPanel from "./document-context-panel";
+import DocumentBulkActions from "./document-bulk-actions";
 
 type DocumentRowsProps = {
   documents: DocumentRecord[];
@@ -39,6 +40,7 @@ export default function DocumentRows({
     : "26px minmax(280px,2fr) minmax(120px,.9fr) minmax(100px,.75fr) 88px 88px 20px";
   const allSelected =
     documents.length > 0 && selected.size === documents.length;
+  const selectedDocuments = documents.filter((doc) => selected.has(doc.id));
 
   const toggleAll = () => {
     setSelected(
@@ -53,6 +55,7 @@ export default function DocumentRows({
 
   return (
     <>
+      <DocumentBulkActions documents={selectedDocuments} onDeleted={() => setSelected(new Set())} />
       <Card
         className="lp-document-table"
         style={{ padding: 0, overflowX: "auto" }}

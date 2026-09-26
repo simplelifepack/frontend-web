@@ -180,9 +180,6 @@ export default function PackDetail({
                       {menuOpen ? (
                         <div className="lp-pack-add-menu">
                           <button type="button" onClick={onUpload}>
-                            <Upload size={14} /> Upload document
-                          </button>
-                          <button type="button" onClick={onUpload}>
                             <FolderOpen size={14} /> Add document
                           </button>
                         </div>

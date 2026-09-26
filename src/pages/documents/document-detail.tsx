@@ -1,10 +1,13 @@
-import { Download, ExternalLink } from "lucide-react";
+import { Download, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Card from "@/components/Card";
 import Pill from "@/components/Pill";
-import { btnGhost, btnGold, T } from "@/constants/theme";
-import { api, type DocumentRecord } from "@/lib/api";
+import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import type { DocumentRecord } from "@/lib/api";
+import { useAppDispatch } from "@/store/hooks";
+import { deleteDocument } from "@/store/slices/documentsSlice";
 import {
   documentTitle,
   fieldsObject,
@@ -13,10 +16,13 @@ import {
   safeCategory,
   sourceLabel,
 } from "./document-utils";
+import { confirmDeleteDocuments, downloadDocuments } from "./document-actions";
 import FilePreview from "./file-preview";
 
 export default function DocumentDetail({ doc }: { doc: DocumentRecord }) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const [busy, setBusy] = useState<"download" | "delete" | null>(null);
   const category = safeCategory(doc.category);
   const fields = fieldsObject(doc);
   const rawExtractedText =
@@ -30,19 +36,16 @@ export default function DocumentDetail({ doc }: { doc: DocumentRecord }) {
     : [];
   const approvedFields = reviewFields(doc);
   const downloadDocument = async () => {
-    if (doc.source === "GOOGLE_DRIVE" && doc.openUrl) {
-      window.open(doc.openUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-    const { blob, fileName } = await api.documents.download(doc.id);
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    setBusy("download");
+    try { await downloadDocuments([doc]); } finally { setBusy(null); }
+  };
+  const removeDocument = async () => {
+    if (!confirmDeleteDocuments(1)) return;
+    setBusy("delete");
+    try {
+      await dispatch(deleteDocument(doc.id)).unwrap();
+      navigate("/documents", { replace: true });
+    } finally { setBusy(null); }
   };
 
   return (
@@ -57,19 +60,19 @@ export default function DocumentDetail({ doc }: { doc: DocumentRecord }) {
       >
         <button
           type="button"
-          onClick={() => navigate(`/documents/${category}`)}
+          onClick={() => navigate("/documents")}
           style={{ ...btnGhost, padding: "8px 12px" }}
         >
-          Documents / {labelize(category)}
+          Documents
         </button>
-        <button
-          type="button"
-          onClick={() => void downloadDocument()}
-          style={{ ...btnGold, textDecoration: "none" }}
-        >
-          {doc.source === "GOOGLE_DRIVE" ? <ExternalLink size={15} /> : <Download size={15} />}
-          {doc.source === "GOOGLE_DRIVE" ? "Open in Google Drive" : "Download"}
-        </button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <button type="button" disabled={Boolean(busy)} onClick={() => void downloadDocument()} style={{ ...btnPrimary, textDecoration: "none" }}>
+            <Download size={15} /> {busy === "download" ? "Downloading..." : "Download"}
+          </button>
+          <button type="button" disabled={Boolean(busy)} onClick={() => void removeDocument()} style={btnGhost}>
+            <Trash2 size={15} /> {busy === "delete" ? "Deleting..." : "Delete"}
+          </button>
+        </div>
       </div>
 
       <Card>

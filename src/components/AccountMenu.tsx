@@ -50,7 +50,7 @@ export default function AccountMenu({ user }: { user: AuthUser | null }) {
     setOpen(false);
     await api.auth.logout().catch(() => undefined);
     dispatch(logout());
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
   };
 
   return (

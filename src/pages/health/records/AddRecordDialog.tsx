@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type DragEvent } from "react";
 import { FileText, Upload, X } from "lucide-react";
-import { btnGhost, btnGold } from "@/constants/theme";
+import { btnGhost, btnPrimary } from "@/constants/theme";
 import { isSupportedHealthFile } from "../healthUtils";
 import type { HealthDocumentType } from "../types/health";
 
@@ -171,7 +171,7 @@ function AddRecordDialog({
           </button>
           <button
             type="button"
-            style={btnGold}
+            style={btnPrimary}
             disabled={!file || !type || processing}
             onClick={process}
           >

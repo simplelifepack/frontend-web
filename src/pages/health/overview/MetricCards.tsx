@@ -6,10 +6,15 @@ import { documentTypeLabels, formatDate } from "../healthUtils";
 import { measurementStatus } from "./measurementStatus";
 const MiniChart = MeasurementChart;
 
+export type MetricCardMetric = Pick<
+  HealthOverview["trackedMetrics"][number],
+  "id" | "displayName" | "measurements" | "latest"
+>;
+
 function MetricCards({
   tracked,
 }: {
-  tracked: HealthOverview["trackedMetrics"];
+  tracked: MetricCardMetric[];
 }) {
   return (
     <div className="lp-health-vitals">

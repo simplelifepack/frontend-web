@@ -9,14 +9,15 @@ type RingProps = {
 export default function Ring({ score, size = 64, color }: RingProps) {
   const stroke = size > 52 ? 6 : 5;
   const radius = (size - stroke * 2) / 2 - 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeColor = color ?? (score >= 100 ? T.mint : score >= 70 ? T.gold : T.coral);
+  const value = Number.isFinite(score) ? Math.min(100, Math.max(0, Math.round(score))) : 0;
+  const strokeColor = color ?? (value >= 100 ? T.mint : value >= 70 ? T.readiness : T.coral);
   const center = size / 2;
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <circle cx={center} cy={center} r={radius} fill="none" stroke={T.border} strokeWidth={stroke} />
       <circle
+        data-testid="readiness-ring-progress"
         cx={center}
         cy={center}
         r={radius}
@@ -24,8 +25,8 @@ export default function Ring({ score, size = 64, color }: RingProps) {
         stroke={strokeColor}
         strokeWidth={stroke}
         strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={circumference * (1 - score / 100)}
+        pathLength="100"
+        strokeDasharray={`${value} 100`}
         transform={`rotate(-90 ${center} ${center})`}
       />
       <text
@@ -37,7 +38,7 @@ export default function Ring({ score, size = 64, color }: RingProps) {
         fontWeight="700"
         fill={T.white}
       >
-        {score}
+        {value}
       </text>
     </svg>
   );

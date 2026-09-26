@@ -16,7 +16,6 @@ type AuthState = {
   initializationStatus: "idle" | "loading" | "succeeded" | "failed";
   initializationError: string | null;
   sessionStatus: "idle" | "loading" | "authenticated" | "anonymous";
-  recoverySetupComplete: boolean | null;
 };
 
 const initialState: AuthState = {
@@ -28,7 +27,6 @@ const initialState: AuthState = {
   initializationStatus: "idle",
   initializationError: null,
   sessionStatus: "idle",
-  recoverySetupComplete: null,
 };
 
 export const restoreSession = createAsyncThunk(
@@ -75,11 +73,7 @@ const authSlice = createSlice({
       state.initializationStatus = "idle";
       state.initializationError = null;
       state.sessionStatus = "anonymous";
-      state.recoverySetupComplete = null;
       clearInMemoryAuth();
-    },
-    recoverySetupComplete(state) {
-      state.recoverySetupComplete = true;
     },
   },
   extraReducers: (builder) => {
@@ -95,7 +89,6 @@ const authSlice = createSlice({
         setAccessToken(state.token);
         state.sessionStatus = "authenticated";
         state.initialized = false;
-        state.recoverySetupComplete = null;
       })
       .addCase(login.rejected, (state, action) => {
         state.status = "failed";
@@ -112,7 +105,6 @@ const authSlice = createSlice({
         setAccessToken(state.token);
         state.sessionStatus = "authenticated";
         state.initialized = false;
-        state.recoverySetupComplete = null;
       })
       .addCase(signup.rejected, (state, action) => {
         state.status = "failed";
@@ -129,7 +121,6 @@ const authSlice = createSlice({
         setAccessToken(state.token);
         state.sessionStatus = "authenticated";
         state.initialized = false;
-        state.recoverySetupComplete = null;
       })
       .addCase(googleLogin.rejected, (state) => {
         state.status = "failed";
@@ -148,7 +139,6 @@ const authSlice = createSlice({
         state.token = null;
         state.user = null;
         state.error = action.error.message ?? "Unable to load profile.";
-        state.recoverySetupComplete = null;
         clearInMemoryAuth();
       })
       .addCase(initializeApp.pending, (state) => {
@@ -159,7 +149,6 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.initialized = true;
         state.initializationStatus = "succeeded";
-        state.recoverySetupComplete = action.payload.recoverySetupComplete;
       })
       .addCase(initializeApp.rejected, (state, action) => {
         state.initializationStatus = "failed";
@@ -173,18 +162,16 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.sessionStatus = "authenticated";
         state.status = "succeeded";
-        state.recoverySetupComplete = null;
         setAccessToken(state.token);
       })
       .addCase(restoreSession.rejected, (state) => {
         state.token = null;
         state.user = null;
         state.sessionStatus = "anonymous";
-        state.recoverySetupComplete = null;
         clearInMemoryAuth();
       });
   },
 });
 
-export const { logout, recoverySetupComplete } = authSlice.actions;
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;

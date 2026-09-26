@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import { btnGold } from "@/constants/theme";
+import { btnPrimary } from "@/constants/theme";
 import { isoDateInput, validateDateOfBirth } from "../healthUtils";
 
 function AddMemberDialog({
@@ -158,7 +158,7 @@ function AddMemberDialog({
         <footer>
           <button
             type="button"
-            style={btnGold}
+            style={btnPrimary}
             disabled={submitting}
             onClick={submit}
           >

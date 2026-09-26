@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, Search, X } from "lucide-react";
 import type { HealthRecordDetail, TrackedHealthMetric } from "@/lib/api.types";
-import { btnGhost, btnGold } from "@/constants/theme";
+import { btnGhost, btnPrimary } from "@/constants/theme";
 import {
   filterMeasurements,
   metricIdentity,
@@ -146,7 +146,7 @@ function MeasurementSelectionDialog({
           </button>
           <button
             type="button"
-            style={btnGold}
+            style={btnPrimary}
             disabled={saving}
             onClick={save}
           >

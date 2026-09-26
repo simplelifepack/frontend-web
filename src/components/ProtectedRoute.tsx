@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializeApp } from "@/store/bootstrap";
+import { restoreSession } from "@/store/slices/authSlice";
 import BootstrapSkeleton from "./BootstrapSkeleton";
 
 export default function ProtectedRoute() {
@@ -9,6 +11,10 @@ export default function ProtectedRoute() {
   const location = useLocation();
   const { token, user, status, initialized, initializationStatus, initializationError, sessionStatus } =
     useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (sessionStatus === "idle") void dispatch(restoreSession());
+  }, [dispatch, sessionStatus]);
 
   if (sessionStatus === "idle" || sessionStatus === "loading") return <BootstrapSkeleton />;
 
@@ -28,7 +34,7 @@ export default function ProtectedRoute() {
   }
 
   if (!token || !user) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to="/" replace state={{ authMode: "signin", from: location }} />;
   }
 
   return <Outlet />;

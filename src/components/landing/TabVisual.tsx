@@ -71,7 +71,7 @@ function HealthVisual() {
 
 function ReadyVisual() {
   const rows: Array<[string, string, string]> = [
-    ["Vehicle insurance", "10d", "#D8B25A"],
+    ["Vehicle insurance", "10d", "#D98A2B"],
     ["Health insurance", "53d", "#ffffff"],
     ["Rental agreement", "expired", "#E04A4F"],
   ];

@@ -9,10 +9,10 @@ type PillProps = {
 
 export default function Pill({ children, tone }: PillProps) {
   const map: Record<Tone, { bg: string; fg: string }> = {
-    ready: { bg: "rgba(79,203,149,0.14)", fg: T.mint },
-    warn: { bg: "rgba(217,184,106,0.14)", fg: T.gold },
-    wax: { bg: "rgba(232,115,106,0.16)", fg: T.coral },
-    flat: { bg: "rgba(147,160,181,0.12)", fg: T.muted },
+    ready: { bg: "color-mix(in srgb, var(--lp-mint) 14%, transparent)", fg: T.mint },
+    warn: { bg: T.warningSoft, fg: T.warning },
+    wax: { bg: T.coralSoft, fg: T.coral },
+    flat: { bg: "color-mix(in srgb, var(--lp-muted) 12%, transparent)", fg: T.muted },
   };
 
   const colors = map[tone];

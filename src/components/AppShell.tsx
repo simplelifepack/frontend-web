@@ -6,7 +6,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { T } from "@/constants/theme";
 import { useAppSelector } from "@/store/hooks";
 import AccountMenu from "./AccountMenu";
-import RecoveryGate from "./RecoveryGate";
+import { BrandWordmark } from "./BrandLogo";
 import { ROUTE_PATHS, SHELL_NAV, routeFromPath } from "./appShellNav";
 
 const UploadDocumentModal = lazy(() => import("@/components/UploadDocumentModal"));
@@ -21,7 +21,6 @@ export default function AppShell({ children }: AppShellProps) {
   const user = useAppSelector((state) => state.auth.user);
   const currentRoute = routeFromPath(location.pathname);
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [stayAfterUpload, setStayAfterUpload] = useState(false);
   const [query, setQuery] = useState("");
   const [navOpen, setNavOpen] = useState(() =>
     typeof window === "undefined" ? true : window.innerWidth > 760,
@@ -29,8 +28,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   useEffect(() => {
     const openUpload = (event: Event) => {
-      const detail = (event as CustomEvent<{ stayOnSave?: boolean }>).detail;
-      setStayAfterUpload(Boolean(detail?.stayOnSave));
+      void event;
       setUploadOpen(true);
     };
     window.addEventListener("readiness:open-upload", openUpload);
@@ -45,11 +43,13 @@ export default function AppShell({ children }: AppShellProps) {
         minHeight: 0,
         overflow: "hidden",
         background: T.navy,
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         color: T.text,
       }}
     >
       <aside
+        className="lp-sidebar"
         style={{
           width: navOpen ? 232 : 68,
           height: "100dvh",
@@ -72,7 +72,15 @@ export default function AppShell({ children }: AppShellProps) {
             justifyContent: navOpen ? "flex-start" : "center",
           }}
         >
-          <div className="lp-shell-brand"><span><FileText size={22} /></span>{navOpen && <div><b>ReadiNes</b><small>READY FOR LIFE</small></div>}</div>
+          <div className="lp-shell-brand">
+            <span><FileText size={21} strokeWidth={2.3} /></span>
+            {navOpen && (
+              <div>
+                <BrandWordmark size={18} color="var(--lp-heading)" />
+                <small>READY FOR LIFE</small>
+              </div>
+            )}
+          </div>
         </div>
 
         <nav style={{ display: "grid", gap: 3 }}>
@@ -104,12 +112,12 @@ export default function AppShell({ children }: AppShellProps) {
                 title={n.label}
                 style={navStyle}
               >
-                <Icon size={18} color={active ? T.gold : T.muted} style={{ flexShrink: 0 }} />
+                <Icon size={18} color={active ? T.action : T.muted} style={{ flexShrink: 0 }} />
                 {navOpen ? n.label : ""}
               </NavLink>
             );
           })}
-          <NavLink to="/settings" className="lp-shell-settings"><Settings size={18} />{navOpen && 'Settings'}</NavLink>
+          <NavLink to="/settings" className="lp-shell-settings"><Settings size={18} />{navOpen && "Settings"}</NavLink>
         </nav>
 
         <button
@@ -141,12 +149,13 @@ export default function AppShell({ children }: AppShellProps) {
           flex: 1,
           minWidth: 0,
           height: "100dvh",
-          overflowY: "auto",
-          overflowX: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
           overscrollBehavior: "contain",
         }}
       >
-        <div style={{ maxWidth: 1160, margin: "0 auto", width: "100%" }}>
+        <div className="lp-shell-inner lp-shell-header">
           <div className="lp-topbar">
             <label className="lp-global-search">
               <Search size={15} color={T.muted} />
@@ -170,19 +179,41 @@ export default function AppShell({ children }: AppShellProps) {
             </label>
             <AccountMenu user={user} />
           </div>
-          <RecoveryGate key={user?.id}>{children ?? <Outlet />}</RecoveryGate>
+        </div>
+        <div className="lp-page-scroll">
+          <div className="lp-shell-inner">
+            {children ?? <Outlet />}
+          </div>
         </div>
         {uploadOpen ? (
           <Suspense fallback={null}>
             <UploadDocumentModal
               open={uploadOpen}
-              stayOnSave={stayAfterUpload}
               onClose={() => setUploadOpen(false)}
             />
           </Suspense>
         ) : null}
-        
       </main>
+      <nav className="lp-tabbar" aria-label="Primary">
+        {SHELL_NAV.slice(0, 5).map((n) => {
+          const Icon = n.icon;
+          const active = currentRoute === n.key;
+          return (
+            <NavLink
+              key={n.key}
+              to={ROUTE_PATHS[n.key]}
+              className="lp-tab"
+              style={{
+                color: active ? "var(--lpv-baractive)" : "var(--lpv-bartext)",
+                background: active ? "var(--lpv-barpill)" : "none",
+              }}
+            >
+              <Icon size={20} color={active ? "var(--lpv-baractive)" : "var(--lpv-bartext)"} />
+              {n.label}
+            </NavLink>
+          );
+        })}
+      </nav>
     </div>
   );
 }

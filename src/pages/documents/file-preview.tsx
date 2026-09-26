@@ -70,7 +70,7 @@ export default function FilePreview({
         </div>
         <div
           style={{
-            background: "#07101f",
+            background: T.navy,
             display: "grid",
             placeItems: "center",
             maxHeight: 620,

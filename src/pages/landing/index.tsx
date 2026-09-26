@@ -1,9 +1,10 @@
 import Landing from "@/components/Landing";
 
 type LandingPageProps = {
-  onStart: () => void;
+  initialAuthMode?: "signin" | "signup" | null;
+  onAuthed: (isNew: boolean) => void;
 };
 
-export default function LandingPage({ onStart }: LandingPageProps) {
-  return <Landing onStart={onStart} />;
+export default function LandingPage({ initialAuthMode, onAuthed }: LandingPageProps) {
+  return <Landing initialAuthMode={initialAuthMode} onAuthed={onAuthed} />;
 }

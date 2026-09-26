@@ -2,7 +2,7 @@ import { Plus, Search } from "lucide-react";
 import Pill from "@/components/Pill";
 import Card from "@/components/Card";
 import MeasurementChart from "../MeasurementChart";
-import { btnGold } from "@/constants/theme";
+import { btnPrimary } from "@/constants/theme";
 import type {
   HealthAvailableMetric,
   HealthOverview,
@@ -39,7 +39,7 @@ function Trends({
             placeholder="Search measurements..."
           />
         </label>
-        <button type="button" style={btnGold}>
+        <button type="button" style={btnPrimary}>
           <Plus size={15} /> Track measurement
         </button>
       </div>

@@ -11,7 +11,7 @@ import type { SupportedDocumentMimeType } from "./document-envelope";
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 const MB = 1024 * 1024;
-export const MAX_ORIGINAL_FILE_SIZE = Number(import.meta.env.VITE_MAX_DOCUMENT_SIZE_BYTES) || 20 * MB;
+export const MAX_ORIGINAL_FILE_SIZE = Number(import.meta.env.VITE_MAX_DOCUMENT_SIZE_BYTES) || 10 * MB;
 const MAX_IMAGE_WIDTH = Number(import.meta.env.VITE_MAX_IMAGE_WIDTH) || 12_000;
 const MAX_IMAGE_HEIGHT = Number(import.meta.env.VITE_MAX_IMAGE_HEIGHT) || 12_000;
 const MAX_IMAGE_PIXELS = Number(import.meta.env.VITE_MAX_IMAGE_PIXELS) || 60_000_000;
@@ -95,12 +95,33 @@ function assertPdfStaticSafety(bytes: Uint8Array) {
       "Password-protected PDFs are not supported.",
     );
   }
-  if (/\/(?:JavaScript|JS|Launch|EmbeddedFile|Filespec)\b|\/AA\s*<</.test(source)) {
+  if (hasUnsupportedPdfActiveContent(source)) {
     throw new DocumentFileValidationError(
       "UNSAFE_FILE",
       "The PDF contains scripts, launch actions, or embedded files.",
     );
   }
+}
+
+function hasUnsupportedPdfActiveContent(source: string) {
+  return /\/S\s*\/(?:JavaScript|Launch)\b/.test(source) ||
+    /\/(?:JavaScript|JS)\s*(?:\(|<|[0-9]+\s+[0-9]+\s+R)/.test(source) ||
+    hasUnsupportedPdfEmbeddedFiles(source) ||
+    /\/AA\s*<</.test(source);
+}
+
+function pdfNameValue(source: string, key: string) {
+  const match = new RegExp(`/${key}(?:\\s+/|\\s+|/)([^/\\s<>()\\[\\]{}%]+)`).exec(source);
+  return match?.[1]?.replace(/^\//, "").replace(/#([0-9a-fA-F]{2})/g, (_, hex: string) =>
+    String.fromCharCode(Number.parseInt(hex, 16)),
+  );
+}
+
+function hasUnsupportedPdfEmbeddedFiles(source: string) {
+  const objects = Array.from(source.matchAll(/(\d+)\s+\d+\s+obj\b([\s\S]*?)\bendobj\b/g));
+  const embedded = objects.filter((match) => pdfNameValue(match[2]!, "Type") === "EmbeddedFile");
+  if (!embedded.length) return /\/EmbeddedFile\b/.test(source);
+  return embedded.some((match) => pdfNameValue(match[2]!, "Subtype") !== "application/c2pa");
 }
 
 async function parsePdf(bytes: Uint8Array) {

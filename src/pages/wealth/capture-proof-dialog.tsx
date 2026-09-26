@@ -1,179 +1,148 @@
-import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, FileCheck, Paperclip, X } from "lucide-react";
+import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { FileUp, Paperclip, Trash2, X } from "lucide-react";
 
-import { api, type DynamicFormCategory, type DynamicFormField, type DynamicFormSchema, type DynamicFormSubtype, type WealthRecord } from "@/lib/api";
-import { useAppDispatch } from "@/store/hooks";
-import { fetchDocuments } from "@/store/slices/documentsSlice";
+import UploadDocumentModal from "@/components/UploadDocumentModal";
+import { api, type DocumentRecord, type WealthRecord, type WealthRecordPayload, type WealthRecordType } from "@/lib/api";
+import { categories, documentTitle, fieldsObject, labelize } from "@/pages/documents/document-utils";
+import { useAppSelector } from "@/store/hooks";
 
-type Value = string | number | boolean | null | string[];
+type Mode = "asset" | "proof";
+type Props = { mode?: Mode; initialCategoryCode?: string; title?: string; onClose: () => void; onSaved: (record: WealthRecord) => void };
 
-type Props = {
-  onClose: () => void;
-  onSaved: (record: WealthRecord) => void;
+const currencies = ["INR", "USD", "EUR", "GBP", "AED", "SGD"];
+const today = () => new Date().toISOString().slice(0, 10);
+const css = {
+  panel: "var(--lp-panel)",
+  raised: "var(--lp-raised)",
+  border: "var(--lp-border)",
+  text: "var(--lp-text)",
+  muted: "var(--lp-muted)",
+  heading: "var(--lp-heading)",
+  action: "var(--lp-action)",
+  coral: "var(--lp-coral)",
+  mint: "var(--lp-mint)",
 };
 
-function today() {
-  return new Date().toISOString().slice(0, 10);
+function inputStyle(): CSSProperties {
+  return { width: "100%", background: css.raised, border: `1px solid ${css.border}`, borderRadius: 9, padding: "9px 11px", color: css.text, fontSize: 14, outline: "none" };
 }
 
-function optionValue(option: unknown) {
-  if (typeof option === "string") return { label: option, value: option };
-  if (option && typeof option === "object" && "value" in option && "label" in option) {
-    return { label: String(option.label), value: String(option.value) };
-  }
-  return null;
+function labelStyle(): CSSProperties {
+  return { display: "block", marginBottom: 5, color: css.muted, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", fontVariantNumeric: "tabular-nums" };
 }
 
-function initialSchemaValues(schema: DynamicFormSchema) {
-  return Object.fromEntries(schema.fields.map((field) => [field.id, field.defaultValue == null ? "" : String(field.defaultValue)]));
+function Modal({ children, onClose, danger }: { children: ReactNode; onClose: () => void; danger?: boolean }) {
+  return <div className="lp-modalwrap" onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 72, background: "var(--lpv-scrim)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}><div className="lp-modalbox lp-wealth-ref-modal" onClick={(event) => event.stopPropagation()} style={{ background: css.panel, border: `1px solid ${danger ? "color-mix(in srgb, var(--lp-coral) 45%, transparent)" : css.border}`, borderRadius: 16, width: "min(500px,100%)", maxHeight: "92vh", overflowY: "auto", padding: 22 }}><div className="lp-sheet-grab lp-grabonly" />{children}</div></div>;
 }
 
-export default function CaptureProofDialog({ onClose, onSaved }: Props) {
-  const dispatch = useAppDispatch();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [categories, setCategories] = useState<DynamicFormCategory[]>([]);
-  const [subtypes, setSubtypes] = useState<DynamicFormSubtype[]>([]);
-  const [schema, setSchema] = useState<DynamicFormSchema | null>(null);
-  const [baseValues, setBaseValues] = useState<Record<string, string>>({ amount: "0", date: today(), direction: "Paid" });
-  const [dynamicValues, setDynamicValues] = useState<Record<string, Value>>({});
-  const [files, setFiles] = useState<Record<string, File[]>>({});
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+export default function CaptureProofDialog({ mode, initialCategoryCode, title, onClose, onSaved }: Props) {
+  const resolved: Mode = mode ?? (initialCategoryCode === "payment_proof" ? "proof" : "asset");
+  return resolved === "proof" ? <ProofModal onClose={onClose} onSaved={onSaved} /> : <HoldingModal title={title} onClose={onClose} onSaved={onSaved} />;
+}
+
+function HoldingModal({ title = "Add holding", onClose, onSaved }: { title?: string; onClose: () => void; onSaved: (record: WealthRecord) => void }) {
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const selectedCategory = categories.find((category) => category.code === baseValues.categoryCode);
+  const [f, setF] = useState({ name: "", kind: "asset", type: "", institution: "", accountRef: "", value: "", currency: "INR", memberId: "you", renewalDate: "", maturityDate: "", accessNote: "", nominee: false, nomineeName: "" });
+  const set = (key: string, value: string | boolean) => setF((current) => ({ ...current, [key]: value }));
+  const kindType: WealthRecordType = f.kind === "liability" ? "LOAN_TAKEN" : f.kind === "cover" ? "INSURANCE" : "ASSET";
+  const valueKey = f.kind === "liability" ? "principalAmount" : f.kind === "cover" ? "coverageAmount" : "value";
+  const valid = f.name.trim().length > 0;
 
-  useEffect(() => {
-    api.wealth.formCategories().then(setCategories).catch((err) => setError(err instanceof Error ? err.message : "Unable to load categories."));
-  }, []);
-
-  const canContinue = Boolean(baseValues.title?.trim() && baseValues.amount?.trim() && baseValues.date && baseValues.categoryCode);
-  const orderedFields = useMemo(() => schema?.fields.slice().sort((a, b) => a.order - b.order) ?? [], [schema]);
-
-  async function loadSubtypes() {
-    if (!baseValues.categoryCode) return;
-    setLoading(true);
+  async function save() {
+    if (!valid) return;
+    setBusy(true);
     setError(null);
+    const details = { assetType: f.type, provider: f.institution, institution: f.institution, accountRef: f.accountRef, currency: f.currency, memberId: f.memberId, renewalDate: f.renewalDate, maturityDate: f.maturityDate, accessInstruction: f.accessNote, nominee: f.nomineeName || (f.nominee ? "Named" : ""), [valueKey]: f.value, amount: f.value };
+    const payload: WealthRecordPayload = { type: kindType, title: f.name.trim(), details, notes: f.accessNote, followUpDate: null, followUpNote: "", attachmentDocumentIds: [] };
     try {
-      setSubtypes(await api.wealth.formSubtypes(baseValues.categoryCode));
-      setStep(2);
+      onSaved(await api.wealth.createRecord(payload));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load subtypes.");
+      setError(err instanceof Error ? err.message : "Unable to add holding.");
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   }
 
-  async function chooseSubtype(subtypeCode: string) {
-    if (!baseValues.categoryCode) return;
-    setLoading(true);
+  return <Modal onClose={onClose}><Head title={title} onClose={onClose} /><label style={labelStyle()}>Name</label><input style={inputStyle()} value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Investment portfolio" /><div className="lp-wealth-form-row" style={{ display: "flex", gap: 10, marginTop: 12 }}><Field label="Kind"><select style={inputStyle()} value={f.kind} onChange={(e) => set("kind", e.target.value)}>{["asset", "liability", "cover"].map((item) => <option key={item} value={item}>{item}</option>)}</select></Field><Field label="Type"><input style={inputStyle()} value={f.type} onChange={(e) => set("type", e.target.value)} placeholder="Mutual funds / Mortgage" /></Field></div><div className="lp-wealth-form-row" style={{ display: "flex", gap: 10, marginTop: 12 }}><Field label="Institution"><input style={inputStyle()} value={f.institution} onChange={(e) => set("institution", e.target.value)} placeholder="Bank / insurer" /></Field><Field label="Account"><input style={inputStyle()} value={f.accountRef} onChange={(e) => set("accountRef", e.target.value)} placeholder="...4821" /></Field></div><div className="lp-wealth-form-row" style={{ display: "flex", gap: 10, marginTop: 12 }}><Field label={f.kind === "liability" ? "Outstanding" : f.kind === "cover" ? "Cover" : "Value"}><input type="number" min="0" style={inputStyle()} value={f.value} onChange={(e) => set("value", e.target.value)} placeholder="0" /></Field><Field label="Currency"><select style={inputStyle()} value={f.currency} onChange={(e) => set("currency", e.target.value)}>{currencies.map((item) => <option key={item}>{item}</option>)}</select></Field></div><div style={{ marginTop: 12 }}><Field label="Owner"><select style={inputStyle()} value={f.memberId} onChange={(e) => set("memberId", e.target.value)}><option value="you">You</option></select></Field></div>{f.kind === "cover" ? <DateField label="Renewal date" value={f.renewalDate} onChange={(value) => set("renewalDate", value)} /> : null}{f.kind === "asset" ? <DateField label="Maturity date (deposits, retirement)" value={f.maturityDate} onChange={(value) => set("maturityDate", value)} /> : null}<div style={{ marginTop: 12 }}><label style={labelStyle()}>{f.kind === "liability" ? "Closure instructions for the family" : "Access instructions for the family"}</label><textarea style={{ ...inputStyle(), minHeight: 58, resize: "vertical", fontFamily: "inherit" }} value={f.accessNote} onChange={(e) => set("accessNote", e.target.value)} placeholder={f.kind === "liability" ? "Who to contact, account details, and how to close or take over the loan" : "Where it is, who to contact, how to claim (locker no., agent, portal)"} /></div>{f.kind !== "liability" ? <div className="lp-wealth-form-row" style={{ marginTop: 14, display: "flex", gap: 10, alignItems: "center" }}><label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, color: css.text }}><input type="checkbox" checked={f.nominee} onChange={(e) => set("nominee", e.target.checked)} /> Nominee named</label>{f.nominee ? <input style={{ ...inputStyle(), flex: 1 }} value={f.nomineeName} onChange={(e) => set("nomineeName", e.target.value)} placeholder="Nominee name" /> : null}</div> : null}{error ? <div className="lp-sos-error">{error}</div> : null}<div className="lp-wealth-form-actions" style={{ display: "flex", gap: 10, marginTop: 20 }}><button disabled={!valid || busy} onClick={save} style={{ background: css.action, color: "var(--lp-action-text)", border: "none", borderRadius: 10, padding: "10px 15px", fontWeight: 800, flex: 1, minHeight: 44, opacity: valid && !busy ? 1 : 0.4 }}>{busy ? "Saving..." : "Add holding"}</button><button onClick={onClose} title="Close" aria-label="Close" style={{ background: css.raised, color: css.coral, border: `1px solid color-mix(in srgb, var(--lp-coral) 45%, transparent)`, borderRadius: 10, padding: "10px 14px" }}><Trash2 size={15} /></button></div></Modal>;
+}
+
+function ProofModal({ onClose, onSaved }: { onClose: () => void; onSaved: (record: WealthRecord) => void }) {
+  const documents = useAppSelector((state) => state.documents.items);
+  const user = useAppSelector((state) => state.auth.user);
+  const [selectedDoc, setSelectedDoc] = useState<DocumentRecord | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [more, setMore] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [f, setF] = useState({ purpose: "", counterparty: "", direction: "paid", amount: "", currency: "INR", date: today(), followUpOn: "", followUpNote: "" });
+  const set = (key: string, value: string) => setF((current) => ({ ...current, [key]: value }));
+  const relevantDocs = useMemo(() => documents.filter(isWealthEvidenceDocument), [documents]);
+  const valid = Boolean(selectedDoc && f.purpose.trim());
+  const choose = (doc: DocumentRecord) => {
+    setSelectedDoc(doc);
+    setF((current) => ({ ...current, purpose: current.purpose || documentTitle(doc), amount: current.amount || amountFromDocument(doc) }));
+  };
+
+  async function save() {
+    if (!valid || !selectedDoc) return;
+    setBusy(true);
     setError(null);
     try {
-      const nextSchema = await api.wealth.formSchema(baseValues.categoryCode, subtypeCode);
-      setSchema(nextSchema);
-      setDynamicValues(initialSchemaValues(nextSchema));
-      setStep(3);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load form.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function uploadFiles(values: Record<string, Value>) {
-    if (!schema) return values;
-    const next = { ...values };
-    for (const field of schema.fields.filter((item) => item.inputType === "file")) {
-      const selected = files[field.id] ?? [];
-      if (!selected.length) continue;
-      const ids: string[] = [];
-      {
-        const analysis = await api.documents.analyze(selected, false);
-        const primaryFile = analysis.files[0]!;
-        const saved = await api.documents.save({
-          tempFileIds: analysis.files.map((item) => item.tempFileId),
-          originalName: primaryFile.originalName,
-          mimeType: primaryFile.mimeType,
-          size: analysis.files.reduce((sum, item) => sum + item.size, 0),
-          title: baseValues.title.trim() || analysis.document.title || primaryFile.originalName,
-          category: schema.category.label,
-          documentType: schema.subtype.label,
-          confidence: 90,
-          fields: {
-            uniqueNumber: analysis.document.uniqueNumber ?? undefined,
-            nameOnDocument: analysis.document.nameOnDocument ?? undefined,
-            ...baseValues,
-          },
-          reviewFields: [],
-          rawExtractedText: "",
-          warnings: analysis.warnings ?? [],
-          extraction: null,
-          evidence: [],
-          analysisSource: "ai",
-          userConfirmedUnknown: true,
-        });
-        ids.push(saved.document.id);
-      }
-      next[field.id] = [...(Array.isArray(next[field.id]) ? next[field.id] as string[] : []), ...ids];
-    }
-    return next;
-  }
-
-  async function submit() {
-    if (!schema || !baseValues.categoryCode) return;
-    setSaving(true);
-    setError(null);
-    try {
-      const values = await uploadFiles({ ...baseValues, ...dynamicValues });
-      const record = await api.wealth.createRecordFromForm({ categoryCode: schema.category.code, subtypeCode: schema.subtype.code, values });
-      void dispatch(fetchDocuments());
+      const amount = f.amount.trim();
+      const details = { amount, currency: f.currency, date: f.date, party: f.counterparty, paidTo: f.direction === "paid" ? f.counterparty : "", receivedFrom: f.direction === "received" ? f.counterparty : "", direction: f.direction, followUpOn: f.followUpOn, sourceDocumentId: selectedDoc.id, sourceDocumentCategory: selectedDoc.category, sourceDocumentType: selectedDoc.documentType };
+      const record = await api.wealth.createRecord({ type: wealthTypeFor(selectedDoc, f.direction), title: f.purpose.trim(), details, notes: f.followUpNote, followUpDate: f.followUpOn || null, followUpNote: f.followUpNote, attachmentDocumentIds: [selectedDoc.id] });
       onSaved(record);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to save Wealth record.");
+      setError(err instanceof Error ? err.message : "Unable to capture proof.");
     } finally {
-      setSaving(false);
+      setBusy(false);
     }
   }
 
-  return (
-    <div className="lp-sos-backdrop" role="presentation">
-      <div className="lp-sos-dialog lp-capture-dialog" role="dialog" aria-modal="true">
-        <div className="lp-sos-head">
-          <div><span><FileCheck size={16} /> Wealth vault</span><h2>Capture proof</h2><p>Capture the core details, choose the record type, then Readiness renders the rest from backend form metadata.</p></div>
-          <button type="button" onClick={onClose} aria-label="Close"><X size={18} /></button>
-        </div>
-        <div className="lp-capture-steps"><span className={step === 1 ? "active" : ""}>1</span><span className={step === 2 ? "active" : ""}>2</span><span className={step === 3 ? "active" : ""}>3</span></div>
-        <div className="lp-capture-panel">
-          {step === 1 ? <StepOne categories={categories} values={baseValues} setValues={setBaseValues} /> : null}
-          {step === 2 ? <StepTwo category={selectedCategory} subtypes={subtypes} onChoose={chooseSubtype} /> : null}
-          {step === 3 && schema ? <DynamicFields fields={orderedFields} values={dynamicValues} files={files} setFiles={setFiles} setValue={(id, value) => setDynamicValues((current) => ({ ...current, [id]: value }))} /> : null}
-          {error ? <div className="lp-sos-error">{error}</div> : null}
-        </div>
-        <div className="lp-sos-foot">
-          {step > 1 ? <button type="button" style={{ marginRight: "auto" }} onClick={() => setStep(step === 3 ? 2 : 1)}><ChevronLeft size={15} /> Back</button> : null}
-          {step === 1 ? <button type="button" className="primary" disabled={!canContinue || loading} onClick={loadSubtypes}>{loading ? "Loading..." : "Next"}</button> : null}
-          {step === 3 ? <button type="button" className="primary" disabled={saving} onClick={submit}>{saving ? "Saving..." : "Confirm"}</button> : null}
-        </div>
-      </div>
-    </div>
-  );
+  if (uploading) return <UploadDocumentModal open onClose={() => setUploading(false)} onSaved={choose} />;
+  if (!selectedDoc) return <Modal onClose={onClose}><div className="lp-vault-picker-head"><h2>From a document in your vault</h2><button type="button" onClick={onClose}>Done</button></div><button type="button" className="lp-vault-doc-row upload" onClick={() => setUploading(true)}><span className="lp-vault-icon upload"><FileUp size={17} /></span><span><b>Scan or upload a new document</b><small>Statement, policy, or deed. It is filed in Documents and opened here.</small></span></button><div className="lp-vault-doc-list">{relevantDocs.map((doc) => <DocumentRow key={doc.id} doc={doc} fallbackOwner={user?.name} onClick={() => choose(doc)} />)}{!relevantDocs.length ? <div className="lp-vault-empty">No matching vault documents yet.</div> : null}</div></Modal>;
+  return <Modal onClose={onClose}><Head title="Capture proof" onClose={onClose} /><DocumentRow doc={selectedDoc} fallbackOwner={user?.name} selected onClick={() => setSelectedDoc(null)} /><label style={{ ...labelStyle(), marginTop: 14 }}>What for</label><input style={inputStyle()} value={f.purpose} onChange={(e) => set("purpose", e.target.value)} placeholder="e.g. investment account, loan proof, policy" /><div className="lp-wealth-form-row" style={{ display: "flex", gap: 10 }}><Field label="Amount"><input style={inputStyle()} type="number" min="0" value={f.amount} onChange={(e) => set("amount", e.target.value)} placeholder="Optional" /></Field><Field label="Currency"><select style={inputStyle()} value={f.currency} onChange={(e) => set("currency", e.target.value)}>{currencies.map((item) => <option key={item}>{item}</option>)}</select></Field></div><div className="lp-wealth-form-row" style={{ display: "flex", gap: 10, marginTop: 12 }}><Field label="Which way"><select style={inputStyle()} value={f.direction} onChange={(e) => set("direction", e.target.value)}><option value="paid">I lent / paid</option><option value="received">I borrowed / received</option></select></Field><Field label="Date"><input style={inputStyle()} type="date" value={f.date} onChange={(e) => set("date", e.target.value)} /></Field></div><button onClick={() => setMore((value) => !value)} style={{ background: "none", border: "none", cursor: "pointer", color: css.muted, fontSize: 12.5, fontWeight: 600, padding: 0, marginTop: 12 }}>{more ? "Fewer details" : "Who and when to follow up"}</button>{more ? <><label style={{ ...labelStyle(), marginTop: 12 }}>Who</label><input style={inputStyle()} value={f.counterparty} onChange={(e) => set("counterparty", e.target.value)} placeholder="e.g. bank, insurer, person" /><div className="lp-wealth-form-row" style={{ display: "flex", gap: 10 }}><Field label="Follow up on"><input style={inputStyle()} type="date" value={f.followUpOn} onChange={(e) => set("followUpOn", e.target.value)} /></Field><Field label="Follow-up note"><input style={inputStyle()} value={f.followUpNote} onChange={(e) => set("followUpNote", e.target.value)} placeholder="e.g. call branch" /></Field></div></> : null}{error ? <div className="lp-sos-error">{error}</div> : null}<button disabled={!valid || busy} onClick={save} style={{ background: css.action, color: "var(--lp-action-text)", border: "none", borderRadius: 10, width: "100%", justifyContent: "center", marginTop: 16, minHeight: 44, fontWeight: 800, opacity: valid && !busy ? 1 : 0.4 }}>{busy ? "Saving..." : "Use as proof"}</button></Modal>;
 }
 
-function StepOne({ categories, values, setValues }: { categories: DynamicFormCategory[]; values: Record<string, string>; setValues: (update: (current: Record<string, string>) => Record<string, string>) => void }) {
-  const set = (key: string, value: string) => setValues((current) => ({ ...current, [key]: value }));
-  return <div className="lp-capture-grid compact"><label className="lp-wealth-field wide">Title<input placeholder="What is it for?" value={values.title ?? ""} onChange={(event) => set("title", event.target.value)} /></label><label className="lp-wealth-field">Amount<input inputMode="decimal" value={values.amount ?? ""} onChange={(event) => set("amount", event.target.value)} /></label><label className="lp-wealth-field">Direction<select value={values.direction ?? "Paid"} onChange={(event) => set("direction", event.target.value)}><option>Paid</option><option>Received</option></select></label><label className="lp-wealth-field">Date<input type="date" value={values.date ?? ""} onChange={(event) => set("date", event.target.value)} /></label><label className="lp-wealth-field wide">Category<select value={values.categoryCode ?? ""} onChange={(event) => set("categoryCode", event.target.value)}><option value="">Select category</option>{categories.map((category) => <option key={category.code} value={category.code}>{category.label}</option>)}</select></label></div>;
+function DocumentRow({ doc, fallbackOwner, onClick, selected }: { doc: DocumentRecord; fallbackOwner?: string; onClick: () => void; selected?: boolean }) {
+  const meta = categoryMeta(doc.category);
+  const Icon = meta.icon;
+  const owner = doc.owner || fallbackOwner || "You";
+  return <button type="button" className={`lp-vault-doc-row ${selected ? "selected" : ""}`} onClick={onClick}><span className="lp-vault-icon" style={{ color: meta.accent, borderColor: `${meta.accent}55`, background: `${meta.accent}18` }}><Icon size={16} /></span><span><b>{documentTitle(doc)}</b><small>{owner} · {labelize(doc.category)}</small></span></button>;
 }
 
-function StepTwo({ category, subtypes, onChoose }: { category?: DynamicFormCategory; subtypes: DynamicFormSubtype[]; onChoose: (code: string) => void }) {
-  return <div className="lp-dynamic-options"><h3>{category ? `${category.label} subtype` : "Select subtype"}</h3>{subtypes.map((subtype) => <button key={subtype.code} type="button" onClick={() => void onChoose(subtype.code)}><b>{subtype.label}</b>{subtype.description ? <small>{subtype.description}</small> : null}</button>)}</div>;
+function categoryMeta(category: string) {
+  return categories.find((item) => item.name.toLowerCase() === category.toLowerCase() || item.key === category.toLowerCase()) ?? categories[categories.length - 1]!;
 }
 
-function DynamicFields(props: { fields: DynamicFormField[]; values: Record<string, Value>; files: Record<string, File[]>; setFiles: (update: (current: Record<string, File[]>) => Record<string, File[]>) => void; setValue: (id: string, value: Value) => void }) {
-  return <div className="lp-capture-grid">{props.fields.map((field) => <DynamicField key={field.id} field={field} value={props.values[field.id]} files={props.files[field.id] ?? []} setFiles={(files) => props.setFiles((current) => ({ ...current, [field.id]: files }))} setValue={(value) => props.setValue(field.id, value)} />)}</div>;
+function isWealthEvidenceDocument(doc: DocumentRecord) {
+  const haystack = [doc.category, doc.documentType, doc.normalizedType, doc.title, doc.originalName, JSON.stringify(fieldsObject(doc))].join(" ").toLowerCase();
+  return ["finance", "insurance", "bank", "investment", "itr", "tax", "transaction", "property", "deed", "loan", "liability", "policy", "statement", "payment", "receipt"].some((word) => haystack.includes(word));
 }
 
-function DynamicField({ field, value, files, setFiles, setValue }: { field: DynamicFormField; value: Value | undefined; files: File[]; setFiles: (files: File[]) => void; setValue: (value: Value) => void }) {
-  if (field.inputType === "file") return <label className="lp-wealth-field wide">{field.label}<span className="lp-wealth-proof-drop"><Paperclip size={22} /><b>{files.length ? `${files.length} file${files.length === 1 ? "" : "s"} selected` : "Attach documents"}</b><small>{field.placeholder ?? "Photo · screenshot · receipt · PDF"}</small><input type="file" hidden multiple accept="image/*,application/pdf" onChange={(event) => setFiles(Array.from(event.target.files ?? []))} /></span></label>;
-  if (field.inputType === "textarea") return <label className="lp-wealth-field wide">{field.label}<textarea required={field.required} placeholder={field.placeholder ?? ""} value={String(value ?? "")} onChange={(event) => setValue(event.target.value)} /></label>;
-  if (field.inputType === "select") return <label className="lp-wealth-field">{field.label}<select required={field.required} value={String(value ?? "")} onChange={(event) => setValue(event.target.value)}><option value="">Select</option>{Array.isArray(field.options) ? field.options.map(optionValue).filter((option): option is { label: string; value: string } => option !== null).map((option) => <option key={option.value} value={option.value}>{option.label}</option>) : null}</select></label>;
-  return <label className="lp-wealth-field">{field.label}<input type={field.inputType === "number" ? "number" : field.inputType === "date" ? "date" : "text"} required={field.required} placeholder={field.placeholder ?? ""} value={String(value ?? "")} onChange={(event) => setValue(event.target.value)} /></label>;
+function amountFromDocument(doc: DocumentRecord) {
+  const fields = fieldsObject(doc);
+  const found = ["amount", "value", "coverageAmount", "principalAmount"].map((key) => fields[key]).find((value) => typeof value === "string" || typeof value === "number");
+  return found ? String(found).replace(/[^\d.]/g, "") : "";
+}
+
+function wealthTypeFor(doc: DocumentRecord, direction: string): WealthRecordType {
+  const haystack = `${doc.category} ${doc.documentType} ${doc.normalizedType ?? ""}`.toLowerCase();
+  if (haystack.includes("insurance") || haystack.includes("policy")) return "INSURANCE";
+  if (haystack.includes("loan") || direction === "received") return "LOAN_TAKEN";
+  if (haystack.includes("payment") || haystack.includes("receipt") || haystack.includes("transaction")) return "PAYMENT_PROOF";
+  return "ASSET";
+}
+
+function Head({ title, onClose }: { title: string; onClose: () => void }) {
+  return <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}><b style={{ color: css.heading, fontSize: 18 }}>{title}</b><button onClick={onClose} style={{ background: css.raised, border: `1px solid ${css.border}`, borderRadius: 10, color: css.text, padding: 8 }}><X size={16} /></button></div>;
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return <div style={{ flex: 1, marginTop: 12 }}><label style={labelStyle()}>{label}</label>{children}</div>;
+}
+
+function DateField({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return <div style={{ marginTop: 12 }}><label style={labelStyle()}>{label}</label><input type="date" style={inputStyle()} value={value} onChange={(e) => onChange(e.target.value)} /></div>;
 }

@@ -29,11 +29,11 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
       <button
           type="button"
           disabled
-          className="w-full rounded-lg border border-slate-700 bg-white px-4 py-2.5 text-sm font-medium text-slate-500 opacity-70"
+          className="w-full rounded-lg border border-[var(--lp-border)] bg-[var(--lp-panel)] px-4 py-2.5 text-sm font-medium text-[var(--lp-faint)] opacity-70"
         >
           Continue with Google
         </button>
-      <p className="mt-2 text-center text-xs text-slate-400">Google sign-in is unavailable right now.</p>
+      <p className="mt-2 text-center text-xs text-[var(--lp-muted)]">Google sign-in is unavailable right now.</p>
     </div>;
   }
 
@@ -43,11 +43,11 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
         <button
           type="button"
           disabled
-          className="w-full rounded-lg border border-slate-700 bg-white px-4 py-2.5 text-sm font-medium text-slate-500 opacity-70"
+          className="w-full rounded-lg border border-[var(--lp-border)] bg-[var(--lp-panel)] px-4 py-2.5 text-sm font-medium text-[var(--lp-faint)] opacity-70"
         >
           Continue with Google
         </button>
-        <p className="mt-2 text-center text-xs text-slate-400">
+        <p className="mt-2 text-center text-xs text-[var(--lp-muted)]">
           {isLoopbackIp
             ? "Open Readiness at http://localhost:5173 to use Google sign-in."
             : "Google sign-in could not load. Disable blockers for accounts.google.com and try again."}
@@ -58,7 +58,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
 
   return (
     <div className={disabled ? "pointer-events-none opacity-60" : ""} aria-busy={disabled}>
-      <div className="flex min-h-10 justify-center overflow-hidden rounded-lg bg-white">
+      <div className="flex min-h-10 justify-center overflow-hidden rounded-lg bg-[var(--lp-panel)]">
         <GoogleLogin
           onSuccess={(response) => {
             if (!response.credential) {
@@ -75,7 +75,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
           width="360"
         />
       </div>
-      {disabled ? <p className="mt-2 text-center text-xs text-slate-400">Signing in securely…</p> : null}
+      {disabled ? <p className="mt-2 text-center text-xs text-[var(--lp-muted)]">Signing in securely…</p> : null}
     </div>
   );
 }

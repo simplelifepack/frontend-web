@@ -5,7 +5,7 @@ import { KeyRound, LockKeyhole, Pencil, Plus, RotateCcw, ShieldCheck, Users, X }
 import Card from "@/components/Card";
 import SectionHead from "@/components/SectionHead";
 import { api, type TrustCenterResponse, type TrustMember, type TrustMemberPayload, type TrustPermission } from "@/lib/api";
-import { btnGhost, btnGold, T } from "@/constants/theme";
+import { btnGhost, btnPrimary, T } from "@/constants/theme";
 
 const relations = ["SPOUSE", "PARENT", "CHILD", "SIBLING", "GUARDIAN", "RELATIVE", "FRIEND", "OTHER"] as const;
 const bloodGroups = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"] as const;
@@ -121,7 +121,7 @@ export default function TrustPage() {
       <Card style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
         <div className="lp-trust-family-head">
           <span>Family &amp; access</span>
-          <button type="button" onClick={() => setAddOpen(true)} style={btnGold}>
+          <button type="button" onClick={() => setAddOpen(true)} style={btnPrimary}>
             <Plus size={15} /> Add member
           </button>
         </div>
@@ -141,7 +141,7 @@ export default function TrustPage() {
       </Card>
 
       {notice ? (
-        <Card style={{ marginBottom: 16, borderColor: `${T.gold}66` }}>
+        <Card style={{ marginBottom: 16, borderColor: "color-mix(in srgb, var(--lp-action) 40%, transparent)" }}>
           <b style={{ color: T.white }}>Invitation status</b>
           <p style={{ color: T.muted, margin: "6px 0 0", fontSize: 13 }}>{notice}</p>
         </Card>
@@ -162,7 +162,7 @@ export default function TrustPage() {
                 type="button"
                 disabled={leavingId === connection.id}
                 onClick={() => void leaveConnection(connection.id, connection.owner.name)}
-                style={{ ...btnGhost, color: T.coral, borderColor: `${T.coral}55`, opacity: leavingId === connection.id ? 0.55 : 1 }}
+                style={{ ...btnGhost, color: T.coral, borderColor: T.coralBorder, opacity: leavingId === connection.id ? 0.55 : 1 }}
               >
                 Leave Readiness
               </button>
@@ -174,7 +174,7 @@ export default function TrustPage() {
       <Card>
         <b style={{ color: T.white, fontSize: 15 }}>Reset demo data</b>
         <p style={{ fontSize: 13, color: T.muted, margin: "6px 0 12px" }}>Restore the sample family and documents on this device.</p>
-        <button type="button" style={{ ...btnGhost, color: T.coral, borderColor: `${T.coral}55` }}>
+        <button type="button" style={{ ...btnGhost, color: T.coral, borderColor: T.coralBorder }}>
           <RotateCcw size={15} /> Reset everything
         </button>
       </Card>
@@ -195,7 +195,7 @@ function TrustError({ message, onRetry }: { message: string; onRetry: () => void
     <Card>
       <b style={{ color: T.white }}>Trust Center unavailable</b>
       <p style={{ color: T.muted }}>{message}</p>
-      <button type="button" style={btnGold} onClick={onRetry}><RotateCcw size={15} /> Retry</button>
+      <button type="button" style={btnPrimary} onClick={onRetry}><RotateCcw size={15} /> Retry</button>
     </Card>
   );
 }
@@ -300,7 +300,7 @@ function MemberModal({ enabledModules, onClose, onSave }: { enabledModules: Trus
         </div>
         <label style={labelStyle}>6-digit PIN<input required inputMode="numeric" maxLength={6} style={inputStyle} value={draft.pin} onChange={(event) => update({ pin: event.target.value.replace(/\D/g, "").slice(0, 6) })} placeholder="Share separately" /></label>
         <p style={{ color: T.muted, fontSize: 12, lineHeight: 1.5, margin: "2px 0 0" }}>{accessCopy[draft.accessTypeCode]}</p>
-        <button type="submit" disabled={saving || !draft.name.trim() || !draft.email.trim() || !/^\d{6}$/.test(draft.pin)} style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 16, opacity: saving ? 0.65 : 1 }}>
+        <button type="submit" disabled={saving || !draft.name.trim() || !draft.email.trim() || !/^\d{6}$/.test(draft.pin ?? "")} style={{ ...btnPrimary, width: "100%", justifyContent: "center", marginTop: 16, opacity: saving ? 0.65 : 1 }}>
           {saving ? "Sending..." : "Send invitation"}
         </button>
       </form>
@@ -334,8 +334,8 @@ const inputStyle: CSSProperties = { width: "100%", marginTop: 5, marginBottom: 1
 const labelStyle: CSSProperties = { display: "block", color: T.muted, fontSize: 11, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase" };
 const modalHeadStyle: CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 };
 const modalStyle: CSSProperties = { width: "min(430px,100%)", background: T.panel, border: `1px solid ${T.border}`, borderRadius: 16, padding: 18 };
-const scrimStyle: CSSProperties = { position: "fixed", inset: 0, zIndex: 70, display: "flex", alignItems: "center", justifyContent: "center", padding: 18, background: "rgba(4,7,15,.62)" };
+const scrimStyle: CSSProperties = { position: "fixed", inset: 0, zIndex: 70, display: "flex", alignItems: "center", justifyContent: "center", padding: 18, background: "var(--lpv-scrim)" };
 const selectStyle: CSSProperties = { minWidth: 160, background: T.raised, border: `1px solid ${T.border}`, borderRadius: 8, padding: "6px 10px", color: T.text, fontSize: 12.5, fontWeight: 700 };
-const inlineButtonStyle: CSSProperties = { marginLeft: 8, padding: 0, border: 0, background: "transparent", color: T.gold, font: "inherit", cursor: "pointer" };
+const inlineButtonStyle: CSSProperties = { marginLeft: 8, padding: 0, border: 0, background: "transparent", color: T.action, font: "inherit", cursor: "pointer" };
 const iconButtonStyle: CSSProperties = { width: 32, height: 32, display: "grid", placeItems: "center", flex: "0 0 32px", background: T.raised, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text, cursor: "pointer" };
-const removeButtonStyle: CSSProperties = { width: 32, height: 32, display: "grid", placeItems: "center", flex: "0 0 32px", background: "rgba(255, 107, 107, 0.08)", border: `1px solid ${T.coral}55`, borderRadius: 8, color: T.coral, cursor: "pointer" };
+const removeButtonStyle: CSSProperties = { width: 32, height: 32, display: "grid", placeItems: "center", flex: "0 0 32px", background: T.coralSoft, border: `1px solid ${T.coralBorder}`, borderRadius: 8, color: T.coral, cursor: "pointer" };

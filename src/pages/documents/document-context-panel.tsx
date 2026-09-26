@@ -1,9 +1,11 @@
-import { Clock, Download, ExternalLink, FileText, X } from "lucide-react";
+import { Clock, Download, FileText, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { btnGhost, btnGold, T } from "@/constants/theme";
+import { btnGhost, btnPrimary, T } from "@/constants/theme";
 import { daysUntil } from "@/data/demoData";
-import { api, type DocumentRecord } from "@/lib/api";
+import type { DocumentRecord } from "@/lib/api";
+import { useAppDispatch } from "@/store/hooks";
+import { deleteDocument } from "@/store/slices/documentsSlice";
 import {
   categories,
   expiryValue,
@@ -13,6 +15,7 @@ import {
   safeCategory,
   sourceLabel,
 } from "./document-utils";
+import { confirmDeleteDocuments, downloadDocuments } from "./document-actions";
 import FilePreview from "./file-preview";
 
 type Props = {
@@ -22,7 +25,9 @@ type Props = {
 };
 
 export default function DocumentContextPanel({ doc, loading = false, onClose }: Props) {
+  const dispatch = useAppDispatch();
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [busy, setBusy] = useState<"download" | "delete" | null>(null);
   const category = safeCategory(doc.category);
   const categoryMeta =
     categories.find((item) => item.key === category) ?? categories[categories.length - 1];
@@ -46,20 +51,17 @@ export default function DocumentContextPanel({ doc, loading = false, onClose }: 
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [onClose, previewOpen]);
 
-  const openDocument = async () => {
-    if (doc.source === "GOOGLE_DRIVE" && doc.openUrl) {
-      window.open(doc.openUrl, "_blank", "noopener,noreferrer");
-      return;
-    }
-    const { blob, fileName } = await api.documents.download(doc.id);
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  const downloadDocument = async () => {
+    setBusy("download");
+    try { await downloadDocuments([doc]); } finally { setBusy(null); }
+  };
+  const removeDocument = async () => {
+    if (!confirmDeleteDocuments(1)) return;
+    setBusy("delete");
+    try {
+      await dispatch(deleteDocument(doc.id)).unwrap();
+      onClose();
+    } finally { setBusy(null); }
   };
 
   const fact = (label: string, value: string) => (
@@ -148,13 +150,16 @@ export default function DocumentContextPanel({ doc, loading = false, onClose }: 
             type="button"
             disabled={loading}
             onClick={() => setPreviewOpen((current) => !current)}
-            style={{ ...btnGold, flex: 1, justifyContent: "center" }}
+            style={{ ...btnPrimary, flex: 1, justifyContent: "center" }}
           >
             <FileText size={15} />
             Preview
           </button>
-          <button type="button" onClick={() => void openDocument()} style={btnGhost}>
-            {doc.source === "GOOGLE_DRIVE" ? <ExternalLink size={15} /> : <Download size={15} />}
+          <button type="button" disabled={loading || Boolean(busy)} onClick={() => void downloadDocument()} style={btnGhost}>
+            <Download size={15} /> Download
+          </button>
+          <button type="button" disabled={loading || Boolean(busy)} onClick={() => void removeDocument()} style={btnGhost}>
+            <Trash2 size={15} /> Delete
           </button>
         </footer>
       </aside>

@@ -23,18 +23,18 @@ export type Source = {
 };
 
 export const categories = [
-  { key: "identity", name: "Identity", accent: "#5B8DEF", icon: Fingerprint },
-  { key: "employment", name: "Employment", accent: "#9B7BE8", icon: Briefcase },
-  { key: "finance", name: "Finance", accent: "#D9B86A", icon: Wallet },
-  { key: "insurance", name: "Insurance", accent: "#3FB9C7", icon: ShieldCheck },
-  { key: "property", name: "Property", accent: "#E86A9B", icon: Home },
-  { key: "medical", name: "Medical", accent: "#4FCB95", icon: HeartPulse },
-  { key: "education", name: "Education", accent: "#8B5CF6", icon: BookOpen },
-  { key: "travel", name: "Travel", accent: "#60A5FA", icon: Plane },
-  { key: "vehicle", name: "Vehicle", accent: "#34D399", icon: Car },
-  { key: "legal", name: "Legal", accent: "#F472B6", icon: Gavel },
-  { key: "photo", name: "Photo", accent: "#F59E0B", icon: ImageIcon },
-  { key: "other", name: "Other", accent: "#94A3B8", icon: FileText },
+  { key: "identity", name: "Identity", accent: "var(--lp-info)", icon: Fingerprint },
+  { key: "employment", name: "Employment", accent: "var(--lp-purple)", icon: Briefcase },
+  { key: "finance", name: "Finance", accent: "var(--lp-teal)", icon: Wallet },
+  { key: "insurance", name: "Insurance", accent: "var(--lp-teal)", icon: ShieldCheck },
+  { key: "property", name: "Property", accent: "var(--lp-pink)", icon: Home },
+  { key: "medical", name: "Medical", accent: "var(--lp-mint)", icon: HeartPulse },
+  { key: "education", name: "Education", accent: "var(--lp-purple)", icon: BookOpen },
+  { key: "travel", name: "Travel", accent: "var(--lp-info)", icon: Plane },
+  { key: "vehicle", name: "Vehicle", accent: "var(--lp-mint)", icon: Car },
+  { key: "legal", name: "Legal", accent: "var(--lp-pink)", icon: Gavel },
+  { key: "photo", name: "Photo", accent: "var(--lp-warning)", icon: ImageIcon },
+  { key: "other", name: "Other", accent: "var(--lp-muted)", icon: FileText },
 ];
 
 const knownCategoryKeys = new Set(categories.map((category) => category.key));

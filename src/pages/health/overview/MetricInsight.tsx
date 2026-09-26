@@ -29,7 +29,7 @@ function MetricInsight({
   return parts.length ? (
     <div className="lp-health-insight lp-health-metric-insight">
       <span>
-        <CircleAlert size={16} color={T.gold} /> {parts.join(" · ")}
+        <CircleAlert size={16} color={T.warning} /> {parts.join(" · ")}
       </span>
       <ChevronDown size={16} />
     </div>

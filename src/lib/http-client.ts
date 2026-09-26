@@ -50,7 +50,7 @@ export const safeMessages: Record<string, string> = {
   STORAGE_LIMIT_EXCEEDED: "Cloud storage full. This upload would exceed your 50 MB allowance. Delete documents to free space or upgrade your account for unlimited cloud storage.",
   AI_MONTHLY_LIMIT_EXCEEDED: "You've used your 3 AI actions for this month. Your allowance resets next month (UTC). Paid accounts have unlimited AI actions.",
   UNSUPPORTED_FILE_TYPE: "Use a supported PDF, JPEG, PNG, or WebP document.",
-  FILE_TOO_LARGE: fileTooLargeMessage(20 * 1024 * 1024),
+  FILE_TOO_LARGE: fileTooLargeMessage(10 * 1024 * 1024),
   FILE_SIGNATURE_MISMATCH: "The file contents do not match its reported type.",
   FILE_CORRUPTED: "The document is corrupted or incomplete.",
   PASSWORD_PROTECTED_FILE: "Password-protected PDFs are not supported.",
@@ -110,14 +110,19 @@ export function request<T>(path: string, options: RequestOptions = {}) {
 
 export async function downloadBlob(
   path: string,
-  options: Pick<RequestOptions, "requiresAuth" | "retryOnUnauthorized"> = {},
+  options: Pick<RequestOptions, "body" | "method" | "requiresAuth" | "retryOnUnauthorized"> = {},
 ) {
-  const headers: HeadersInit = {};
+  const headers: HeadersInit = options.body ? { "Content-Type": "application/json" } : {};
   if (options.requiresAuth) {
     const token = getAccessToken();
     if (token) headers.Authorization = `Bearer ${token}`;
   }
-  const response = await fetch(`${API_URL}${path}`, { method: "GET", headers, credentials: "include" });
+  const response = await fetch(`${API_URL}${path}`, {
+    method: options.method ?? "GET",
+    headers,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+    credentials: "include",
+  });
   if (
     response.status === 401 &&
     options.requiresAuth &&

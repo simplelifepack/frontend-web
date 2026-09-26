@@ -28,7 +28,7 @@ export default function ExpiringSoonCard({ items }: ExpiringSoonCardProps) {
             marginBottom: 12,
           }}
         >
-          <Clock size={16} color={T.gold} />
+          <Clock size={16} color={T.warning} />
           <span style={{ fontWeight: 700, color: T.white, fontSize: 14 }}>
             Expiring soon
           </span>

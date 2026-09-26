@@ -1,9 +1,9 @@
 import { publicDocumentLabels } from "./public-document-labels";
-import type { AccountUsage } from "./api.types";
 import { streamRequest } from "./http-client";
 import { buildEncryptedDocumentFormData } from "./document-upload-api";
 import { API_URL, downloadBlob, request } from "./http-client";
 import type {
+  AccountUsage,
   AnalyzeDocumentResponse,
   AuthResponse,
   AuthUser,
@@ -18,14 +18,9 @@ import type {
   GmailCandidate,
   GmailImportResult,
   GmailStatus,
-  HealthAvailableMetric,
-  HealthHomeReminder,
-  HealthMember,
-  HealthOverview,
-  HealthProcessResponse,
-  HealthRecord,
-  HealthRecordDetail,
-  HealthTimelineEvent,
+  HealthAvailableMetric, HealthHomeReminder, HealthMeasurement, HealthMedication,
+  HealthMember, HealthOverview, HealthProcessResponse,
+  HealthRecord, HealthRecordDetail, HealthTimelineEvent,
   TrackedHealthMetric,
   PackSummary,
   PackageListQuery,
@@ -70,8 +65,12 @@ export const api = {
     logoutAll: () => request<ForgotPasswordResponse>("/auth/logout-all", { method: "POST", requiresAuth: true }),
     forgotPassword: (payload: { email: string }) =>
       request<ForgotPasswordResponse>("/auth/forgot-password", { method: "POST", body: payload }),
+    forgotPasswordOtp: (payload: { email: string }) =>
+      request<ForgotPasswordResponse>("/auth/forgot-password/otp", { method: "POST", body: payload }),
     resetPassword: (payload: { token: string; password: string }) =>
       request<ResetPasswordResponse>("/auth/reset-password", { method: "POST", body: payload }),
+    resetPasswordOtp: (payload: { email: string; otp: string; password: string }) =>
+      request<ResetPasswordResponse>("/auth/reset-password/otp", { method: "POST", body: payload }),
     me: () => request<{ user: AuthUser }>("/auth/me", { requiresAuth: true }),
   },
   gmail: {
@@ -97,10 +96,9 @@ export const api = {
   documents: {
     list: () => request<DocumentRecord[]>("/documents", { requiresAuth: true }),
     getById: (id: string) => request<DocumentRecord>(`/documents/${id}`, { requiresAuth: true }),
-    preview: (id: string) =>
-      downloadBlob(`/documents/${encodeURIComponent(id)}/preview`, { requiresAuth: true }),
-    download: (id: string) =>
-      downloadBlob(`/documents/${encodeURIComponent(id)}/download`, { requiresAuth: true }),
+    preview: (id: string) => downloadBlob(`/documents/${encodeURIComponent(id)}/preview`, { requiresAuth: true }),
+    download: (id: string) => downloadBlob(`/documents/${encodeURIComponent(id)}/download`, { requiresAuth: true }),
+    bulkDownload: (ids: string[]) => downloadBlob("/documents/bulk-download", { method: "POST", body: { ids }, requiresAuth: true }),
     analyze: async (files: File[], aiAnalysisConsent = false) => {
       const formData = await buildEncryptedDocumentFormData(files, aiAnalysisConsent, request);
       return request<AnalyzeDocumentResponse>("/documents/analyze", {
@@ -123,11 +121,8 @@ export const api = {
         requiresAuth: true,
       });
     },
-    delete: (id: string) =>
-      request<void>(`/documents/${encodeURIComponent(id)}`, {
-        method: "DELETE",
-        requiresAuth: true,
-      }),
+    delete: (id: string) => request<void>(`/documents/${encodeURIComponent(id)}`, { method: "DELETE", requiresAuth: true }),
+    bulkDelete: (ids: string[]) => request<void>("/documents/bulk-delete", { method: "POST", body: { ids }, requiresAuth: true }),
   },
   usage: () => request<AccountUsage>("/api/bootstrap/usage", { requiresAuth: true, dedupeMs: 0 }),
   bootstrap: () => request<BootstrapResponse>("/api/bootstrap", { requiresAuth: true }),
@@ -143,6 +138,8 @@ export const api = {
       request<{ message: string }>(`/api/trust/invitations/${encodeURIComponent(token)}/reject`, { method: "POST" }),
     addMember: (payload: TrustMemberPayload) =>
       request<TrustMember>("/api/trust/members", { method: "POST", body: payload, requiresAuth: true }),
+    addFamilyMember: (payload: TrustMemberPayload) =>
+      request<TrustMember>("/api/trust/family-members", { method: "POST", body: payload, requiresAuth: true }),
     updateMember: (id: string, payload: Partial<TrustMemberPayload>) =>
       request<TrustMember>(`/api/trust/members/${encodeURIComponent(id)}`, {
         method: "PATCH",
@@ -169,6 +166,10 @@ export const api = {
     records: () => request<WealthRecord[]>("/api/wealth/records", { requiresAuth: true }),
     createRecord: (payload: WealthRecordPayload) =>
       request<WealthRecord>("/api/wealth/records", { method: "POST", body: payload, requiresAuth: true }),
+    updateRecord: (id: string, payload: WealthRecordPayload) =>
+      request<WealthRecord>(`/api/wealth/records/${encodeURIComponent(id)}`, { method: "PATCH", body: payload, requiresAuth: true }),
+    deleteRecord: (id: string) =>
+      request<void>(`/api/wealth/records/${encodeURIComponent(id)}`, { method: "DELETE", requiresAuth: true }),
     formCategories: () => request<DynamicFormCategory[]>("/api/wealth/form/categories", { requiresAuth: true }),
     formSubtypes: (categoryCode: string) =>
       request<DynamicFormSubtype[]>(`/api/wealth/form/categories/${encodeURIComponent(categoryCode)}/subtypes`, { requiresAuth: true }),
@@ -206,7 +207,7 @@ export const api = {
     deleteRecord: (recordId: string) =>
       request<void>(`/api/health/records/${encodeURIComponent(recordId)}`, { method: "DELETE", requiresAuth: true }),
     measurements: (memberId: string, metric?: string) =>
-      request(`/api/health/members/${encodeURIComponent(memberId)}/measurements${metric ? `?metric=${encodeURIComponent(metric)}` : ""}`, { requiresAuth: true, dedupeMs: 0 }),
+      request<HealthMeasurement[]>(`/api/health/members/${encodeURIComponent(memberId)}/measurements${metric ? `?metric=${encodeURIComponent(metric)}` : ""}`, { requiresAuth: true, dedupeMs: 0 }),
     trackedMetrics: (memberId: string) =>
       request<TrackedHealthMetric[]>(`/api/health/members/${encodeURIComponent(memberId)}/tracked-metrics`, { requiresAuth: true, dedupeMs: 0 }),
     trackMetric: (memberId: string, payload: { metricKey: string; displayName: string; context?: string | null; bodySite?: string | null }) =>
@@ -217,6 +218,8 @@ export const api = {
       request<HealthAvailableMetric[]>(`/api/health/members/${encodeURIComponent(memberId)}/available-metrics?${toQueryString({ search })}`, { requiresAuth: true, dedupeMs: 0 }),
     timeline: (memberId: string) =>
       request<HealthTimelineEvent[]>(`/api/health/members/${encodeURIComponent(memberId)}/timeline`, { requiresAuth: true, dedupeMs: 0 }),
+    createMedication: (memberId: string, payload: { name: string; dose: string; frequency?: string | null; repeats: boolean; runsOutAt?: string | null }) =>
+      request<HealthMedication>(`/api/health/members/${encodeURIComponent(memberId)}/medications`, { method: "POST", body: payload, requiresAuth: true }),
   },
   packages: {
     list: (query: PackageListQuery = {}) =>

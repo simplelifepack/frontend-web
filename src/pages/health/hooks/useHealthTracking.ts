@@ -1,6 +1,11 @@
 import { api } from "@/lib/api";
-import type { HealthRecordDetail, TrackedHealthMetric } from "@/lib/api.types";
+import type {
+  HealthAvailableMetric,
+  HealthRecordDetail,
+  TrackedHealthMetric,
+} from "@/lib/api.types";
 import type { useHealthData } from "./useHealthData";
+import { metricIdentity } from "../healthUtils";
 
 export function useHealthTracking(data: ReturnType<typeof useHealthData>) {
   const {
@@ -61,6 +66,36 @@ export function useHealthTracking(data: ReturnType<typeof useHealthData>) {
     }
   };
 
+  const applyTrackedMetrics = async (metrics: HealthAvailableMetric[]) => {
+    if (!selectedMemberId) return;
+    const selected = new Set(metrics.map(metricIdentity));
+    try {
+      await Promise.all([
+        ...metrics
+          .filter((metric) => !tracked.some((item) => metricIdentity(item) === metricIdentity(metric)))
+          .map((metric) =>
+            api.health.trackMetric(selectedMemberId, {
+              metricKey: metric.metricKey,
+              displayName: metric.displayName,
+              context: metric.context,
+              bodySite: metric.bodySite,
+            }),
+          ),
+        ...tracked
+          .filter((metric) => !selected.has(metricIdentity(metric)))
+          .map((metric) => api.health.untrackMetric(selectedMemberId, metric.id)),
+      ]);
+      await refreshHealth(selectedMemberId);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Tracking preferences could not be updated.",
+      );
+      throw error;
+    }
+  };
+
   const toggleRecordMetric = async (
     measurement: HealthRecordDetail["measurements"][number],
     trackedNow: boolean,
@@ -106,5 +141,11 @@ export function useHealthTracking(data: ReturnType<typeof useHealthData>) {
     }
   };
 
-  return { trackMetric, trackMetrics, toggleRecordMetric, untrackMetric };
+  return {
+    applyTrackedMetrics,
+    trackMetric,
+    trackMetrics,
+    toggleRecordMetric,
+    untrackMetric,
+  };
 }

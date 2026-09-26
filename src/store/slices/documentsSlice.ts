@@ -75,6 +75,11 @@ export const deleteDocument = createAsyncThunk("documents/deleteDocument", async
   void dispatch(refreshUsage());
   return id;
 });
+export const deleteDocuments = createAsyncThunk("documents/deleteDocuments", async (ids: string[], { dispatch }) => {
+  await api.documents.bulkDelete(ids);
+  void dispatch(refreshUsage());
+  return ids;
+});
 
 const documentsSlice = createSlice({
   name: "documents",
@@ -189,6 +194,13 @@ const documentsSlice = createSlice({
         state.items = state.items.filter((document) => document.id !== action.payload);
         if (state.selected?.id === action.payload) state.selected = null;
         if (existed) state.documentCount = Math.max(0, state.documentCount - 1);
+      })
+      .addCase(deleteDocuments.fulfilled, (state, action) => {
+        const deleted = new Set(action.payload);
+        const removed = state.items.filter((document) => deleted.has(document.id)).length;
+        state.items = state.items.filter((document) => !deleted.has(document.id));
+        if (state.selected && deleted.has(state.selected.id)) state.selected = null;
+        state.documentCount = Math.max(0, state.documentCount - removed);
       })
       .addCase(initializeApp.fulfilled, (state, action) => {
         state.documentCount = action.payload.documentCount;

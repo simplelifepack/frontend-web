@@ -11,7 +11,7 @@ export default function AIDebugPanel({ debug }: { debug: SearchDebugInfo }) {
   ];
   return (
     <Card style={{ marginBottom: 22, borderStyle: "dashed" }}>
-      <div style={{ color: T.gold, fontSize: 12, fontWeight: 800, marginBottom: 10 }}>AI DEBUG · DEVELOPMENT</div>
+      <div style={{ color: T.warning, fontSize: 12, fontWeight: 800, marginBottom: 10 }}>AI DEBUG · DEVELOPMENT</div>
       <div style={{ display: "grid", gridTemplateColumns: "150px minmax(0, 1fr)", gap: "7px 12px" }}>
         {rows.map(([label, value]) => (
           <div key={label} style={{ display: "contents" }}>

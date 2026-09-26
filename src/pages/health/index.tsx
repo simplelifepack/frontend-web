@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+
 import Card from "@/components/Card";
 import { api } from "@/lib/api";
 import HealthDialog from "./HealthDialog";
@@ -15,6 +18,7 @@ import AddRecordDialog from "./records/AddRecordDialog";
 import MemberResolutionDialog from "./members/MemberResolutionDialog";
 import AddMemberDialog from "./members/AddMemberDialog";
 export default function HealthPage() {
+  const location = useLocation();
   const {
     healthDialog,
     setHealthDialog,
@@ -26,6 +30,7 @@ export default function HealthPage() {
     overview,
     records,
     timeline,
+    measurements,
     selectedRecord,
     setSelectedRecord,
     selectedRecordId,
@@ -58,6 +63,7 @@ export default function HealthPage() {
     confirmMemberResolution,
     trackMetric,
     trackMetrics,
+    applyTrackedMetrics,
     toggleRecordMetric,
     removeRecord,
     viewOriginalDocument,
@@ -65,6 +71,13 @@ export default function HealthPage() {
     untrackMetric,
     createMember,
   } = useHealthPage();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const memberId = params.get("member");
+    const tab = params.get("tab");
+    if (memberId && members.some((member) => member.id === memberId)) setSelectedMemberId(memberId);
+    if (tab === "Overview" || tab === "Trends" || tab === "Timeline" || tab === "Medications" || tab === "Records") setActiveTab(tab);
+  }, [location.search, members, setActiveTab, setSelectedMemberId]);
   return (
     <div className="lp-route lp-health-route">
       <HealthPageHeader
@@ -75,6 +88,7 @@ export default function HealthPage() {
         upcoming={upcoming}
         onSelectMember={setSelectedMemberId}
         onAddMember={() => setShowAddMember(true)}
+        onPrepareVisit={() => setHealthDialog("visit")}
         onDialog={setHealthDialog}
         onTab={setActiveTab}
       />
@@ -89,10 +103,11 @@ export default function HealthPage() {
         <Overview
           onReminder={() => setHealthDialog("reminder")}
           onEdit={() => setHealthDialog("profile")}
-          onVisit={() => setHealthDialog("visit")}
           overview={overview}
           records={records}
+          measurements={measurements}
           onTrack={() => setActiveTab("Trends")}
+          onApplyTracked={applyTrackedMetrics}
         />
       ) : null}
       {!loading && selectedMember && activeTab === "Trends" ? (
@@ -109,7 +124,19 @@ export default function HealthPage() {
         <Timeline events={timeline} />
       ) : null}
       {!loading && selectedMember && activeTab === "Medications" ? (
-        <MedicationSummary events={timeline} />
+        <MedicationSummary
+          events={timeline}
+          onCreate={async (form) => {
+            await api.health.createMedication(selectedMember.id, {
+              name: form.name.trim(),
+              dose: form.dose.trim(),
+              frequency: form.frequency.trim() || null,
+              repeats: form.repeats,
+              runsOutAt: form.runsOutAt || null,
+            });
+            await refreshHealth(selectedMember.id);
+          }}
+        />
       ) : null}
       {!loading && selectedMember && activeTab === "Records" ? (
         <Records

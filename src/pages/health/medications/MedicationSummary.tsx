@@ -1,9 +1,24 @@
-import { Stethoscope } from "lucide-react";
+import { useState } from "react";
+import { Plus, Stethoscope } from "lucide-react";
 import Card from "@/components/Card";
 import type { HealthTimelineEvent } from "@/lib/api.types";
 import { formatDate } from "../healthUtils";
+import AddMedicationDialog from "./AddMedicationDialog";
 
-function MedicationSummary({ events }: { events: HealthTimelineEvent[] }) {
+function MedicationSummary({
+  events,
+  onCreate,
+}: {
+  events: HealthTimelineEvent[];
+  onCreate: (form: {
+    name: string;
+    dose: string;
+    frequency: string;
+    repeats: boolean;
+    runsOutAt: string;
+  }) => Promise<void>;
+}) {
+  const [adding, setAdding] = useState(false);
   const medications = events.filter(
     (event) => event.eventType === "medication",
   );
@@ -11,6 +26,9 @@ function MedicationSummary({ events }: { events: HealthTimelineEvent[] }) {
     <Card>
       <div className="lp-health-card-title">
         <Stethoscope size={17} /> Medications
+        <button type="button" onClick={() => setAdding(true)}>
+          <Plus size={14} /> Add medication
+        </button>
       </div>
       <div className="lp-health-record-list">
         {medications.length ? (
@@ -27,6 +45,12 @@ function MedicationSummary({ events }: { events: HealthTimelineEvent[] }) {
           <p className="lp-health-muted">No medications recorded.</p>
         )}
       </div>
+      {adding ? (
+        <AddMedicationDialog
+          onClose={() => setAdding(false)}
+          onCreate={onCreate}
+        />
+      ) : null}
     </Card>
   );
 }

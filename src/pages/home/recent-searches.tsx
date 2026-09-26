@@ -62,7 +62,7 @@ export default function RecentSearches({ items, onSelect }: RecentSearchesProps)
                   alignItems: "center",
                   justifyContent: "center",
                   background: T.raised,
-                  color: T.gold,
+                  color: T.action,
                 }}
               >
                 <History size={17} />

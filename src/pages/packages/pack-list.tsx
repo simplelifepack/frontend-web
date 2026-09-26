@@ -50,7 +50,7 @@ export default function PackList({
           padding: "10px 12px",
         }}
       >
-        <Search size={16} color={T.gold} />
+        <Search size={16} color={T.action} />
         <input
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
@@ -84,7 +84,7 @@ export default function PackList({
               textAlign: "left",
               cursor: "pointer",
               background: active ? T.raised : T.panel,
-              border: `1px solid ${active ? T.gold : T.border}`,
+              border: `1px solid ${active ? T.action : T.border}`,
               borderRadius: 10,
               padding: "12px 14px",
               display: "grid",
@@ -183,8 +183,8 @@ export default function PackList({
 
       {!filteredCount && status !== "loading" ? (
         <Card style={{ textAlign: "center", padding: 32 }}>
-          <span style={{ width: 46, height: 46, borderRadius: 14, display: "grid", placeItems: "center", background: "rgba(155,123,232,.14)", margin: "0 auto 12px" }}>
-            <Plane size={21} color="#9B7BE8" />
+          <span style={{ width: 46, height: 46, borderRadius: 14, display: "grid", placeItems: "center", background: "color-mix(in srgb, var(--lp-purple) 14%, transparent)", margin: "0 auto 12px" }}>
+            <Plane size={21} color={T.purple} />
           </span>
           <div style={{ color: T.white, fontSize: 15, fontWeight: 800 }}>
             No life-event packs yet

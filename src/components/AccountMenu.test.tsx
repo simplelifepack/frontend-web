@@ -78,6 +78,6 @@ describe("account dropdown", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: /Sign out/ }));
     await vi.waitFor(() => expect(api.auth.logout).toHaveBeenCalledOnce());
     await vi.waitFor(() => expect(dispatch).toHaveBeenCalledOnce());
-    expect(screen.getByTestId("route").textContent).toBe("/login");
+    expect(screen.getByTestId("route").textContent).toBe("/");
   });
 });

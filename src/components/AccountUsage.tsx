@@ -38,11 +38,11 @@ export function StorageUsage({ storage, circular = false }: { storage: Usage['st
           : { paddingBlock: 6, cursor: 'help' }}>
         {circular ? <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
           <circle cx="16" cy="16" r="13" fill="none" stroke={T.border} strokeWidth="3" />
-          <circle cx="16" cy="16" r="13" fill="none" stroke={percentage >= 100 ? T.coral : T.gold}
+          <circle cx="16" cy="16" r="13" fill="none" stroke={percentage >= 100 ? T.coral : T.action}
             strokeWidth="3" pathLength="100" strokeDasharray={`${storage.unlimited ? 100 : percentage} 100`}
             transform="rotate(-90 16 16)" opacity={storage.unlimited ? 0.4 : 1} />
         </svg> : <div style={{ height: 8, borderRadius: 8, background: T.border, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: storage.unlimited ? '100%' : `${percentage}%`, background: percentage >= 100 ? T.coral : T.gold, opacity: storage.unlimited ? 0.4 : 1, borderRadius: 8 }} />
+          <div style={{ height: '100%', width: storage.unlimited ? '100%' : `${percentage}%`, background: percentage >= 100 ? T.coral : T.action, opacity: storage.unlimited ? 0.4 : 1, borderRadius: 8 }} />
         </div>}
       </div>
     </TooltipTrigger>

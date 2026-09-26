@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import type { HealthMember, HealthMemberResolution } from "@/lib/api.types";
-import { btnGhost, btnGold } from "@/constants/theme";
+import { btnGhost, btnPrimary } from "@/constants/theme";
 
 function MemberResolutionDialog({
   resolution,
@@ -43,7 +43,7 @@ function MemberResolutionDialog({
           </header>
           <p>This record appears to belong to a new person.</p>
           <footer>
-            <button type="button" style={btnGold} onClick={onCreateProfile}>
+            <button type="button" style={btnPrimary} onClick={onCreateProfile}>
               Create profile for {patientName}
             </button>
             <button
@@ -76,7 +76,7 @@ function MemberResolutionDialog({
               {memberId ? (
                 <button
                   type="button"
-                  style={btnGold}
+                  style={btnPrimary}
                   disabled={saving}
                   onClick={() => {
                     setSaving(true);
@@ -142,7 +142,7 @@ function MemberResolutionDialog({
           </button>
           <button
             type="button"
-            style={btnGold}
+            style={btnPrimary}
             disabled={!memberId || saving}
             onClick={async () => {
               setSaving(true);

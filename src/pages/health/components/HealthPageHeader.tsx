@@ -23,6 +23,7 @@ export default function HealthPageHeader({
   upcoming,
   onSelectMember,
   onAddMember,
+  onPrepareVisit,
   onDialog,
   onTab,
 }: {
@@ -33,6 +34,7 @@ export default function HealthPageHeader({
   upcoming: HealthOverview["upcoming"];
   onSelectMember: (id: string) => void;
   onAddMember: () => void;
+  onPrepareVisit: () => void;
   onDialog: (dialog: HealthDialogKind) => void;
   onTab: (tab: HealthTab) => void;
 }) {
@@ -82,6 +84,13 @@ export default function HealthPageHeader({
                 .join(" · ")}
             </p>
           </div>
+          <button
+            type="button"
+            style={btnGhost}
+            onClick={onPrepareVisit}
+          >
+            <FileText size={15} /> Prepare for visit
+          </button>
           <button
             type="button"
             style={btnGhost}

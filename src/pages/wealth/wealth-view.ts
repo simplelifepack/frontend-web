@@ -84,6 +84,7 @@ export function dashboardStats(records: WealthRecord[]) {
   const assets = records.filter((record) => record.type === "ASSET");
   const liabilities = records.filter((record) => record.type === "LOAN_TAKEN");
   const protection = records.filter((record) => record.type === "INSURANCE");
+  const lentBorrowed = records.filter((record) => record.type === "LOAN_GIVEN" || record.type === "PAYMENT_PROOF");
   const documented = records.filter((record) => record.attachments.length > 0).length;
   const accessReady = records.filter((record) => statusFor(record).access).length;
   const readiness = records.length ? Math.round(((documented + accessReady) / (records.length * 2)) * 100) : 0;
@@ -91,7 +92,7 @@ export function dashboardStats(records: WealthRecord[]) {
     assets,
     liabilities,
     protection,
-    proofs: records.filter((record) => record.type === "PAYMENT_PROOF"),
+    lentBorrowed,
     assetTotal: assets.reduce((total, record) => total + recordAmount(record), 0),
     liabilityTotal: liabilities.reduce((total, record) => total + recordAmount(record), 0),
     protectionTotal: protection.reduce((total, record) => total + recordAmount(record), 0),

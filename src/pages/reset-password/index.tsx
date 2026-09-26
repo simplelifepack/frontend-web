@@ -54,43 +54,43 @@ export default function ResetPasswordPage() {
   return (
     <div className="mx-auto max-w-md">
       <div className="lg:hidden"><BrandLogo height={64} /></div>
-      <h2 className="mt-4 text-3xl font-semibold text-white">Reset password</h2>
-      <p className="mt-2 text-sm text-slate-400">
+      <h2 className="mt-4 text-3xl font-semibold text-[var(--lp-heading)]">Reset password</h2>
+      <p className="mt-2 text-sm text-[var(--lp-muted)]">
         Create a new password for your Readiness account.
       </p>
 
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <label className="block">
-          <span className="mb-2 block text-sm text-slate-300">New password</span>
+          <span className="mb-2 block text-sm text-[var(--lp-text)]">New password</span>
           <input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300"
+            className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
             minLength={8}
             required
           />
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm text-slate-300">Confirm password</span>
+          <span className="mb-2 block text-sm text-[var(--lp-text)]">Confirm password</span>
           <input
             type="password"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300"
+            className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
             minLength={8}
             required
           />
         </label>
 
-        {error ? <p className="text-sm text-rose-400">{error}</p> : null}
-        {successMessage ? <p className="text-sm text-emerald-400">{successMessage}</p> : null}
+        {error ? <p className="text-sm text-[var(--lp-coral)]">{error}</p> : null}
+        {successMessage ? <p className="text-sm text-[var(--lp-mint)]">{successMessage}</p> : null}
 
         <button
           type="submit"
           disabled={isSubmitting || !resetToken}
-          className="w-full rounded-2xl bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
+          className="w-full rounded-2xl bg-[var(--lp-action)] px-4 py-3 text-sm font-semibold text-[var(--lp-action-text)] transition hover:bg-[var(--lp-action-hover)] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Resetting..." : "Reset password"}
         </button>
@@ -99,8 +99,8 @@ export default function ResetPasswordPage() {
       <div className="mt-6 text-sm">
         <button
           type="button"
-          onClick={() => navigate("/login")}
-          className="text-slate-300 transition hover:text-white"
+          onClick={() => navigate("/", { state: { authMode: "signin" } })}
+          className="text-[var(--lp-text)] transition hover:text-[var(--lp-heading)]"
         >
           Go to login
         </button>

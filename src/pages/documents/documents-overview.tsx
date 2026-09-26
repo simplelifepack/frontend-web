@@ -4,7 +4,7 @@ import { useSearchParams } from "react-router-dom";
 
 import Card from "@/components/Card";
 import SectionHead from "@/components/SectionHead";
-import { btnGhost, btnGold, T } from "@/constants/theme";
+import { btnGhost, btnPrimary, T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 import { useAppSelector } from "@/store/hooks";
 import { categories, openUpload } from "./document-utils";
@@ -92,7 +92,7 @@ export default function DocumentsOverview({
         sub={`${documents.length} records in your archive. Search, filter, and open any row for full context.`}
         action={
           <div className="lp-document-add-actions">
-            <button type="button" onClick={openUpload} style={btnGold}>
+            <button type="button" onClick={openUpload} style={btnPrimary}>
               <UploadCloud size={16} /> Upload <ChevronDown size={15} />
             </button>
             <button type="button" onClick={openUpload} style={btnGhost}>

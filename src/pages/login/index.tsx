@@ -54,47 +54,47 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md">
       <div className="lg:hidden"><BrandLogo height={64} /></div>
-      <h2 className="mt-4 text-3xl font-semibold text-white">Log in</h2>
-      <p className="mt-2 text-sm text-slate-400">Use your email and password to continue.</p>
+      <h2 className="mt-4 text-3xl font-semibold text-[var(--lp-heading)]">Log in</h2>
+      <p className="mt-2 text-sm text-[var(--lp-muted)]">Use your email and password to continue.</p>
 
       <div className="mt-8">
         <GoogleSignInButton disabled={isSubmitting} onCredential={handleGoogleCredential} onError={setError} />
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wider text-slate-500">
-          <span className="h-px flex-1 bg-slate-800" /> or <span className="h-px flex-1 bg-slate-800" />
+        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wider text-[var(--lp-faint)]">
+          <span className="h-px flex-1 bg-[var(--lp-border)]" /> or <span className="h-px flex-1 bg-[var(--lp-border)]" />
         </div>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <label className="block">
-          <span className="mb-2 block text-sm text-slate-300">Email</span>
+          <span className="mb-2 block text-sm text-[var(--lp-text)]">Email</span>
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300"
+            className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
             placeholder="you@example.com"
             required
           />
         </label>
 
         <label className="block">
-          <span className="mb-2 block text-sm text-slate-300">Password</span>
+          <span className="mb-2 block text-sm text-[var(--lp-text)]">Password</span>
           <input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-300"
+            className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
             placeholder="Enter your password"
             required
           />
         </label>
 
-        {error ? <p className="text-sm text-rose-400">{error}</p> : null}
+        {error ? <p className="text-sm text-[var(--lp-coral)]">{error}</p> : null}
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-2xl bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-70"
+          className="w-full rounded-2xl bg-[var(--lp-action)] px-4 py-3 text-sm font-semibold text-[var(--lp-action-text)] transition hover:bg-[var(--lp-action-hover)] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Logging in..." : "Login"}
         </button>
@@ -104,14 +104,14 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => navigate("/signup")}
-          className="block text-amber-300 transition hover:text-amber-200"
+          className="block text-[var(--lp-action)] transition hover:text-[var(--lp-action-hover)]"
         >
           Go to signup
         </button>
         <button
           type="button"
           onClick={() => navigate("/forgot-password")}
-          className="block text-slate-300 transition hover:text-white"
+          className="block text-[var(--lp-text)] transition hover:text-[var(--lp-heading)]"
         >
           Go to forgot password
         </button>

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 
 import Card from "@/components/Card";
 import SectionHead from "@/components/SectionHead";
-import { btnGhost, btnGold, T } from "@/constants/theme";
+import { btnGhost, btnPrimary, T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 import DocumentRows from "./document-rows";
 import { labelize, openUpload } from "./document-utils";
@@ -44,7 +44,7 @@ export default function CategoryDocuments({
         <button
           type="button"
           onClick={openUpload}
-          style={{ ...btnGold, alignSelf: "start" }}
+          style={{ ...btnPrimary, alignSelf: "start" }}
         >
           Upload
         </button>
@@ -60,7 +60,7 @@ export default function CategoryDocuments({
           <div style={{ color: T.muted, fontSize: 13, marginTop: 8 }}>
             Upload a document and Readiness will place it here automatically.
           </div>
-          <button type="button" onClick={openUpload} style={{ ...btnGold, marginTop: 18 }}>
+          <button type="button" onClick={openUpload} style={{ ...btnPrimary, marginTop: 18 }}>
             Upload
           </button>
         </Card>

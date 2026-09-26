@@ -59,7 +59,7 @@ export interface Category {
 export const CATEGORIES: Category[] = [
   { name: "Identity", complete: 100, accent: A.blue, icon: Fingerprint },
   { name: "Employment", complete: 80, accent: A.purple, icon: Briefcase },
-  { name: "Finance", complete: 90, accent: A.gold, icon: Wallet },
+  { name: "Finance", complete: 90, accent: A.teal, icon: Wallet },
   { name: "Insurance", complete: 75, accent: A.teal, icon: ShieldCheck },
   { name: "Property", complete: 70, accent: A.pink, icon: HomeIcon },
   { name: "Medical", complete: 85, accent: A.green, icon: HeartPulse },
@@ -83,7 +83,7 @@ export const EVENTS: LifeEvent[] = [
   { id: "carloan", name: "Car loan", blurb: "Application pack", accent: A.teal, icon: Car, reqs: ["PAN", "Aadhaar", "Bank Statement", "Payslip", "Driver License", "Down Payment Proof"] },
   { id: "bgv", name: "Background verification", blurb: "Job switch", accent: A.purple, icon: ShieldCheck, reqs: ["Aadhaar", "PAN", "Payslip", "Offer Letter", "Experience Letter"] },
   { id: "hospital", name: "Hospital admission", blurb: "Cashless pack", accent: A.pink, icon: HeartPulse, reqs: ["Aadhaar", "Prescription", "Lab Report", "Health Insurance", "Discharge Summary", "Pre-Authorization"] },
-  { id: "tax", name: "Tax filing", blurb: "FY 2025-26", accent: A.gold, icon: FileText, reqs: ["PAN", "Aadhaar", "Form 16", "Bank Statement", "Investment Statement", "Capital Gains Statement"] },
+  { id: "tax", name: "Tax filing", blurb: "FY 2025-26", accent: A.teal, icon: FileText, reqs: ["PAN", "Aadhaar", "Form 16", "Bank Statement", "Investment Statement", "Capital Gains Statement"] },
   { id: "property", name: "Property sale", blurb: "Resale pack", accent: A.pink, icon: HomeIcon, reqs: ["Sale Deed", "Property Tax Receipt", "PAN", "Aadhaar", "Encumbrance Certificate"] },
   { id: "passport", name: "Passport renewal", blurb: "Tatkal ready", accent: A.blue, icon: BookOpen, reqs: ["Passport", "Aadhaar", "PAN"] },
 ];
