@@ -19,7 +19,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
     if (!host) return;
     const updateWidth = () => {
       const width = Math.floor(host.getBoundingClientRect().width);
-      if (width > 0) setButtonWidth(Math.min(width, 400));
+      if (width > 0) setButtonWidth(width);
     };
     updateWidth();
     if (typeof ResizeObserver === "undefined") return;
@@ -74,7 +74,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
 
   return (
     <div className={disabled ? "pointer-events-none opacity-60" : ""} aria-busy={disabled}>
-      <div ref={buttonHostRef} className="flex min-h-10 w-full justify-center overflow-hidden rounded-lg bg-[var(--lp-panel)]">
+      <div ref={buttonHostRef} className="flex min-h-10 w-full justify-center overflow-hidden bg-[var(--lp-panel)]">
         <GoogleLogin
           key={buttonWidth}
           onSuccess={(response) => {
