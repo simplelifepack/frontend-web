@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 
 type GoogleSignInButtonProps = {
@@ -10,7 +10,23 @@ type GoogleSignInButtonProps = {
 export default function GoogleSignInButton({ disabled, onCredential, onError }: GoogleSignInButtonProps) {
   const configured = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim());
   const [scriptFailed, setScriptFailed] = useState(false);
+  const [buttonWidth, setButtonWidth] = useState(360);
+  const buttonHostRef = useRef<HTMLDivElement>(null);
   const isLoopbackIp = typeof window !== "undefined" && window.location.hostname === "127.0.0.1";
+
+  useEffect(() => {
+    const host = buttonHostRef.current;
+    if (!host) return;
+    const updateWidth = () => {
+      const width = Math.floor(host.getBoundingClientRect().width);
+      if (width > 0) setButtonWidth(Math.min(width, 400));
+    };
+    updateWidth();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const handleScriptError = (event: Event) => {
@@ -58,8 +74,9 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
 
   return (
     <div className={disabled ? "pointer-events-none opacity-60" : ""} aria-busy={disabled}>
-      <div className="flex min-h-10 justify-center overflow-hidden rounded-lg bg-[var(--lp-panel)]">
+      <div ref={buttonHostRef} className="flex min-h-10 w-full justify-center overflow-hidden rounded-lg bg-[var(--lp-panel)]">
         <GoogleLogin
+          key={buttonWidth}
           onSuccess={(response) => {
             if (!response.credential) {
               onError("Google did not return a valid account. Please try again.");
@@ -72,7 +89,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
           shape="rectangular"
           theme="outline"
           size="large"
-          width="360"
+          width={String(buttonWidth)}
         />
       </div>
       {disabled ? <p className="mt-2 text-center text-xs text-[var(--lp-muted)]">Signing in securely…</p> : null}
