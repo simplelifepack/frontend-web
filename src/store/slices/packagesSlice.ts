@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 
 import { api, type PackageListItem, type PackageListQuery, type PackageListResponse, type PackSummary } from "@/lib/api";
 import type { RootState } from "../index";
-import { packagePageCacheKey, readAllPackagePages, readPackagePage, writePackagePage, type CachedPackagePage } from "@/packages/packageCatalogueCache";
+import { clearPackageCatalogueCache, packagePageCacheKey, readAllPackagePages, readPackagePage, writePackagePage, type CachedPackagePage } from "@/packages/packageCatalogueCache";
 
 const DEFAULT_LIMIT = 20;
 
@@ -42,6 +42,18 @@ const initialState: PackagesState = {
   loaded: false,
 };
 
+function applyPackSummary(state: PackagesState, pack: PackSummary) {
+  state.detailsBySlug[pack.slug] = pack;
+  const summary = toListItem(pack);
+  state.summariesBySlug[summary.slug] = summary;
+  const index = state.items.findIndex((item) => item.slug === pack.slug);
+  if (index >= 0) {
+    state.items[index] = summary;
+  } else {
+    state.items.unshift(summary);
+  }
+}
+
 function queryKey(query: PackageListQuery = {}) {
   return packagePageCacheKey(query);
 }
@@ -51,8 +63,9 @@ export const fetchPackages = createAsyncThunk(
   async (query: PackageListQuery | undefined) => {
     const resolved = { limit: DEFAULT_LIMIT, page: 1, sort: "category" as const, ...query };
     const key = queryKey(resolved);
-    const hydratedPages = await readAllPackagePages().catch(() => []);
-    const cached = hydratedPages.find((page) => page.key === key) ?? await readPackagePage(key).catch(() => null);
+    const hydratedPages = (await readAllPackagePages().catch(() => [])).filter(isValidCachedPage);
+    const cachedPage = hydratedPages.find((page) => page.key === key) ?? await readPackagePage(key).catch(() => null);
+    const cached = cachedPage && isValidCachedPage(cachedPage) ? cachedPage : null;
     if (cached) return { key, query: resolved, response: cached.response, hydratedPages, source: "cache" as const };
     const response = await api.packages.list(resolved);
     const page: CachedPackagePage = { key, query: resolved, response };
@@ -74,6 +87,27 @@ export const fetchPackages = createAsyncThunk(
   },
 );
 
+export const assignRequirementDocument = createAsyncThunk(
+  "packages/assignRequirementDocument",
+  async (input: { assignmentSource: "USER_SELECTED" | "USER_OVERRIDE"; documentId: string; requirementId: string; slug: string }) => {
+    const response = await api.packages.assignRequirementDocument(input.slug, input.requirementId, {
+      documentId: input.documentId,
+      assignmentSource: input.assignmentSource,
+    });
+    await clearPackageCatalogueCache();
+    return response.package;
+  },
+);
+
+export const clearRequirementDocument = createAsyncThunk(
+  "packages/clearRequirementDocument",
+  async (input: { requirementId: string; slug: string }) => {
+    const response = await api.packages.clearRequirementDocument(input.slug, input.requirementId);
+    await clearPackageCatalogueCache();
+    return response.package;
+  },
+);
+
 const packagesSlice = createSlice({
   name: "packages",
   initialState,
@@ -85,15 +119,7 @@ const packagesSlice = createSlice({
       state.pagination = state.paginationByKey[key] ?? null;
     },
     upsertPackage: (state, action: PayloadAction<PackSummary>) => {
-      state.detailsBySlug[action.payload.slug] = action.payload;
-      const summary = toListItem(action.payload);
-      state.summariesBySlug[summary.slug] = summary;
-      const index = state.items.findIndex((item) => item.slug === action.payload.slug);
-      if (index >= 0) {
-        state.items[index] = summary;
-      } else {
-        state.items.unshift(summary);
-      }
+      applyPackSummary(state, action.payload);
     },
     setPackageGenerationStatus: (state, action: PayloadAction<PackagesState["generationStatus"]>) => {
       state.generationStatus = action.payload;
@@ -134,6 +160,12 @@ const packagesSlice = createSlice({
         state.searchStatus = "failed";
         state.error = action.error.message ?? "Unable to fetch packages.";
       })
+      .addMatcher(
+        (action) => [assignRequirementDocument.fulfilled.type, clearRequirementDocument.fulfilled.type].includes(action.type),
+        (state, action: { payload: PackSummary }) => {
+          applyPackSummary(state, action.payload);
+        },
+      )
       ;
   },
 });
@@ -146,6 +178,12 @@ function mergeUniquePackages(existing: PackageListItem[], incoming: PackageListI
   const byId = new Map(existing.map((item) => [item.id, item]));
   incoming.forEach((item) => byId.set(item.id, item));
   return [...byId.values()];
+}
+
+function isValidCachedPage(page: CachedPackagePage | null | undefined): page is CachedPackagePage {
+  if (!page?.response || !Array.isArray(page.response.items) || !page.response.pagination) return false;
+  if (!page.query.search && page.response.items.length === 0) return false;
+  return true;
 }
 
 function hydratePages(state: PackagesState, pages: CachedPackagePage[]) {

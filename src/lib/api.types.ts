@@ -10,14 +10,47 @@ export type AuthResponse = {
   token: string;
   accessToken?: string;
   user: AuthUser;
+  deletionCancelled?: boolean;
 };
 
 export type ForgotPasswordResponse = {
   message: string;
 };
 
+export type PushSubscriptionPayload = {
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+};
+
+export type PushNotificationStatus = {
+  configured: boolean;
+  publicKey: string | null;
+  deviceEnabled: boolean;
+};
+
+export type PushNotificationSendResult = {
+  attempted: number;
+  sent: number;
+};
+
 export type ResetPasswordResponse = {
   message: string;
+};
+
+export type DocumentPage = {
+  id: string;
+  position: number;
+  label: string;
+  sourceType: string;
+  pageCount?: number | null;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type DocumentRecord = {
@@ -54,6 +87,7 @@ export type DocumentRecord = {
   driveFileId?: string | null;
   openUrl?: string | null;
   lastAnalyzed?: string | null;
+  pages?: DocumentPage[];
 };
 
 export type DriveStatus = {
@@ -146,19 +180,7 @@ export type DocumentAnalysis = {
 };
 
 export type DocumentAIResult = {
-  category:
-    | "Identity"
-    | "Employment"
-    | "Finance"
-    | "Insurance"
-    | "Property"
-    | "Medical"
-    | "Education"
-    | "Travel"
-    | "Vehicle"
-    | "Legal"
-    | "Photo"
-    | "Other";
+  category: "Identity" | "Employment" | "Finance" | "Insurance" | "Property" | "Medical" | "Education" | "Travel" | "Vehicle" | "Legal" | "Photo" | "Other";
   documentType: string;
   uniqueNumber: string | null;
   nameOnDocument: string | null;
@@ -167,8 +189,12 @@ export type DocumentAIResult = {
 
 export type AnalyzeDocumentResponse = {
   success: true;
-  document: DocumentAIResult & { title: string; ownership: "mine" | "other" | "unknown" };
-  files: Array<{ tempFileId: string;
+  document: DocumentAIResult & {
+    title: string;
+    ownership: "mine" | "other" | "unknown";
+  };
+  files: Array<{
+    tempFileId: string;
     originalName: string;
     mimeType: string;
     size: number;
@@ -201,8 +227,8 @@ export type HealthMember = {
 
 export type HealthMeasurement = {
   id: string;
-  sourceDocumentId: string;
-  recordId: string;
+  sourceDocumentId: string | null;
+  recordId: string | null;
   metricKey: string;
   displayName: string;
   originalName: string;
@@ -228,7 +254,7 @@ export type HealthRecord = {
   documentDate: string | null;
   provider?: string | null;
   doctor?: string | null;
-  processingStatus: string;
+  processingStatus: "pending" | "processing" | "processed" | "partial_medication_extraction" | "handwritten_unreadable" | "no_medications_detected" | "ai_processing_disabled" | "failed" | "awaiting_profile_match" | string;
   processingError?: string | null;
   measurementCount: number;
   trackedMeasurementCount: number;
@@ -240,9 +266,32 @@ export type HealthRecord = {
 
 export type HealthRecordDetail = HealthRecord & {
   measurements: HealthMeasurement[];
-  medications: Array<{ id: string; name: string; dose?: string | null; frequency?: string | null; duration?: string | null; quantity?: string | null; repeats?: boolean; runsOutAt?: string | null }>;
-  followUps: Array<{ id: string; title: string; dueDate?: string | null; explicitDate?: string | null; sourceText?: string | null }>;
-  reminders: Array<{ id: string; title: string; dueDate: string | null; origin: string; status: string }>;
+  medications: Array<{
+    id: string;
+    name: string;
+    dose?: string | null;
+    frequency?: string | null;
+    duration?: string | null;
+    quantity?: string | null;
+    repeats?: boolean;
+    runsOutAt?: string | null;
+    status?: "continuing" | "stopped" | string;
+    stoppedAt?: string | null;
+  }>;
+  followUps: Array<{
+    id: string;
+    title: string;
+    dueDate?: string | null;
+    explicitDate?: string | null;
+    sourceText?: string | null;
+  }>;
+  reminders: Array<{
+    id: string;
+    title: string;
+    dueDate: string | null;
+    origin: string;
+    status: string;
+  }>;
 };
 
 export type HealthHomeReminder = {
@@ -258,12 +307,25 @@ export type HealthMemberResolution = {
   type: "lab_report" | "medical_report" | "prescription";
   documentId: string;
   processingStatus: "awaiting_profile_match";
-  patient: { name?: string | null; dateOfBirth?: string | null; age?: number | null; gender?: string | null } | null;
-  memberMatch: { status: "missing" | "unmatched" | "ambiguous"; candidates: HealthMember[] };
+  patient: {
+    name?: string | null;
+    dateOfBirth?: string | null;
+    age?: number | null;
+    gender?: string | null;
+  } | null;
+  memberMatch: {
+    status: "missing" | "unmatched" | "ambiguous";
+    candidates: HealthMember[];
+  };
   measurements: [];
 };
 
-export type HealthProcessResponse = HealthRecordDetail & { patient?: HealthMemberResolution["patient"]; matchedMember?: HealthMember | null } | HealthMemberResolution;
+export type HealthProcessResponse =
+  | (HealthRecordDetail & {
+      patient?: HealthMemberResolution["patient"];
+      matchedMember?: HealthMember | null;
+    })
+  | HealthMemberResolution;
 
 export type TrackedHealthMetric = {
   id: string;
@@ -291,8 +353,20 @@ export type HealthAvailableMetric = {
 
 export type HealthOverview = {
   member: HealthMember;
-  upcoming: Array<{ id: string; title: string; dueDate: string | null; origin: string; status: string; sourceDocumentId?: string | null }>;
-  trackedMetrics: Array<TrackedHealthMetric & { measurements: HealthMeasurement[]; latest: HealthMeasurement | null }>;
+  upcoming: Array<{
+    id: string;
+    title: string;
+    dueDate: string | null;
+    origin: string;
+    status: string;
+    sourceDocumentId?: string | null;
+  }>;
+  trackedMetrics: Array<
+    TrackedHealthMetric & {
+      measurements: HealthMeasurement[];
+      latest: HealthMeasurement | null;
+    }
+  >;
   recentRecords: HealthRecord[];
 };
 
@@ -308,6 +382,17 @@ export type HealthTimelineEvent = {
   detail?: string | null;
   source: string;
   sourceType: string;
+  medication?: {
+    name: string;
+    dose?: string | null;
+    frequency?: string | null;
+    duration?: string | null;
+    quantity?: string | null;
+    repeats: boolean;
+    runsOutAt?: string | null;
+    status: "continuing" | "stopped" | string;
+    stoppedAt?: string | null;
+  };
 };
 
 export type HealthMedication = {
@@ -318,9 +403,12 @@ export type HealthMedication = {
   frequency?: string | null;
   duration?: string | null;
   quantity?: string | null;
+  status: "continuing" | "stopped" | string;
   repeats: boolean;
   runsOutAt?: string | null;
+  stoppedAt?: string | null;
   createdAt: string;
+  updatedAt?: string;
 };
 
 export type SaveDocumentPayload = {
@@ -430,6 +518,15 @@ export type PackageRequirement = {
   owner?: string;
   metadata?: Record<string, string | number | boolean | null> | null;
   acceptedDocumentTypes: string[];
+  assignment?: RequirementAssignment;
+};
+
+export type RequirementAssignmentSource = "AUTO" | "USER_SELECTED" | "USER_OVERRIDE";
+
+export type RequirementAssignment = {
+  assignmentSource: Exclude<RequirementAssignmentSource, "AUTO">;
+  documentId: string;
+  overriddenAt?: string | null;
 };
 
 export type FamilyMember = {
@@ -511,7 +608,13 @@ export type TrustInvitation = {
 
 export type TrustCenterResponse = {
   role: "OWNER" | "BOTH";
-  owner: { id: string; name: string; email: string; accessType: "OWNER"; note: string };
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+    accessType: "OWNER";
+    note: string;
+  };
   memberCount: number;
   members: TrustMember[];
   connections: TrustConnection[];
@@ -551,6 +654,7 @@ export type WealthRecord = WealthRecordPayload & {
     documentId: string;
     originalName: string;
     title?: string | null;
+    category: string;
     mimeType: string;
     size: number;
   }>;
@@ -666,5 +770,11 @@ export type PackageSearchOrGenerateResponse = {
 export type AccountUsage = {
   accountTier: "free" | "paid";
   storage: { usedBytes: number; limitBytes: number | null; unlimited: boolean };
-  aiUsage: { used: number | null; limit: number | null; remaining: number | null; unlimited: boolean; period: string };
+  aiUsage: {
+    used: number | null;
+    limit: number | null;
+    remaining: number | null;
+    unlimited: boolean;
+    period: string;
+  };
 };

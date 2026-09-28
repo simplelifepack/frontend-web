@@ -4,6 +4,7 @@ import {
   HeartPulse,
   Plus,
   ShieldAlert,
+  ShieldCheck,
   Stethoscope,
   Users,
 } from "lucide-react";
@@ -21,6 +22,8 @@ export default function HealthPageHeader({
   selectedMember,
   activeTab,
   upcoming,
+  recordCount,
+  medicationCount,
   onSelectMember,
   onAddMember,
   onPrepareVisit,
@@ -32,6 +35,8 @@ export default function HealthPageHeader({
   selectedMember: HealthMember | null;
   activeTab: HealthTab;
   upcoming: HealthOverview["upcoming"];
+  recordCount: number;
+  medicationCount: number;
   onSelectMember: (id: string) => void;
   onAddMember: () => void;
   onPrepareVisit: () => void;
@@ -84,27 +89,40 @@ export default function HealthPageHeader({
                 .join(" · ")}
             </p>
           </div>
-          <button
-            type="button"
-            style={btnGhost}
-            onClick={onPrepareVisit}
-          >
-            <FileText size={15} /> Prepare for visit
-          </button>
-          <button
-            type="button"
-            style={btnGhost}
-            onClick={() => onDialog("emergency")}
-          >
-            <ShieldAlert size={15} /> Emergency card
-          </button>
-          <button
-            type="button"
-            style={btnGhost}
-            onClick={() => onDialog("reading")}
-          >
-            <Plus size={15} /> Log reading
-          </button>
+          <div className="lp-health-profile-actions">
+            <button
+              type="button"
+              className="lp-health-action lp-health-action-primary"
+              style={btnGhost}
+              onClick={onPrepareVisit}
+            >
+              <FileText size={15} /> Prepare for a visit
+            </button>
+            <button
+              type="button"
+              className="lp-health-action"
+              style={btnGhost}
+              onClick={() => onDialog("reading")}
+            >
+              <Plus size={15} /> Log reading
+            </button>
+            <button
+              type="button"
+              className="lp-health-action"
+              style={btnGhost}
+              onClick={() => onDialog("emergency")}
+            >
+              <ShieldAlert size={15} /> In an emergency
+            </button>
+            <button
+              type="button"
+              className="lp-health-action"
+              style={btnGhost}
+              onClick={() => onDialog("insurance")}
+            >
+              <ShieldCheck size={15} /> Insurance card
+            </button>
+          </div>
         </div>
       ) : null}
 
@@ -128,6 +146,10 @@ export default function HealthPageHeader({
               <FileText size={16} />
             )}
             {tab}
+            {tab === "Medications" && medicationCount ? (
+              <span>{medicationCount}</span>
+            ) : null}
+            {tab === "Records" && recordCount ? <span>{recordCount}</span> : null}
           </button>
         ))}
       </div>

@@ -12,6 +12,7 @@ GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 const MB = 1024 * 1024;
 export const MAX_ORIGINAL_FILE_SIZE = Number(import.meta.env.VITE_MAX_DOCUMENT_SIZE_BYTES) || 10 * MB;
+export const MAX_IMAGE_UPLOAD_BATCH_SIZE = MAX_ORIGINAL_FILE_SIZE;
 const MAX_IMAGE_WIDTH = Number(import.meta.env.VITE_MAX_IMAGE_WIDTH) || 12_000;
 const MAX_IMAGE_HEIGHT = Number(import.meta.env.VITE_MAX_IMAGE_HEIGHT) || 12_000;
 const MAX_IMAGE_PIXELS = Number(import.meta.env.VITE_MAX_IMAGE_PIXELS) || 60_000_000;
@@ -33,6 +34,7 @@ export class DocumentFileValidationError extends Error {
     readonly code:
       | "EMPTY_FILE"
       | "FILE_TOO_LARGE"
+      | "IMAGE_BATCH_TOO_LARGE"
       | "UNSUPPORTED_FILE_TYPE"
       | "FILE_SIGNATURE_MISMATCH"
       | "FILE_CORRUPTED"
@@ -54,6 +56,18 @@ function extensionOf(filename: string) {
 
 function matches(bytes: Uint8Array, expected: number[], offset = 0) {
   return expected.every((value, index) => bytes[offset + index] === value);
+}
+
+function isIgnorableTrailingByte(value: number) {
+  return value === 0x00 || value === 0x09 || value === 0x0a || value === 0x0c || value === 0x0d || value === 0x20;
+}
+
+function assertNoUnexpectedImageTrailingData(bytes: Uint8Array, endOffset: number) {
+  for (const value of bytes.subarray(endOffset)) {
+    if (!isIgnorableTrailingByte(value)) {
+      throw new DocumentFileValidationError("FILE_CORRUPTED", "The image contains unexpected trailing data.");
+    }
+  }
 }
 
 export function detectDocumentMimeType(bytes: Uint8Array): SupportedDocumentMimeType | null {
@@ -159,24 +173,29 @@ async function parsePdf(bytes: Uint8Array) {
 }
 
 async function decodeImage(bytes: Uint8Array, mimeType: SupportedDocumentMimeType) {
-  const isValidEnding =
-    (mimeType === "image/jpeg" &&
-      bytes.at(-2) === 0xff &&
-      bytes.at(-1) === 0xd9) ||
-    (mimeType === "image/png" &&
-      matches(
-        bytes,
-        [0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82],
-        bytes.length - 12,
-      )) ||
-    (mimeType === "image/webp" &&
-      bytes.length >= 12 &&
-      new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(4, true) + 8 === bytes.length);
-  if (!isValidEnding) {
-    throw new DocumentFileValidationError(
-      "FILE_CORRUPTED",
-      "The image is truncated or contains unexpected trailing data.",
-    );
+  if (mimeType === "image/jpeg") {
+    let end = -1;
+    for (let index = bytes.length - 1; index > 0; index -= 1) {
+      if (bytes[index] === 0xd9 && bytes[index - 1] === 0xff) {
+        end = index;
+        break;
+      }
+    }
+    if (end < 0) throw new DocumentFileValidationError("FILE_CORRUPTED", "The JPEG is truncated.");
+  }
+  if (mimeType === "image/png") {
+    const marker = [0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82];
+    let end = -1;
+    for (let index = Math.max(0, bytes.length - 256); index <= bytes.length - marker.length; index += 1) {
+      if (matches(bytes, marker, index)) end = index + marker.length;
+    }
+    if (end < 0) throw new DocumentFileValidationError("FILE_CORRUPTED", "The PNG is truncated.");
+    assertNoUnexpectedImageTrailingData(bytes, end);
+  }
+  if (mimeType === "image/webp") {
+    const end = bytes.length >= 12 ? new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(4, true) + 8 : -1;
+    if (end < 12 || end > bytes.length) throw new DocumentFileValidationError("FILE_CORRUPTED", "The WebP container length is invalid.");
+    assertNoUnexpectedImageTrailingData(bytes, end);
   }
   let bitmap: ImageBitmap | undefined;
   try {
@@ -237,4 +256,16 @@ export async function validateDocumentFile(file: File) {
   }
 
   return { bytes, mimeType: detectedMimeType };
+}
+
+export function validateImageUploadBatch(files: File[]) {
+  const imageBytes = files
+    .filter((file) => file.type.startsWith("image/"))
+    .reduce((total, file) => total + file.size, 0);
+  if (imageBytes > MAX_IMAGE_UPLOAD_BATCH_SIZE) {
+    throw new DocumentFileValidationError(
+      "IMAGE_BATCH_TOO_LARGE",
+      documentValidationMessages.IMAGE_BATCH_TOO_LARGE,
+    );
+  }
 }

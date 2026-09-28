@@ -69,8 +69,8 @@ function renderModal(route: string) {
   return {
     ...view,
     onClose,
-    showReview: () => {
-      pendingAnalysis = analysis;
+    showReview: (override: AnalyzeDocumentResponse = analysis) => {
+      pendingAnalysis = override;
       view.rerender(
         <MemoryRouter initialEntries={[route]}>
           <CurrentRoute />
@@ -96,7 +96,7 @@ describe("manual document upload review", () => {
     const pdf = new File(["%PDF-1.4\n%%EOF"], "statement.pdf", { type: "application/pdf" });
     fireEvent.change(input, { target: { files: [pdf] } });
     expect(screen.getByText("statement.pdf")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Analyze 1 page" }));
+    fireEvent.click(screen.getByRole("button", { name: "Continue with 1 page" }));
     expect(analyzeDocument).toHaveBeenCalledWith({ files: [pdf], aiAnalysisConsent: true });
 
     const dropped = new File(["%PDF-1.4\n%%EOF"], "drop.pdf", { type: "application/pdf" });
@@ -111,8 +111,7 @@ describe("manual document upload review", () => {
     "saves from %s with only %s and stays on its opening route",
     async (route, category) => {
       const view = renderModal(route);
-      fireEvent.click(screen.getByRole("checkbox"));
-      view.showReview();
+      view.showReview({ ...analysis, warnings: [{ code: "AI_PROCESSING_DISABLED", message: "AI processing is disabled for this account." }] });
       expect((screen.getByLabelText("Title") as HTMLInputElement).value).toBe(
         "",
       );
@@ -144,8 +143,7 @@ describe("manual document upload review", () => {
 
   it("keeps optional PAN number and AI-consent metadata distinct", async () => {
     const manual = renderModal("/documents");
-    fireEvent.click(screen.getByRole("checkbox"));
-    manual.showReview();
+    manual.showReview({ ...analysis, warnings: [{ code: "AI_PROCESSING_DISABLED", message: "AI processing is disabled for this account." }] });
     fireEvent.change(screen.getByLabelText("Category"), {
       target: { value: "Identity" },
     });

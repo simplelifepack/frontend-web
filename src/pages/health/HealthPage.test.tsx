@@ -6,9 +6,16 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { api } from "@/lib/api";
-import type { HealthMember, HealthRecord, HealthRecordDetail } from "@/lib/api.types";
+import { preferencesApi } from "@/lib/preferences-api";
+import type {
+  DocumentRecord,
+  HealthMember,
+  HealthRecord,
+  HealthRecordDetail,
+} from "@/lib/api.types";
 import HealthPage from "./index";
 
 vi.mock("@/lib/api", () => ({
@@ -20,10 +27,24 @@ vi.mock("@/lib/api", () => ({
       record: vi.fn(),
       timeline: vi.fn(),
       measurements: vi.fn(),
+      createMeasurement: vi.fn(),
       availableMetrics: vi.fn(),
       createMedication: vi.fn(),
+      updateRecord: vi.fn(),
     },
-    documents: { download: vi.fn() },
+    documents: {
+      download: vi.fn(),
+      getById: vi.fn(),
+      list: vi.fn(),
+      preview: vi.fn(),
+      previewPage: vi.fn(),
+    },
+  },
+}));
+
+vi.mock("@/lib/preferences-api", () => ({
+  preferencesApi: {
+    get: vi.fn(),
   },
 }));
 
@@ -87,6 +108,29 @@ const details: Record<string, HealthRecordDetail> = Object.fromEntries(
     },
   ]),
 );
+const documents: Record<string, DocumentRecord> = Object.fromEntries(
+  records.map((record) => [
+    record.documentId,
+    {
+      id: record.documentId,
+      originalName: `${record.documentId}.png`,
+      mimeType: "image/png",
+      size: 1200,
+      documentType: "Lab Report",
+      category: "Medical",
+      analysisSource: "upload",
+      confidence: 0.98,
+      classificationStatus: "verified",
+      classificationConfidence: 0.98,
+      ownershipStatus: "verified",
+      readinessEligible: true,
+      fields: {},
+      source: "MANUAL_UPLOAD",
+      createdAt: "2026-05-02",
+      updatedAt: "2026-05-02",
+    },
+  ]),
+);
 const manualMedication = {
   id: "medication-manual",
   memberId: "member-a",
@@ -95,8 +139,18 @@ const manualMedication = {
   frequency: "Twice daily",
   repeats: true,
   runsOutAt: "2026-10-25",
+  status: "continuing",
+  stoppedAt: null,
   createdAt: "2026-09-25",
 };
+
+function renderHealthPage() {
+  return render(
+    <MemoryRouter>
+      <HealthPage />
+    </MemoryRouter>,
+  );
+}
 
 afterEach(() => {
   cleanup();
@@ -105,6 +159,13 @@ afterEach(() => {
 
 describe("Health page orchestration", () => {
   it("renders, switches profiles, and opens exact records with duplicate type and date", async () => {
+    vi.mocked(preferencesApi.get).mockResolvedValue({
+      country: "IN",
+      passportCountry: "IN",
+      homeCurrency: "INR",
+      appearance: "dark",
+      aiProcessingEnabled: true,
+    });
     vi.mocked(api.health.members).mockResolvedValue(members);
     vi.mocked(api.health.overview).mockImplementation(async (memberId) => ({
       member: members.find((member) => member.id === memberId)!,
@@ -118,48 +179,118 @@ describe("Health page orchestration", () => {
     vi.mocked(api.health.record).mockImplementation(
       async (recordId) => details[recordId],
     );
+    vi.mocked(api.documents.getById).mockImplementation(
+      async (documentId) => documents[documentId],
+    );
+    vi.mocked(api.documents.preview).mockResolvedValue({
+      blob: new Blob(["preview"], { type: "image/png" }),
+      fileName: "preview.png",
+    });
     vi.mocked(api.health.timeline).mockResolvedValue([]);
     vi.mocked(api.health.measurements).mockResolvedValue([]);
     vi.mocked(api.health.availableMetrics).mockResolvedValue([]);
+    if (!URL.createObjectURL)
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        value: vi.fn(),
+      });
+    if (!URL.revokeObjectURL)
+      Object.defineProperty(URL, "revokeObjectURL", {
+        configurable: true,
+        value: vi.fn(),
+      });
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:health-preview");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(window, "open").mockReturnValue(null);
 
-    render(<HealthPage />);
+    renderHealthPage();
     expect(
       await screen.findByRole("heading", { name: "Alex Example" }),
     ).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Records" }));
+    fireEvent.click(screen.getByRole("button", { name: /^Records/ }));
     await waitFor(() =>
-      expect(screen.getAllByRole("button", { name: "View" })).toHaveLength(2),
+      expect(
+        screen.getAllByRole("button", {
+          name: /^Correct what was read for Lab Report/,
+        }),
+      ).toHaveLength(2),
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "View" })[1]);
+    fireEvent.click(
+      screen.getAllByRole("button", {
+        name: /^Correct what was read for Lab Report/,
+      })[1],
+    );
     let dialog = await screen.findByRole("dialog", {
-      name: "Health record details",
+      name: "Health record document",
     });
     await waitFor(() =>
-      expect(within(dialog).getByText("Clinic B")).toBeTruthy(),
+      expect(api.documents.getById).toHaveBeenCalledWith("document-b"),
     );
     expect(api.health.record).toHaveBeenCalledWith("record-b");
+    expect(within(dialog).getByText("Lab Report")).toBeTruthy();
+    expect(within(dialog).getByText("Upload · Medical")).toBeTruthy();
+    expect(within(dialog).getByText("LABORATORY REPORT")).toBeTruthy();
+    expect(within(dialog).getByText("Alex Example")).toBeTruthy();
+    expect(within(dialog).getByText("Clinic B")).toBeTruthy();
+    expect(within(dialog).queryByText("Tracked measurements")).toBeNull();
+    expect(within(dialog).queryByText("All measurements")).toBeNull();
+    expect(
+      within(dialog).queryByRole("button", { name: "View original document" }),
+    ).toBeNull();
+    expect(
+      within(dialog).getByRole("button", { name: "View original" }),
+    ).toBeTruthy();
     expect(
       [...document.querySelectorAll(".lp-health-record-row")]
         .find((row) => row.textContent?.includes("Clinic B"))
         ?.classList.contains("active"),
     ).toBe(true);
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Correct details" }),
+    );
+    expect(
+      await screen.findByRole("dialog", { name: "Choose measurements to track" }),
+    ).toBeTruthy();
+    vi.mocked(api.health.updateRecord).mockResolvedValue({
+      ...details["record-b"]!,
+      type: "prescription",
+    });
+    const correctionDialog = screen.getByRole("dialog", {
+      name: "Choose measurements to track",
+    });
+    fireEvent.change(within(correctionDialog).getByLabelText("Document type"), {
+      target: { value: "prescription" },
+    });
+    fireEvent.click(
+      within(correctionDialog).getByRole("button", { name: "Save tracking" }),
+    );
+    await waitFor(() =>
+      expect(api.health.updateRecord).toHaveBeenCalledWith("record-b", {
+        type: "prescription",
+      }),
+    );
 
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Close report details" }),
+      screen.getAllByRole("button", {
+        name: /^Correct what was read for Lab Report/,
+      })[0],
     );
-    fireEvent.click(screen.getAllByRole("button", { name: "View" })[0]);
     dialog = await screen.findByRole("dialog", {
-      name: "Health record details",
+      name: "Health record document",
     });
     await waitFor(() =>
-      expect(within(dialog).getByText("Clinic A")).toBeTruthy(),
+      expect(api.documents.getById).toHaveBeenCalledWith("document-a"),
     );
     expect(api.health.record).toHaveBeenCalledWith("record-a");
     expect(api.documents.download).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole("button", { name: "View original" }));
+    await waitFor(() =>
+      expect(api.documents.preview).toHaveBeenCalledWith("document-a"),
+    );
 
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Close report details" }),
+      within(dialog).getByRole("button", { name: "Close document viewer" }),
     );
     fireEvent.click(screen.getByRole("button", { name: /JordanChild/ }));
     expect(
@@ -171,6 +302,13 @@ describe("Health page orchestration", () => {
   });
 
   it("keeps the Timeline, Medications, emergency, reading, and add-record surfaces wired", async () => {
+    vi.mocked(preferencesApi.get).mockResolvedValue({
+      country: "IN",
+      passportCountry: "IN",
+      homeCurrency: "INR",
+      appearance: "dark",
+      aiProcessingEnabled: true,
+    });
     vi.mocked(api.health.members).mockResolvedValue(members);
     vi.mocked(api.health.overview).mockResolvedValue({
       member: members[0]!,
@@ -204,14 +342,22 @@ describe("Health page orchestration", () => {
     vi.mocked(api.health.measurements).mockResolvedValue([]);
     vi.mocked(api.health.availableMetrics).mockResolvedValue([]);
     vi.mocked(api.health.createMedication).mockResolvedValue(manualMedication);
+    vi.mocked(api.documents.list).mockResolvedValue([]);
 
-    render(<HealthPage />);
+    renderHealthPage();
     await screen.findByRole("heading", { name: "Alex Example" });
     fireEvent.click(screen.getByRole("button", { name: "Timeline" }));
     expect(await screen.findByText("Test reading 118 mg/dL")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Medications" }));
     expect(await screen.findByText("Test medication")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Add medication" }));
+    const medicationCard = screen
+      .getByText("Current medications")
+      .closest(".lp-health-med-card")!;
+    fireEvent.click(
+      within(medicationCard as HTMLElement).getByRole("button", {
+        name: "Add",
+      }),
+    );
     const medicationDialog = await screen.findByRole("dialog", { name: "Add medication" });
     fireEvent.click(within(medicationDialog).getByRole("button", { name: "Add medication" }));
     expect(await within(medicationDialog).findByText("Name and dose are required.")).toBeTruthy();
@@ -233,16 +379,18 @@ describe("Health page orchestration", () => {
     );
     expect(api.health.timeline).toHaveBeenCalledTimes(2);
 
-    fireEvent.click(screen.getByRole("button", { name: "Emergency card" }));
+    fireEvent.click(screen.getByRole("button", { name: "In an emergency" }));
     expect(
       await screen.findByRole("dialog", { name: "Emergency card" }),
     ).toBeTruthy();
     fireEvent.click(screen.getAllByRole("button", { name: "Close" })[0]);
     fireEvent.click(screen.getByRole("button", { name: "Log reading" }));
     expect(
-      await screen.findByRole("dialog", { name: "Log reading" }),
+      await screen.findByRole("dialog", { name: "Log a reading for Alex" }),
     ).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Add health record" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    fireEvent.click(screen.getByRole("button", { name: "Records" }));
+    fireEvent.click(screen.getByRole("button", { name: "Upload medical record" }));
     expect(
       await screen.findByRole("heading", { name: "Add health record" }),
     ).toBeTruthy();

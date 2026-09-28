@@ -33,6 +33,11 @@ it('shows the same helpful corruption message for incomplete and undecodable ima
     await expect(validateDocumentFile(file(bytes))).rejects.toMatchObject({ code: 'FILE_CORRUPTED', message: 'This file appears to be corrupted. Please try uploading another copy.' });
   }
 });
+it('accepts decodable images without requiring an exact terminal marker position', async () => {
+  const bytes = [0xff, 0xd8, 0xff, 0xe0, 0, 0, 0xff, 0xd9, 0, 0];
+  vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 10, height: 10, close: vi.fn() }));
+  await expect(validateDocumentFile(file(bytes, 'photo.jpg', 'image/jpeg'))).resolves.toMatchObject({ mimeType: 'image/jpeg' });
+});
 it('replaces technical API validation messages while retaining their codes', () => {
   for (const code of ['FILE_CORRUPTED', 'FILE_TOO_LARGE', 'UNSUPPORTED_FILE_TYPE']) {
     const error = apiError({ code, message: 'truncated unexpected trailing data decoder' });

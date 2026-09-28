@@ -2,16 +2,19 @@ import { useEffect, useRef, useState, type DragEvent } from "react";
 import { FileText, Upload, X } from "lucide-react";
 import { btnGhost, btnPrimary } from "@/constants/theme";
 import { isSupportedHealthFile } from "../healthUtils";
-import type { HealthDocumentType } from "../types/health";
+import { healthDocumentTypes, type HealthDocumentType } from "../types/health";
+import { documentTypeLabels } from "../healthUtils";
 
 function AddRecordDialog({
   onClose,
   onCreate,
+  aiProcessingEnabled,
 }: {
   onClose: () => void;
+  aiProcessingEnabled: boolean;
   onCreate: (payload: {
     file: File;
-    type: HealthDocumentType;
+    type?: HealthDocumentType;
   }) => Promise<void>;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -62,13 +65,17 @@ function AddRecordDialog({
   };
 
   const process = async () => {
-    if (!file || !type || processing) return;
+    if (!file || (!aiProcessingEnabled && !type) || processing) return;
     setProcessing(true);
     setError("");
     try {
-      await onCreate({ file, type });
-    } catch {
-      setError("Unable to process health record. Try again.");
+      await onCreate({ file, type: aiProcessingEnabled ? undefined : type });
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to process health record. Try again.",
+      );
       setProcessing(false);
     }
   };
@@ -151,19 +158,23 @@ function AddRecordDialog({
             </button>
           </div>
         )}
-        <label className="lp-health-document-type">
-          <span>Document type</span>
-          <select
-            value={type}
-            onChange={(event) =>
-              setType(event.target.value as HealthDocumentType)
-            }
-          >
-            <option value="lab_report">Lab Report</option>
-            <option value="medical_report">Medical Report</option>
-            <option value="prescription">Prescription</option>
-          </select>
-        </label>
+        {!aiProcessingEnabled ? (
+          <label className="lp-health-document-type">
+            <span>Document type *</span>
+            <select
+              value={type}
+              onChange={(event) =>
+                setType(event.target.value as HealthDocumentType)
+              }
+            >
+              {healthDocumentTypes.map((documentType) => (
+                <option key={documentType} value={documentType}>
+                  {documentTypeLabels[documentType] ?? documentType}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         {error ? <div className="lp-health-form-error">{error}</div> : null}
         <footer>
           <button type="button" style={btnGhost} onClick={onClose}>
@@ -172,7 +183,7 @@ function AddRecordDialog({
           <button
             type="button"
             style={btnPrimary}
-            disabled={!file || !type || processing}
+            disabled={!file || (!aiProcessingEnabled && !type) || processing}
             onClick={process}
           >
             <Upload size={15} /> {processing ? "Processing..." : "Process"}

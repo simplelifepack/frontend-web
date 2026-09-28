@@ -3,11 +3,13 @@ import { Check, Search, X } from "lucide-react";
 import type { HealthRecordDetail, TrackedHealthMetric } from "@/lib/api.types";
 import { btnGhost, btnPrimary } from "@/constants/theme";
 import {
+  documentTypeLabels,
   filterMeasurements,
   metricIdentity,
   uniqueMeasurements,
   valueWithUnit,
 } from "../healthUtils";
+import { healthDocumentTypes, type HealthDocumentType } from "../types/health";
 
 function MeasurementSelectionDialog({
   record,
@@ -25,6 +27,7 @@ function MeasurementSelectionDialog({
       context?: string | null;
       bodySite?: string | null;
     }>,
+    documentType: HealthDocumentType,
   ) => Promise<void>;
 }) {
   const alreadyTracked = new Set(tracked.map(metricIdentity));
@@ -38,6 +41,9 @@ function MeasurementSelectionDialog({
       ),
   );
   const [query, setQuery] = useState("");
+  const [documentType, setDocumentType] = useState<HealthDocumentType>(
+    record.type,
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const visible = filterMeasurements(measurements, query);
@@ -62,8 +68,7 @@ function MeasurementSelectionDialog({
     setSaving(true);
     setError("");
     try {
-      await onSave(
-        measurements
+      const metrics = measurements
           .filter(
             (item) =>
               selected.has(metricIdentity(item)) &&
@@ -74,8 +79,8 @@ function MeasurementSelectionDialog({
             displayName: item.displayName,
             context: item.context,
             bodySite: item.bodySite,
-          })),
-      );
+          }));
+      await onSave(metrics, documentType);
     } catch {
       setError("Unable to save tracking preferences. Try again.");
       setSaving(false);
@@ -87,6 +92,7 @@ function MeasurementSelectionDialog({
         className="lp-modal-panel lp-health-add-dialog lp-health-measurement-dialog"
         role="dialog"
         aria-modal="true"
+        aria-label="Choose measurements to track"
       >
         <header className="lp-health-dialog-head">
           <div>
@@ -97,6 +103,22 @@ function MeasurementSelectionDialog({
             <X size={18} />
           </button>
         </header>
+        <h3>Correct details</h3>
+        <label className="lp-health-document-type lp-health-correct-type">
+          <span>Document type</span>
+          <select
+            value={documentType}
+            onChange={(event) =>
+              setDocumentType(event.target.value as HealthDocumentType)
+            }
+          >
+            {healthDocumentTypes.map((type) => (
+              <option key={type} value={type}>
+                {documentTypeLabels[type] ?? type}
+              </option>
+            ))}
+          </select>
+        </label>
         <h3>Choose what you want to track</h3>
         <div className="lp-health-toolbar compact">
           <label>

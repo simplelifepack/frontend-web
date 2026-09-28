@@ -1,4 +1,4 @@
-import { CalendarClock, Microscope, Stethoscope } from "lucide-react";
+import { Activity, Stethoscope } from "lucide-react";
 import Card from "@/components/Card";
 import type { HealthTimelineEvent } from "@/lib/api.types";
 import { formatDate, formatMonthYear } from "../healthUtils";
@@ -15,9 +15,6 @@ function Timeline({ events }: { events: HealthTimelineEvent[] }) {
   }, []);
   return (
     <Card className="lp-health-timeline">
-      <div className="lp-health-card-title">
-        <CalendarClock size={17} /> Health timeline
-      </div>
       {groups.length ? (
         groups.map((group) => (
           <section className="lp-health-timeline-group" key={group.month}>
@@ -31,7 +28,7 @@ function Timeline({ events }: { events: HealthTimelineEvent[] }) {
                   <i aria-hidden="true" />
                   <span className="lp-health-timeline-icon">
                     {event.eventType === "measurement" ? (
-                      <Microscope size={16} />
+                      <Activity size={16} />
                     ) : (
                       <Stethoscope size={16} />
                     )}
@@ -47,7 +44,7 @@ function Timeline({ events }: { events: HealthTimelineEvent[] }) {
                       {event.eventType === "measurement"
                         ? "Reading"
                         : "Medication"}{" "}
-                      · {event.source}
+                      · {event.eventType === "measurement" ? "Reading logged" : event.source}
                     </small>
                     {event.detail ? <small>{event.detail}</small> : null}
                   </div>

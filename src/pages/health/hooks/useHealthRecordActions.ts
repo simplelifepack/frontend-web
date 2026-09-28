@@ -1,65 +1,50 @@
 import { api } from "@/lib/api";
 import type { HealthDocumentType } from "../types/health";
-import {
-  documentTypeLabels,
-  healthMemberResolutionMessage,
-  isMemberResolution,
-} from "../healthUtils";
+import { documentTypeLabels, healthMemberResolutionMessage, isMemberResolution } from "../healthUtils";
 import type { useHealthData } from "./useHealthData";
 
+function prescriptionUploadMessage(record: { processingStatus: string; medicationCount: number; processingError?: string | null }) {
+  if (record.processingStatus === "partial_medication_extraction") return "Some information in this prescription couldn't be read. Please review the detected medications and add any missing medicines manually.";
+  if (record.processingStatus === "handwritten_unreadable") return "Handwritten prescription couldn't be read. We couldn't reliably identify the medicines from this handwriting. You can enter the medications manually.";
+  if (record.processingStatus === "ai_processing_disabled") return "AI processing is turned off. Turn on AI processing in Preferences to automatically extract medications from prescriptions, or enter the medications manually.";
+  if (record.processingStatus === "no_medications_detected") return record.processingError || "No medications were detected in this prescription. You can enter medications manually.";
+  if (record.medicationCount) return "Prescription processed. Review the detected medications and add any missing medicines manually.";
+  return "Prescription saved. Add medications manually if needed.";
+}
+
 export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
-  const {
-    selectedMemberId,
-    memberResolution,
-    recordOpenRequest,
-    setMessage,
-    setShowAddRecord,
-    setMemberResolution,
-    setSelectedMemberId,
-    setActiveTab,
-    setSelectedRecord,
-    setProcessedRecord,
-    refreshHealth,
-    setDeleteRecord,
-    setSelectedRecordId,
-    setIsRecordModalOpen,
-    setMembers,
-    setShowAddMember,
-    setOverview,
-    setRecords,
-    setTimeline,
-    setAvailableMetrics,
-  } = data;
-  const createRecord = async (payload: {
-    file: File;
-    type: HealthDocumentType;
-  }) => {
+  const { selectedMemberId, memberResolution, recordOpenRequest, setMessage, setShowAddRecord, setMemberResolution, setSelectedMemberId, setActiveTab, setSelectedRecord, setProcessedRecord, refreshHealth, setDeleteRecord, setSelectedRecordId, setIsRecordModalOpen, setMembers, setShowAddMember, setOverview, setRecords, setTimeline, setAvailableMetrics } = data;
+  const createRecord = async (payload: { file: File; type?: HealthDocumentType }) => {
     setMessage("Processing health record...");
     try {
       const analysis = await api.documents.analyze([payload.file], true);
+      const aiDisabled = analysis.warnings.some(
+        (warning) => warning.code === "AI_PROCESSING_DISABLED",
+      );
       const saved = await api.documents.save({
         tempFileIds: analysis.files.map((file) => file.tempFileId),
         originalName: analysis.files[0]?.originalName ?? payload.file.name,
         mimeType: analysis.files[0]?.mimeType ?? payload.file.type,
-        size:
-          analysis.files.reduce((total, file) => total + file.size, 0) ||
-          payload.file.size,
+        size: analysis.files.reduce((total, file) => total + file.size, 0) || payload.file.size,
         title: payload.file.name,
         category: "Medical",
-        documentType: documentTypeLabels[payload.type] ?? "Medical Report",
-        confidence: 90,
+        documentType: payload.type
+          ? documentTypeLabels[payload.type]
+          : "Medical Report",
+        confidence: aiDisabled ? 0 : 90,
         fields: {},
         reviewFields: [],
         rawExtractedText: "",
         warnings: analysis.warnings,
         evidence: [],
-        analysisSource: "ai",
+        analysisSource: aiDisabled ? "manual" : "ai",
         duplicateAction: "keep_both",
         userConfirmedUnknown: true,
       });
       const record = await api.health.createRecord({
+        memberId: selectedMemberId || undefined,
         documentId: saved.document.id,
-        type: payload.type,
+        ...(payload.type ? { type: payload.type } : {}),
       });
       setShowAddRecord(false);
       if (isMemberResolution(record)) {
@@ -69,30 +54,16 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
       }
       setSelectedMemberId(record.memberId);
       await refreshHealth(record.memberId);
-      setActiveTab("Records");
+      setActiveTab(record.type === "prescription" ? "Medications" : "Records");
       setSelectedRecord(record);
       if (record.measurements.length) {
         setProcessedRecord(record);
-        setMessage(
-          record.matchedMember
-            ? `Report added to ${record.matchedMember.name}`
-            : "",
-        );
+        setMessage(record.matchedMember ? `Report added to ${record.matchedMember.name}` : "");
       } else {
-        setMessage(
-          record.processingStatus === "failed"
-            ? "We couldn't process this health record. Try processing it again."
-            : "Health record processed.",
-        );
+        setMessage(record.type === "prescription" ? prescriptionUploadMessage(record) : record.processingStatus === "failed" ? "We couldn't process this health record. Try processing it again." : "Health record processed.");
       }
     } catch (error) {
-      setMessage(
-        error instanceof Error && error.message.includes("file type")
-          ? "Only images and PDF files are supported."
-          : error instanceof Error
-            ? error.message
-            : "Health record could not be processed.",
-      );
+      setMessage(error instanceof Error && error.message.includes("file type") ? "Only images and PDF files are supported." : error instanceof Error ? error.message : "Health record could not be processed.");
       throw error;
     }
   };
@@ -105,19 +76,14 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
         documentId: memberResolution.documentId,
         type: memberResolution.type,
       });
-      if (isMemberResolution(record))
-        throw new Error("A health profile still needs to be selected.");
+      if (isMemberResolution(record)) throw new Error("A health profile still needs to be selected.");
       setMemberResolution(null);
       setSelectedMemberId(memberId);
       await refreshHealth(memberId);
       setSelectedRecord(record);
       if (record.measurements.length) setProcessedRecord(record);
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to assign this health record.",
-      );
+      setMessage(error instanceof Error ? error.message : "Unable to assign this health record.");
     }
   };
 
@@ -129,26 +95,18 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
       await refreshHealth(selectedMemberId);
       setMessage("Health record deleted.");
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Health record could not be deleted.",
-      );
+      setMessage(error instanceof Error ? error.message : "Health record could not be deleted.");
     }
   };
 
   const viewOriginalDocument = async (documentId: string) => {
     try {
-      const { blob } = await api.documents.download(documentId);
+      const { blob } = await api.documents.preview(documentId);
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
       window.setTimeout(() => URL.revokeObjectURL(url), 1200);
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Original document could not be opened.",
-      );
+      setMessage(error instanceof Error ? error.message : "Original document could not be opened.");
     }
   };
 
@@ -162,21 +120,12 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
     } catch (error) {
       if (request === recordOpenRequest.current) {
         setIsRecordModalOpen(false);
-        setMessage(
-          error instanceof Error
-            ? error.message
-            : "Health record could not be opened.",
-        );
+        setMessage(error instanceof Error ? error.message : "Health record could not be opened.");
       }
     }
   };
 
-  const createMember = async (payload: {
-    name: string;
-    relation: string;
-    bloodGroup?: string | null;
-    dateOfBirth?: string | null;
-  }) => {
+  const createMember = async (payload: { name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null }) => {
     const member = await api.health.createMember(payload);
     setMembers((current) => [...current, member]);
     setSelectedMemberId(member.id);

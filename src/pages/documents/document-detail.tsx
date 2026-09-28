@@ -83,6 +83,7 @@ export default function DocumentDetail({ doc }: { doc: DocumentRecord }) {
           <Pill tone="flat">{labelize(category)}</Pill>
           <Pill tone="flat">{labelize(doc.documentType)}</Pill>
           <Pill tone="flat">{sourceLabel(doc)}</Pill>
+          <Pill tone="flat">{doc.pages?.length ? `${doc.pages.length} page${doc.pages.length === 1 ? "" : "s"}` : "1 page"}</Pill>
         </div>
         <div style={{ color: T.muted, fontSize: 13, marginTop: 12 }}>
           {doc.source === "MANUAL_UPLOAD" ? "Uploaded" : "Indexed"} {new Date(doc.createdAt).toLocaleString()} . {doc.originalName}

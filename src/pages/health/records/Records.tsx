@@ -1,4 +1,12 @@
-import { Eye, FileText, Trash2 } from "lucide-react";
+import {
+  FileText,
+  FlaskConical,
+  Pencil,
+  Pill,
+  Stethoscope,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import Card from "@/components/Card";
 import type { HealthRecord } from "@/lib/api.types";
 import { documentTypeLabels, formatDate } from "../healthUtils";
@@ -18,14 +26,23 @@ function Records({
 }) {
   return (
     <div className="lp-two-col lp-health-records-view">
-      <Card>
-        <div className="lp-health-card-title">
-          <FileText size={17} /> Records{" "}
+      <Card className="lp-health-records-card">
+        <div className="lp-health-records-head">
+          <h2>
+            <Stethoscope size={18} /> Records
+          </h2>
           <button type="button" onClick={onAdd}>
-            + Add health record
+            <Upload size={18} /> Upload medical record
           </button>
         </div>
-        <div className="lp-health-record-list">
+        <p className="lp-health-records-copy">
+          Upload anything. ReadiNes reads the record on your device to file it,
+          pull out the values and the ranges printed beside them, and note the
+          doctor, hospital, and specialisation so a visit kit can be assembled.
+          It records what the document says and never adds an opinion. A copy
+          lands in Documents too.
+        </p>
+        <div className="lp-health-record-list" role="list">
           {records.map((record) => (
             <RecordRow
               key={record.id}
@@ -52,37 +69,60 @@ function RecordRow({
   onView?: () => void;
   onDelete?: () => void;
 }) {
-  const count = record.measurementCount;
+  const label = documentTypeLabels[record.type] ?? record.type;
+  const Icon =
+    record.type === "lab_report"
+      ? FlaskConical
+      : record.type === "prescription"
+        ? Pill
+        : FileText;
+  const readDate =
+    record.processedAt ?? record.documentDate ?? record.createdAt ?? null;
+  const source = [record.doctor, record.provider].filter(Boolean).join(" · ");
   return (
     <div
       className={
         active ? "lp-health-record-row active" : "lp-health-record-row"
       }
+      role="listitem"
     >
-      <span>
-        <b>{documentTypeLabels[record.type] ?? record.type}</b>
-        <small>
-          {formatDate(record.documentDate)} ·{" "}
-          {record.provider ?? record.doctor ?? record.processingStatus}
-        </small>
-        <small>{record.trackedMeasurementCount} tracked</small>
+      <span className={`lp-health-record-dot ${record.type}`} />
+      <span className={`lp-health-record-type ${record.type}`}>
+        <Icon size={18} />
       </span>
-      <strong>
-        {count
-          ? `${count} measurements`
-          : record.medicationCount
-            ? `${record.medicationCount} medications`
-            : `${record.followUpCount} follow-ups`}
-      </strong>
-      {onView && onDelete ? (
-        <div className="lp-health-record-actions">
-          <button type="button" onClick={onView}>
-            <Eye size={14} /> View
-          </button>
-          <button type="button" className="danger" onClick={onDelete}>
-            <Trash2 size={14} /> Delete
-          </button>
-        </div>
+      <span className="lp-health-record-main">
+        <b>{label}</b>
+        <small>
+          {label} · {formatDate(record.documentDate)}
+        </small>
+        <small>
+          <strong>Read on {formatDate(readDate)}</strong>
+          {source ? ` · ${source}` : ` · ${record.processingStatus}`}
+        </small>
+      </span>
+      {onView || onDelete ? (
+        <span className="lp-health-record-actions">
+          {onView ? (
+            <button
+              type="button"
+              className="lp-health-record-edit"
+              aria-label={`Correct what was read for ${label}`}
+              onClick={onView}
+            >
+              <Pencil size={18} />
+            </button>
+          ) : null}
+          {onDelete ? (
+            <button
+              type="button"
+              className="lp-health-record-delete"
+              aria-label={`Delete ${label}`}
+              onClick={onDelete}
+            >
+              <Trash2 size={18} />
+            </button>
+          ) : null}
+        </span>
       ) : null}
     </div>
   );

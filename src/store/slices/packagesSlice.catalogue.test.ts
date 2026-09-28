@@ -11,6 +11,7 @@ vi.mock("@/packages/packageCatalogueCache", () => ({
   readAllPackagePages: vi.fn(async () => [...cache.values()]),
   readPackagePage: vi.fn(async (key: string) => cache.get(key) ?? null),
   writePackagePage: vi.fn(async (page: any) => { cache.set(page.key, page); }),
+  clearPackageCatalogueCache: vi.fn(async () => { cache.clear(); }),
 }));
 vi.mock("@/lib/api", () => ({ api: { packages: { list, get: vi.fn() } } }));
 
@@ -87,5 +88,21 @@ describe("persistent package catalogue", () => {
     list.mockResolvedValue(response(1, 1)); const app = store();
     await app.dispatch(fetchPackages({ page: 1 }));
     expect(list).toHaveBeenCalledTimes(1);
+  });
+
+  it("fetches from API when the persistent cache is empty", async () => {
+    list.mockResolvedValue(response(1, 1)); const app = store();
+    await app.dispatch(fetchPackages({ page: 1 }));
+    expect(list).toHaveBeenCalledTimes(1);
+    expect(app.getState().packages.items).toHaveLength(20);
+    expect(cache.has(key(1))).toBe(true);
+  });
+
+  it("treats an empty cached catalogue page as a cache miss", async () => {
+    cache.set(key(1), pageRecord(1, response(1, 1, 0)));
+    list.mockResolvedValue(response(1, 1)); const app = store();
+    await app.dispatch(fetchPackages({ page: 1 }));
+    expect(list).toHaveBeenCalledTimes(1);
+    expect(app.getState().packages.items).toHaveLength(20);
   });
 });

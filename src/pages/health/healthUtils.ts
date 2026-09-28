@@ -8,6 +8,7 @@ export const documentTypeLabels: Record<string, string> = {
   lab_report: "Lab Report",
   medical_report: "Medical Report",
   prescription: "Prescription",
+  manual: "Manual Reading",
 };
 
 export function valueWithUnit(measurement: {

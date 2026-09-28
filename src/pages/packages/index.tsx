@@ -8,10 +8,11 @@ import Card from "@/components/Card";
 import Ring from "@/components/Ring";
 import SectionHead from "@/components/SectionHead";
 import { btnPrimary, T } from "@/constants/theme";
-import { api } from "@/lib/api";
+import { api, type DocumentRecord } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import type { DerivedRequirement } from "@/readiness/calculatePackageReadiness";
 import { makeSelectPackageReadiness, selectCataloguePackageCards, selectPackageCards } from "@/readiness/selectors";
-import { fetchPackages, setActivePackageQuery, setPackageGenerationStatus, upsertPackage } from "@/store/slices/packagesSlice";
+import { assignRequirementDocument, clearRequirementDocument, fetchPackages, setActivePackageQuery, setPackageGenerationStatus, upsertPackage } from "@/store/slices/packagesSlice";
 import PackDetail from "./pack-detail";
 
 const PACKS_PER_PAGE = 20;
@@ -73,6 +74,7 @@ export default function PackagesPage() {
   const {
     status,
     error,
+    loaded,
     pagination,
     searchCanGenerate,
     searchStatus,
@@ -80,6 +82,7 @@ export default function PackagesPage() {
   } = useAppSelector((state) => state.packages);
   const documentLabels = useAppSelector((state) => state.documents.items.map((document) =>
     document.normalizedType || document.documentType).filter(Boolean));
+  const documents = useAppSelector((state) => state.documents.items);
   const packs = useAppSelector(selectPackageCards);
   const cachedCataloguePacks = useAppSelector(selectCataloguePackageCards);
   const [selectedSlug, setSelectedSlug] = useState<string>("");
@@ -121,7 +124,8 @@ export default function PackagesPage() {
   const displayedPacks = filteredPacks;
   const suggestions = useMemo(() => displayedPacks.slice(0, 4), [displayedPacks]);
   const hasSearchQuery = Boolean(debouncedQuery.trim());
-  const hasEmptySearch = hasSearchQuery && !displayedPacks.length && searchStatus !== "loading" && status !== "loading";
+  const activeQuerySettled = loaded && Boolean(pagination) && searchStatus !== "loading" && status !== "loading";
+  const hasEmptySearch = hasSearchQuery && !displayedPacks.length && activeQuerySettled;
 
   const totalPages = Math.max(
     1,
@@ -334,7 +338,7 @@ export default function PackagesPage() {
             <ChevronRight size={18} color={T.muted} />
           </button>
         ))}
-        {!filteredPacks.length && searchStatus !== "loading" && status !== "loading" ? (
+        {!filteredPacks.length && activeQuerySettled ? (
           <Card style={{ gridColumn: "1 / -1", textAlign: "center", padding: hasSearchQuery ? "56px 34px 52px" : 34 }}>
             <strong style={{ color: T.white, display: "block", fontSize: hasSearchQuery ? 16 : 14 }}>
               {hasSearchQuery ? `No pack covers "${debouncedQuery.trim()}" yet` : "No matching packages"}
@@ -406,7 +410,14 @@ export default function PackagesPage() {
                 readiness={readiness}
                 readyCount={readyCount}
                 totalCount={totalCount}
+                documents={documents}
                 onClose={() => setDetailOpen(false)}
+                onAssignRequirement={(requirement: DerivedRequirement, document: DocumentRecord, assignmentSource: "USER_SELECTED" | "USER_OVERRIDE") =>
+                  dispatch(assignRequirementDocument({ slug: selectedDetail.slug, requirementId: requirement.id, documentId: document.id, assignmentSource })).unwrap().then(() => undefined)
+                }
+                onClearAssignment={(requirement: DerivedRequirement) =>
+                  dispatch(clearRequirementDocument({ slug: selectedDetail.slug, requirementId: requirement.id })).unwrap().then(() => undefined)
+                }
                 onUpload={openPackUpload}
               />
             ) : (

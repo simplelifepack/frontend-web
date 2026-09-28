@@ -6,6 +6,12 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { signup } from "@/store/slices/authSlice";
 import { googleLogin } from "@/store/slices/authSlice";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { api } from "@/lib/api";
+
+function signupErrorMessage(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  return /already exists/i.test(message) ? "User already exists. Log in." : message || "Unable to sign up.";
+}
 
 export default function SignupPage() {
   const dispatch = useAppDispatch();
@@ -15,6 +21,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [awaitingOtp, setAwaitingOtp] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,10 +42,16 @@ export default function SignupPage() {
     setIsSubmitting(true);
 
     try {
-      await dispatch(signup({ name, email, password })).unwrap();
+      if (!awaitingOtp) {
+        await api.auth.requestSignupOtp({ name, email, password });
+        setAwaitingOtp(true);
+        setOtp("");
+        return;
+      }
+      await dispatch(signup({ name, email, password, otp })).unwrap();
       navigate("/", { replace: true });
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unable to sign up.");
+      setError(signupErrorMessage(submitError));
     } finally {
       setIsSubmitting(false);
     }
@@ -119,6 +133,23 @@ export default function SignupPage() {
           />
         </label>
 
+        {awaitingOtp ? (
+          <label className="block">
+            <span className="mb-2 block text-sm text-[var(--lp-text)]">Signup code</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              value={otp}
+              onChange={(event) => setOtp(event.target.value)}
+              className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
+              placeholder="6-digit code"
+              required
+            />
+            <span className="mt-2 block text-xs text-[var(--lp-muted)]">We sent this code to {email}.</span>
+          </label>
+        ) : null}
+
         {error ? <p className="text-sm text-[var(--lp-coral)]">{error}</p> : null}
 
         <button
@@ -126,7 +157,7 @@ export default function SignupPage() {
           disabled={isSubmitting}
           className="w-full rounded-2xl bg-[var(--lp-action)] px-4 py-3 text-sm font-semibold text-[var(--lp-action-text)] transition hover:bg-[var(--lp-action-hover)] disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? "Creating account..." : "Signup"}
+          {isSubmitting ? "Working..." : awaitingOtp ? "Verify and create account" : "Send signup code"}
         </button>
       </form>
 

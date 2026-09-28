@@ -81,6 +81,29 @@ export const deleteDocuments = createAsyncThunk("documents/deleteDocuments", asy
   return ids;
 });
 
+export const addDocumentPages = createAsyncThunk("documents/addDocumentPages", async (input: { documentId: string; files: File[] }, { dispatch }) => {
+  const response = await api.documents.addPageFiles(input.documentId, input.files);
+  void dispatch(refreshUsage());
+  return response.document;
+});
+
+export const reorderDocumentPages = createAsyncThunk("documents/reorderDocumentPages", async (input: { documentId: string; pageIds: string[] }) =>
+  (await api.documents.reorderPages(input.documentId, input.pageIds)).document,
+);
+
+export const replaceDocumentPage = createAsyncThunk("documents/replaceDocumentPage", async (input: { documentId: string; pageId: string; file: File }, { dispatch }) => {
+  const analysis = await api.documents.upload([input.file], false);
+  const tempFileId = analysis.files[0]?.tempFileId;
+  if (!tempFileId) throw new Error("Unable to prepare replacement page.");
+  const response = await api.documents.replacePage(input.documentId, input.pageId, tempFileId);
+  void dispatch(refreshUsage());
+  return response.document;
+});
+
+export const deleteDocumentPage = createAsyncThunk("documents/deleteDocumentPage", async (input: { documentId: string; pageId: string }, { dispatch }) => {
+  const response = await api.documents.deletePage(input.documentId, input.pageId); void dispatch(refreshUsage()); return response.document;
+});
+
 const documentsSlice = createSlice({
   name: "documents",
   initialState,
@@ -204,15 +227,22 @@ const documentsSlice = createSlice({
       })
       .addCase(initializeApp.fulfilled, (state, action) => {
         state.documentCount = action.payload.documentCount;
-      });
+      })
+      .addMatcher(
+        (action) => [
+          addDocumentPages.fulfilled.type,
+          reorderDocumentPages.fulfilled.type,
+          replaceDocumentPage.fulfilled.type,
+          deleteDocumentPage.fulfilled.type,
+        ].includes(action.type),
+        (state, action: { payload: DocumentRecord }) => {
+          const index = state.items.findIndex((document) => document.id === action.payload.id);
+          if (index >= 0) state.items[index] = action.payload;
+          if (state.selected?.id === action.payload.id) state.selected = action.payload;
+        },
+      );
   },
 });
 
-export const {
-  clearPendingAnalysis,
-  documentAdded,
-  documentRemoved,
-  documentUpdated,
-  setImportedAnalyses,
-} = documentsSlice.actions;
+export const { clearPendingAnalysis, documentAdded, documentRemoved, documentUpdated, setImportedAnalyses } = documentsSlice.actions;
 export default documentsSlice.reducer;

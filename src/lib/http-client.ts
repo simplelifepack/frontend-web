@@ -49,8 +49,10 @@ function refreshSession() {
 export const safeMessages: Record<string, string> = {
   STORAGE_LIMIT_EXCEEDED: "Cloud storage full. This upload would exceed your 50 MB allowance. Delete documents to free space or upgrade your account for unlimited cloud storage.",
   AI_MONTHLY_LIMIT_EXCEEDED: "You've used your 3 AI actions for this month. Your allowance resets next month (UTC). Paid accounts have unlimited AI actions.",
+  AI_PROCESSING_DISABLED: "AI processing is disabled for this account.",
   UNSUPPORTED_FILE_TYPE: "Use a supported PDF, JPEG, PNG, or WebP document.",
   FILE_TOO_LARGE: fileTooLargeMessage(10 * 1024 * 1024),
+  IMAGE_BATCH_TOO_LARGE: "The selected pages exceed the 10 MB upload limit. Remove or compress some pages and try again.",
   FILE_SIGNATURE_MISMATCH: "The file contents do not match its reported type.",
   FILE_CORRUPTED: "The document is corrupted or incomplete.",
   PASSWORD_PROTECTED_FILE: "Password-protected PDFs are not supported.",

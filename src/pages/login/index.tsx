@@ -1,6 +1,7 @@
 import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login } from "@/store/slices/authSlice";
@@ -28,7 +29,10 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await dispatch(login({ email, password })).unwrap();
+      const result = await dispatch(login({ email, password })).unwrap();
+      if (result.deletionCancelled) {
+        toast.success("Welcome back. Your account deletion request has been cancelled.");
+      }
       navigate(from, { replace: true });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Unable to sign in.");
@@ -42,7 +46,10 @@ export default function LoginPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      await dispatch(googleLogin({ credential })).unwrap();
+      const result = await dispatch(googleLogin({ credential })).unwrap();
+      if (result.deletionCancelled) {
+        toast.success("Welcome back. Your account deletion request has been cancelled.");
+      }
       navigate(from, { replace: true });
     } catch {
       setError(navigator.onLine ? "We could not authenticate that Google account." : "Check your connection and try again.");

@@ -1,15 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import Card from "@/components/Card";
 import { api } from "@/lib/api";
+import { preferencesApi } from "@/lib/preferences-api";
 import HealthDialog from "./HealthDialog";
 import HealthPageHeader from "./components/HealthPageHeader";
 import { useHealthPage } from "./hooks/useHealthPage";
 import Overview from "./overview/Overview";
 import Trends from "./overview/Trends";
 import Timeline from "./timeline/Timeline";
-import MedicationSummary from "./medications/MedicationSummary";
+import HealthMedicationsTab from "./medications/HealthMedicationsTab";
 import Records from "./records/Records";
 import RecordDetailModal from "./records/RecordDetailModal";
 import MeasurementSelectionDialog from "./records/MeasurementSelectionDialog";
@@ -17,8 +18,10 @@ import DeleteRecordDialog from "./records/DeleteRecordDialog";
 import AddRecordDialog from "./records/AddRecordDialog";
 import MemberResolutionDialog from "./members/MemberResolutionDialog";
 import AddMemberDialog from "./members/AddMemberDialog";
+
 export default function HealthPage() {
   const location = useLocation();
+  const [aiProcessingEnabled, setAiProcessingEnabled] = useState(true);
   const {
     healthDialog,
     setHealthDialog,
@@ -72,6 +75,21 @@ export default function HealthPage() {
     createMember,
   } = useHealthPage();
   useEffect(() => {
+    let cancelled = false;
+    const refreshPreferences = () => {
+      void preferencesApi.get().then((preferences) => {
+        if (!cancelled)
+          setAiProcessingEnabled(preferences.aiProcessingEnabled);
+      });
+    };
+    refreshPreferences();
+    window.addEventListener("readiness-preferences-changed", refreshPreferences);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("readiness-preferences-changed", refreshPreferences);
+    };
+  }, []);
+  useEffect(() => {
     const params = new URLSearchParams(location.search);
     const memberId = params.get("member");
     const tab = params.get("tab");
@@ -86,6 +104,11 @@ export default function HealthPage() {
         selectedMember={selectedMember}
         activeTab={activeTab}
         upcoming={upcoming}
+        recordCount={records.length}
+        medicationCount={records.reduce(
+          (sum, record) => sum + record.medicationCount,
+          0,
+        )}
         onSelectMember={setSelectedMemberId}
         onAddMember={() => setShowAddMember(true)}
         onPrepareVisit={() => setHealthDialog("visit")}
@@ -124,18 +147,10 @@ export default function HealthPage() {
         <Timeline events={timeline} />
       ) : null}
       {!loading && selectedMember && activeTab === "Medications" ? (
-        <MedicationSummary
-          events={timeline}
-          onCreate={async (form) => {
-            await api.health.createMedication(selectedMember.id, {
-              name: form.name.trim(),
-              dose: form.dose.trim(),
-              frequency: form.frequency.trim() || null,
-              repeats: form.repeats,
-              runsOutAt: form.runsOutAt || null,
-            });
-            await refreshHealth(selectedMember.id);
-          }}
+        <HealthMedicationsTab
+          selectedMember={selectedMember}
+          timeline={timeline}
+          refreshHealth={refreshHealth}
         />
       ) : null}
       {!loading && selectedMember && activeTab === "Records" ? (
@@ -152,10 +167,13 @@ export default function HealthPage() {
           record={
             selectedRecord?.id === selectedRecordId ? selectedRecord : null
           }
-          tracked={tracked}
+          member={selectedMember}
           onClose={() => setIsRecordModalOpen(false)}
           onViewOriginal={viewOriginalDocument}
-          onToggleMetric={toggleRecordMetric}
+          onCorrectDetails={(record) => {
+            setIsRecordModalOpen(false);
+            setProcessedRecord(record);
+          }}
         />
       ) : null}
       {healthDialog && selectedMember ? (
@@ -163,20 +181,18 @@ export default function HealthPage() {
           kind={healthDialog}
           member={selectedMember}
           records={records}
+          measurements={measurements}
           onClose={() => setHealthDialog(null)}
           onSaved={async () => {
             await refreshMembers();
             await refreshHealth(selectedMember.id);
-          }}
-          onUpload={() => {
-            setHealthDialog(null);
-            setShowAddRecord(true);
           }}
           onViewDocument={viewOriginalDocument}
         />
       ) : null}
       {showAddRecord ? (
         <AddRecordDialog
+          aiProcessingEnabled={aiProcessingEnabled}
           onClose={() => setShowAddRecord(false)}
           onCreate={createRecord}
         />
@@ -197,7 +213,12 @@ export default function HealthPage() {
             setSelectedRecord(await api.health.record(processedRecord.id));
             setMessage("Health record saved.");
           }}
-          onSave={async (metrics) => {
+          onSave={async (metrics, documentType) => {
+            if (documentType !== processedRecord.type) {
+              const updated = await api.health.updateRecord(processedRecord.id, { type: documentType });
+              setSelectedRecord(updated);
+              await refreshHealth(updated.memberId);
+            }
             await trackMetrics(metrics, processedRecord.id);
             setProcessedRecord(null);
             setMessage("Tracking preferences saved.");

@@ -858,6 +858,10 @@ function LandingGoogleButton({
   );
 }
 
+function isExistingAccountError(error: unknown) {
+  return error instanceof Error && /already exists/i.test(error.message);
+}
+
 function AuthModal({
   mode: initMode,
   onClose,
@@ -869,7 +873,7 @@ function AuthModal({
 }) {
   const dispatch = useAppDispatch();
   const [mode, setMode] = useState<"signin" | "signup">(initMode);
-  const [screen, setScreen] = useState<"start" | "creds" | "forgot-email" | "forgot-code" | "forgot-password">("start");
+  const [screen, setScreen] = useState<"start" | "creds" | "signup-code" | "forgot-email" | "forgot-code" | "forgot-password">("start");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
@@ -924,14 +928,25 @@ function AuthModal({
       if (mode === "signup") {
         if (!name.trim()) return setErr("Enter your name.");
         if (pw !== pw2) return setErr("Passwords do not match.");
-        const result = await dispatch(signup({ name: name.trim(), email: email.trim(), password: pw })).unwrap();
-        onAuthed(true, result.user.name);
+        await api.auth.requestSignupOtp({ name: name.trim(), email: email.trim(), password: pw });
+        setOtp("");
+        setScreen("signup-code");
       } else {
         const result = await dispatch(login({ email: email.trim(), password: pw })).unwrap();
+        if (result.deletionCancelled) {
+          toast.success("Welcome back. Your account deletion request has been cancelled.");
+        }
         onAuthed(false, result.user.name);
       }
     } catch (error) {
-      setErr(error instanceof Error ? error.message : mode === "signup" ? "Unable to create account." : "Unable to sign in.");
+      if (mode === "signup" && isExistingAccountError(error)) {
+        setMode("signin");
+        setPw("");
+        setPw2("");
+        setErr("User already exists. Log in.");
+      } else {
+        setErr(error instanceof Error ? error.message : mode === "signup" ? "Unable to create account." : "Unable to sign in.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -942,9 +957,34 @@ function AuthModal({
     setSubmitting(true);
     try {
       const result = await dispatch(googleLogin({ credential })).unwrap();
+      if (result.deletionCancelled) {
+        toast.success("Welcome back. Your account deletion request has been cancelled.");
+      }
       onAuthed(mode === "signup", result.user.name);
     } catch {
       setErr(navigator.onLine ? "We could not authenticate that Google account." : "Check your connection and try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  const verifySignupOtp = async () => {
+    setErr("");
+    if (submitting) return;
+    if (!otp.match(/^\d{6}$/)) return setErr("Enter the 6-digit code from your email.");
+    setSubmitting(true);
+    try {
+      const result = await dispatch(signup({ name: name.trim(), email: email.trim(), password: pw, otp })).unwrap();
+      onAuthed(true, result.user.name);
+    } catch (error) {
+      if (isExistingAccountError(error)) {
+        setMode("signin");
+        setScreen("creds");
+        setPw("");
+        setPw2("");
+        setErr("User already exists. Log in.");
+      } else {
+        setErr(error instanceof Error ? error.message : "Invalid or expired signup code.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -1044,6 +1084,8 @@ function AuthModal({
             <b style={{ fontFamily: "'Space Grotesk'", fontSize: 20, color: auth.heading }}>
               {screen === "forgot-email"
                 ? "Reset your password"
+                : screen === "signup-code"
+                  ? "Check your email"
                 : screen === "forgot-code"
                   ? "Check your email"
                   : screen === "forgot-password"
@@ -1168,6 +1210,30 @@ function AuthModal({
               </button>
               <button onClick={() => { setScreen("start"); setErr(""); }} style={ghostBtn}>
                 ← Other sign-in options
+              </button>
+            </>
+          )}
+
+          {screen === "signup-code" && (
+            <>
+              <p style={{ fontSize: 13.5, color: auth.muted, lineHeight: 1.6, margin: "0 0 6px" }}>
+                Enter the 6-digit code sent to {email.trim()} to create your account.
+              </p>
+              <input
+                style={inp}
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                placeholder="6-digit code"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && verifySignupOtp()}
+              />
+              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
+              <button onClick={verifySignupOtp} className="lp-cta" style={{ width: "100%", justifyContent: "center", marginTop: 14 }}>
+                {submitting ? "Verifying..." : "Verify and create account"} <ArrowRight size={15} />
+              </button>
+              <button onClick={() => { setScreen("creds"); setErr(""); }} style={ghostBtn}>
+                ← Edit signup details
               </button>
             </>
           )}

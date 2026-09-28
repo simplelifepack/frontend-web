@@ -44,7 +44,7 @@ function Overview({
     setChoosing(false);
   }, [overview?.member.id]);
   const tracked = overview?.trackedMetrics ?? [];
-  const visibleMetrics = showAll ? allMetrics.cards : tracked;
+  const visibleMetrics = showAll ? allMetrics.cards : allMetrics.trackedCards;
   const total = allMetrics.available.length || tracked.length;
   return (
     <>
@@ -116,7 +116,7 @@ function buildMetrics(
     grouped.set(key, [...(grouped.get(key) ?? []), item]);
   });
   const available: HealthAvailableMetric[] = [];
-  const cards: MetricCardMetric[] = [];
+  const cardsByKey = new Map<string, MetricCardMetric>();
   grouped.forEach((items, key) => {
     const sorted = [...items].sort((a, b) =>
       (a.measuredAt ?? "").localeCompare(b.measuredAt ?? ""),
@@ -133,9 +133,20 @@ function buildMetrics(
       secondaryValue: latest.secondaryValue,
       unit: latest.unit,
     });
-    cards.push({ id: key, displayName: latest.displayName, measurements: sorted, latest });
+    cardsByKey.set(key, {
+      id: key,
+      displayName: latest.displayName,
+      measurements: sorted,
+      latest,
+    });
   });
-  return { available, cards };
+  const trackedCards = tracked.map((metric) => {
+    const matched = cardsByKey.get(metricIdentity(metric));
+    return matched
+      ? { ...matched, id: metric.id, displayName: metric.displayName }
+      : metric;
+  });
+  return { available, cards: [...cardsByKey.values()], trackedCards };
 }
 
 export default Overview;
