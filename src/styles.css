@@ -3933,6 +3933,12 @@ button.lp-pack-check-row:hover {
 .lp-health-add-dialog {
   width: min(560px, calc(100vw - 36px));
 }
+.lp-health-medication-dialog {
+  max-height: calc(100dvh - 44px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 @media (max-width: 560px) {
   .lp-health-record-modal {
     width: min(100vw - 20px, 560px);
@@ -4411,7 +4417,23 @@ button.lp-pack-check-row:hover {
   gap: 12px;
   margin-bottom: 16px;
 }
+.lp-health-dialog-head > div {
+  min-width: 0;
+}
+.lp-health-medication-head {
+  align-items: flex-start;
+}
+.lp-health-medication-head h2,
+.lp-health-medication-head p {
+  overflow-wrap: anywhere;
+}
+.lp-health-medication-form {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
 .lp-health-dialog-head button {
+  flex: 0 0 auto;
   display: grid;
   width: 34px;
   height: 34px;
@@ -4880,6 +4902,7 @@ button.lp-pack-check-row:hover {
   text-align: left;
 }
 .lp-health-add-dialog footer {
+  flex: 0 0 auto;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -8073,6 +8096,13 @@ button.lp-pack-check-row:hover {
   margin-top: 0;
 }
 
+.lp-wealth-sos-action {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+
 .lp-wealth-summary-actions button {
   width: auto;
   min-height: 44px;
@@ -8357,93 +8387,6 @@ button.lp-pack-check-row:hover {
   font-weight: 600;
 }
 
-.lp-family-summary-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 75;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
-  background: var(--lpv-scrim);
-}
-
-.lp-family-summary-modal {
-  width: min(680px, 100%);
-  max-height: 88vh;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  border: 1px solid var(--lp-border);
-  border-radius: 16px;
-  background: var(--lp-panel);
-}
-
-.lp-family-summary-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 14px;
-}
-
-.lp-family-summary-head span {
-  display: block;
-  margin-bottom: 4px;
-  color: var(--lp-readiness);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-
-.lp-family-summary-head b {
-  color: var(--lp-heading);
-  font-size: 19px;
-}
-
-.lp-family-summary-head button,
-.lp-family-summary-actions button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  border: 1px solid var(--lp-border);
-  border-radius: 10px;
-  background: var(--lp-raised);
-  color: var(--lp-heading);
-  padding: 8px 12px;
-  font-weight: 800;
-}
-
-.lp-family-summary-preview {
-  flex: 1;
-  overflow: auto;
-  min-height: 280px;
-  padding: 12px;
-  width: 100%;
-  border-radius: 10px;
-  border: 0;
-  background: #eef0f3;
-}
-
-.lp-family-summary-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.lp-family-summary-actions button {
-  flex: 1;
-}
-
-.lp-family-summary-actions button.primary {
-  border: 0;
-  background: var(--lp-action);
-  color: var(--lp-action-text);
-}
-
 @media (max-width: 760px) {
   .lp-wealth-route {
     max-width: none;
@@ -8467,10 +8410,15 @@ button.lp-pack-check-row:hover {
     width: 100%;
   }
 
-  .lp-wealth-summary-actions {
+  .lp-wealth-sos-action {
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    padding-top: 14px;
+    border-top: 1px solid var(--lp-border);
+  }
+
+  .lp-wealth-summary-actions {
+    width: auto;
+    display: flex;
   }
 
   .lp-wealth-filter-wrap {
@@ -8538,7 +8486,7 @@ button.lp-pack-check-row:hover {
     justify-content: flex-start;
   }
 
-  .lp-vdiv {
+  .lp-wealth-sos-action .lp-vdiv {
     display: none;
   }
 

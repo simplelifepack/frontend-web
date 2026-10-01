@@ -1,4 +1,4 @@
-import { ChevronRight, Coins, FileText, Link2, ShieldAlert, Wallet } from "lucide-react";
+import { ChevronRight, Coins, Link2, ShieldAlert, Wallet } from "lucide-react";
 
 import Card from "@/components/Card";
 import type { WealthRecord } from "@/lib/api";
@@ -9,7 +9,6 @@ export function Readiness({
   records,
   showMath,
   onMath,
-  onSummary,
   onSos,
   onLent,
 }: {
@@ -17,7 +16,6 @@ export function Readiness({
   records: WealthRecord[];
   showMath: boolean;
   onMath: () => void;
-  onSummary: () => void;
   onSos: () => void;
   onLent: () => void;
 }) {
@@ -64,14 +62,13 @@ export function Readiness({
           <span>You owe <b>{money(youOwe)}</b></span>
           <ChevronRight size={14} />
         </button>
-        <span className="lp-vdiv" />
-        <div className="lp-wealth-summary-actions">
-          <button type="button" onClick={onSummary}>
-            <FileText size={15} /> Family summary
-          </button>
-          <button type="button" className="danger" onClick={onSos}>
-            <ShieldAlert size={15} /> SOS handoff
-          </button>
+        <div className="lp-wealth-sos-action">
+          <span className="lp-vdiv" />
+          <div className="lp-wealth-summary-actions">
+            <button type="button" className="danger" onClick={onSos}>
+              <ShieldAlert size={15} /> SOS handoff
+            </button>
+          </div>
         </div>
       </div>
     </Card>

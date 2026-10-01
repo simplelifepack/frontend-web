@@ -39,7 +39,6 @@ import {
   Camera,
   Image as ImageIcon,
   Stethoscope,
-  Printer,
   Pencil,
   Coins,
   Trash2,
@@ -208,6 +207,7 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-hrow .lp-wchips,.lp-txrow .lp-wchips{grid-area:chips;justify-content:flex-start;margin-left:0}
 .lp-hrow > svg:last-child{grid-area:chev;justify-self:end}
 .lp-txrow > button{grid-area:act;justify-self:end}
+.lp-es-action{display:flex;align-items:stretch;gap:12px;flex:0 0 auto}
 .lp-es-cta{display:flex;gap:8px}
 .lp-es-cta>button{flex:1;justify-content:center}
 .lp-act{flex-wrap:wrap;row-gap:2px}
@@ -224,7 +224,8 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-wrow > select{order:2;margin-left:48px}
 .lp-upmenu{left:0 !important;right:auto !important}
 .lp-searchdrop{left:0 !important;right:auto !important;width:calc(100vw - 28px) !important}
-.lp-vdiv{display:none}
+.lp-es-action{grid-area:cta;width:100%;padding-top:12px;border-top:1px solid ${T.border}}
+.lp-es-action .lp-vdiv{display:none}
 .lp-readystrip{display:grid !important;grid-template-columns:1fr auto;grid-template-areas:"label pct" "bar bar" "sum how" "lb lb" "cta cta";gap:10px 12px !important;padding:16px !important;border-radius:16px !important}
 .lp-es-lb{grid-area:lb;justify-content:flex-start}
 .lp-es-label{grid-area:label}
@@ -232,7 +233,7 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-es-bar{grid-area:bar;min-width:0 !important;height:8px !important}
 .lp-es-sum{grid-area:sum;white-space:normal !important;font-size:12.5px !important;align-self:center}
 .lp-es-how{grid-area:how;justify-self:end}
-.lp-es-cta{grid-area:cta;width:100%;justify-content:center;padding:12px 14px !important;font-size:14px !important}
+.lp-es-cta{width:auto;justify-content:center}
 .lp-networth{display:grid !important;grid-template-columns:1fr 1fr;gap:14px 16px !important;font-family:inherit !important;padding:14px 16px !important}
 .lp-metric{display:flex;flex-direction:column;gap:3px;font-size:12px}
 .lp-metric b{font-size:20px;letter-spacing:-0.02em}
@@ -5464,7 +5465,6 @@ function Wealth({ store, go, toast }: any) {
   const [addTx, setAddTx] = useState(false);
   const [sos, setSos] = useState(false);
   const [nomineeFor, setNomineeFor] = useState<Holding | null>(null);
-  const [estate, setEstate] = useState(false);
   const attachRef = useRef<HTMLInputElement>(null);
   const pending = useRef<Holding | null>(null);
 
@@ -5955,19 +5955,18 @@ function Wealth({ store, go, toast }: any) {
                 <ChevronRight size={13} color={T.faint} />
               </button>
             )}
-            <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
-            <div className="lp-es-cta">
-              <button onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13, minHeight: 44, whiteSpace: "nowrap" }}>
-                <FileText size={14} /> Family summary
-              </button>
-              {!store.handoff && (
-                <button
-                  onClick={() => setSos(true)}
-                  style={{ ...btnGhost, padding: "8px 14px", fontSize: 13, minHeight: 44, whiteSpace: "nowrap", color: T.coral, borderColor: T.coral + "55" }}
-                >
-                  <Siren size={14} /> SOS handoff
-                </button>
-              )}
+            <div className="lp-es-action">
+              <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
+              <div className="lp-es-cta">
+                {!store.handoff && (
+                  <button
+                    onClick={() => setSos(true)}
+                    style={{ ...btnGhost, padding: "8px 14px", fontSize: 13, minHeight: 44, whiteSpace: "nowrap", color: T.coral, borderColor: T.coral + "55" }}
+                  >
+                    <Siren size={14} /> SOS handoff
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           {showMath && (
@@ -6478,7 +6477,6 @@ function Wealth({ store, go, toast }: any) {
             />
           )}
           {sos && <SOSHandoffModal store={store} toast={toast} go={go} onClose={() => setSos(false)} />}
-          {estate && <EstateSheet store={store} onClose={() => setEstate(false)} toast={toast} />}
           {viewDoc && <DocViewer doc={viewDoc} store={store} onClose={() => setViewDoc(null)} />}
           {confirm && <ConfirmSheet {...confirm} onClose={() => setConfirm(null)} />}
         </>
@@ -6825,14 +6823,6 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
     if (!chosen.size || !reason || !ack || busy) return;
     setBusy(true);
     try {
-      const estate = buildEstate(store);
-      const b = new Blob([estate], { type: "text/html" });
-      const u = URL.createObjectURL(b);
-      const a = document.createElement("a");
-      a.href = u;
-      a.download = "SOS_Estate_Summary.html";
-      a.click();
-      URL.revokeObjectURL(u);
       const res = await buildZip("SOS_Handoff_Documents", wealthDocs);
       if (res.added === 0) {
         toast("No document files could be read, so nothing was downloaded.");
@@ -6881,7 +6871,7 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
           </button>
         </div>
         <p style={{ fontSize: 13, color: T.muted, margin: "0 0 14px", lineHeight: 1.55 }}>
-          For a real emergency. Releases the estate summary, {wealthDocs.length} wealth documents, and every access
+          For a real emergency. Releases {wealthDocs.length} wealth documents and every access
           instruction to the people below, so nothing is locked away when it matters. You can cancel any time and access
           is revoked.
         </p>
@@ -7002,7 +6992,6 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
           }}
         >
           <div style={{ color: T.text, fontWeight: 700, marginBottom: 4 }}>They receive</div>
-          <div style={{ color: T.mint }}>✓ Family summary with first steps</div>
           <div style={{ color: T.mint }}>✓ {wealthDocs.length} wealth documents (deeds, policies, statements)</div>
           <div style={{ color: T.mint }}>✓ Access instructions per holding</div>
           <div style={{ color: T.muted, marginTop: 4 }}>
@@ -7737,136 +7726,6 @@ function NomineeModal({ holding, onClose, onSave }: any) {
   );
 }
 
-function EstateSheet({ store, onClose, toast }: any) {
-  const html = buildEstate(store);
-  const exportH = () => {
-    const b = new Blob([html], { type: "text/html" });
-    const u = URL.createObjectURL(b);
-    const a = document.createElement("a");
-    a.href = u;
-    a.download = "Estate_Summary.html";
-    a.click();
-    URL.revokeObjectURL(u);
-    toast("Family summary exported");
-  };
-  const printH = () => {
-    const w = window.open("", "_blank");
-    if (w) {
-      w.document.write(html);
-      w.document.close();
-      w.focus();
-      setTimeout(() => w.print(), 250);
-    }
-  };
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 75,
-        background: "var(--lpv-scrim)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 18,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: T.panel,
-          border: `1px solid ${T.border}`,
-          borderRadius: 16,
-          width: "min(680px,100%)",
-          maxHeight: "88vh",
-          display: "flex",
-          flexDirection: "column",
-          padding: 20,
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div>
-            <div
-              style={{
-                fontVariantNumeric: "tabular-nums",
-                fontSize: 12,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                color: T.gold,
-                marginBottom: 4,
-              }}
-            >
-              What your family would need
-            </div>
-            <b style={{ color: T.white, fontSize: 19 }}>Family summary</b>
-          </div>
-          <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
-            <X size={16} />
-          </button>
-        </div>
-        <div
-          style={{ flex: 1, overflow: "auto", background: "#eef0f3", borderRadius: 10, padding: 12 }}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={printH} style={{ ...btnGold, flex: 1, justifyContent: "center" }}>
-            <Printer size={16} /> Save as PDF
-          </button>
-          <button onClick={exportH} style={{ ...btnGhost, flex: 1, justifyContent: "center" }}>
-            <Download size={16} /> Export
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function buildEstate(store: any): string {
-  const H: Holding[] = store.holdings;
-  const m2 = (v?: number) => formatMoney(v || 0, getCurrency(), false);
-  const A_ = H.filter((h) => h.kind === "asset"),
-    L_ = H.filter((h) => h.kind === "liability"),
-    C_ = H.filter((h) => h.kind === "cover");
-  const s = (a: Holding[]) => a.reduce((x, h) => x + (h.value || 0), 0);
-  const net = s(A_) - s(L_);
-  const dn = (id?: string) => store.docs.find((d: Doc) => d.id === id)?.name || "\u2014 not attached \u2014";
-  const trusted = store.members.filter((mm: Member) => mm.access === "Full member" || mm.access === "Emergency access");
-  const th = (t: string) => `<th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">${t}</th>`;
-  const secTable = (title: string, arr: Holding[], showNom: boolean) =>
-    `<h3 style="margin:18px 0 6px;font-size:14px;color:#111827">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:600">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:#6b7280">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "#111827" : "#b91c1c"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:#6b7280">${dn(h.docId)}</td><td style="padding:6px 10px;color:#374151">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:#6b7280">None</td></tr>`}</table>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Family Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;max-width:760px;margin:20px auto;padding:0 20px;background:#fff">
-  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:12px"><div><div style="font-weight:800;font-size:20px">ReadiNes · Family Summary</div><div style="color:#6b7280;font-size:13px">What your family would need to find and claim everything</div></div><div style="text-align:right;color:#6b7280;font-size:12px">Prepared ${new Date().toLocaleString()}</div></div>
-  <div style="display:flex;gap:26px;margin-top:16px">
-    <div><div style="font-size:12px;color:#6b7280">Net worth (documented)</div><div style="font-size:22px;font-weight:800">${m2(net)}</div></div>
-    <div><div style="font-size:12px;color:#6b7280">Assets</div><div style="font-size:18px;font-weight:700">${m2(s(A_))}</div></div>
-    <div><div style="font-size:12px;color:#6b7280">Liabilities</div><div style="font-size:18px;font-weight:700">${m2(s(L_))}</div></div>
-    <div><div style="font-size:12px;color:#6b7280">Protection</div><div style="font-size:18px;font-weight:700">${m2(s(C_))}</div></div>
-  </div>
-  ${secTable("Accounts and investments", A_, true)}
-  ${secTable("Loans", L_, false)}
-  ${secTable("Insurance", C_, true)}
-  <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Money between people</h3>
-  <table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Who")}${th("What for")}${th("Amount")}${th("Direction")}${th("Evidence")}</tr>${(store.transactions || []).filter((t: Transaction) => !t.followUpDone).map((t: Transaction) => `<tr><td style="padding:6px 10px;font-weight:600">${t.counterparty || "\u2014"}</td><td style="padding:6px 10px">${t.purpose}</td><td style="padding:6px 10px">${m2(t.amount)}</td><td style="padding:6px 10px">${t.direction === "paid" ? "owed to the family" : "the family owes"}</td><td style="padding:6px 10px;color:${t.docId ? "#111827" : "#b91c1c"};font-weight:${t.docId ? 400 : 700}">${t.docId ? dn(t.docId) : "NONE"}</td></tr>`).join("") || `<tr><td colspan="5" style="padding:6px 10px;color:#6b7280">None recorded</td></tr>`}</table>
-  <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">If something happens: first steps for the family</h3>
-  <ol style="margin:0;padding-left:18px;line-height:1.8;color:#374151;font-size:13px">
-    ${C_.map((c) => `<li>File the ${c.type.toLowerCase()} claim with <b>${c.institution || "the insurer"}</b>${c.accessNote ? ` — ${c.accessNote}` : ""}${c.nominee ? ` (nominee: ${c.nomineeName || "named"})` : ` <span style="color:#b91c1c;font-weight:700">(no nominee — expect a legal-heir process)</span>`}</li>`).join("")}
-    ${[...new Set(A_.map((h) => h.institution).filter(Boolean))].map((inst) => `<li>Visit or contact <b>${inst}</b> with the death certificate, ID proof, and the account references above</li>`).join("")}
-    <li>Documents attached in the handoff pack: ${A_.concat(C_).filter((h) => h.docId).length} of ${A_.concat(C_).length} holdings have proof on file${
-      A_.concat(C_).filter((h) => !h.docId).length
-        ? ` — <span style="color:#b91c1c;font-weight:700">${A_.concat(C_)
-            .filter((h) => !h.docId)
-            .map((h) => h.name)
-            .join(", ")} missing</span>`
-        : ""
-    }</li>
-    ${L_.length ? `<li>Outstanding liabilities to settle or transfer: ${L_.map((l) => `${l.name} (${l.institution || ""})`).join(", ")}</li>` : ""}
-  </ol>
-  <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Who can help</h3><ul style="margin:0;padding-left:18px;line-height:1.7;color:#374151;font-size:13px">${trusted.map((mm: Member) => `<li>${mm.name} \u2014 ${mm.relation} (${mm.access})</li>`).join("") || "<li>No trusted contacts set</li>"}</ul>
-  <p style="margin-top:22px;font-size:12px;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:10px">Prepared by ReadiNes from your own records. Account references are masked. This is an organizational summary \u2014 not a will, and not legal, tax, or financial advice. Confirm nominee and succession details with each institution and a professional.</p>
-  </body></html>`;
-}
-
 /* ═════ SETTINGS ═════ */
 const CHANGELOG: [string, string][] = [
   ["Semantic document ontology", "One Aadhaar now satisfies Address Proof across all 34 packs that ask for it."],
@@ -7874,7 +7733,7 @@ const CHANGELOG: [string, string][] = [
   ["Family access readiness, explained", "The score shows its own math, holding by holding."],
   [
     "SOS handoff",
-    "Release the estate summary, documents, and access instructions to your emergency contacts, with reason and revoke.",
+    "Release documents and access instructions to your emergency contacts, with reason and revoke.",
   ],
   ["Proof-first capture", "Money moments are captured as evidence, findable in Wealth and under Documents › Proofs."],
 ];

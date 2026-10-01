@@ -16,7 +16,6 @@ import WealthHandoffDialog from "./sos-handoff-dialog";
 import { WealthActionSheet, WealthDesktopActions } from "./wealth-actions";
 import { type WealthCategory } from "./wealth-categories";
 import { EmptyWealth, Readiness, ReadinessMath } from "./wealth-summary";
-import { FamilySummaryDialog } from "./wealth-family-summary";
 import { NeedsAttention } from "./wealth-attention";
 import { WealthSections } from "./wealth-page-sections";
 import {
@@ -39,7 +38,6 @@ export default function WealthPage() {
   >(null);
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
   const [handoffOpen, setHandoffOpen] = useState(false);
-  const [summaryOpen, setSummaryOpen] = useState(false);
   const [editingHolding, setEditingHolding] = useState<WealthRecord | null>(null);
   const [action, setAction] = useState<{
     mode: "edit" | "note" | "attach" | "delete";
@@ -171,7 +169,6 @@ export default function WealthPage() {
         records={records}
         showMath={showMath}
         onMath={() => setShowMath((value) => !value)}
-        onSummary={() => setSummaryOpen(true)}
         onSos={() => setHandoffOpen(true)}
         onLent={goLent}
       />
@@ -237,7 +234,6 @@ export default function WealthPage() {
       {handoffOpen ? (
         <WealthHandoffDialog onClose={() => setHandoffOpen(false)} />
       ) : null}
-      {summaryOpen ? <FamilySummaryDialog records={records} stats={stats} onClose={() => setSummaryOpen(false)} /> : null}
     </div>
   );
 }

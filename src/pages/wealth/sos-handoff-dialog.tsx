@@ -59,12 +59,11 @@ export default function WealthHandoffDialog({ onClose }: { onClose: () => void }
         {error ? <div className="lp-sos-error">{error}</div> : null}
         {!summary ? <div className="lp-sos-loading"><Loader2 size={18} /> Loading emergency handoff</div> : done ? <Done result={done} /> : (
           <>
-            <p style={{ fontSize: 13, color: css.muted, margin: "0 0 14px", lineHeight: 1.55 }}>For a real emergency. Releases the estate summary, {docs} wealth documents, and every access instruction to the people below, so nothing is locked away when it matters.</p>
+            <p style={{ fontSize: 13, color: css.muted, margin: "0 0 14px", lineHeight: 1.55 }}>For a real emergency. Releases {docs} wealth documents and every access instruction to the people below, so nothing is locked away when it matters.</p>
             <SectionTitle>Who steps in</SectionTitle>
             {recipients.length ? recipients.map((recipient) => <RecipientRow key={recipient.id} recipient={recipient} checked={chosen.has(recipient.id)} onToggle={() => toggle(recipient.id)} />) : <EmptyTrust />}
             <div style={{ marginTop: 14, borderRadius: 11, border: `1px solid ${css.border}`, background: css.raised, padding: "11px 13px", fontSize: 12.5, lineHeight: 1.7 }}>
               <div style={{ color: css.text, fontWeight: 700, marginBottom: 4 }}>They receive</div>
-              <div style={{ color: css.mint }}>✓ Family summary with first steps</div>
               <div style={{ color: css.mint }}>✓ {docs} wealth documents (deeds, policies, statements)</div>
               <div style={{ color: css.mint }}>✓ Access instructions per holding</div>
               <div style={{ color: css.muted, marginTop: 4 }}>✗ Health records · ✗ personal notes · ✗ anything outside Wealth</div>

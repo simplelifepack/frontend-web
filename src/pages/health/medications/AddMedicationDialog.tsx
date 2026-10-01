@@ -69,8 +69,8 @@ function AddMedicationDialog({
   };
   return (
     <div className="lp-modal-backdrop" style={{ zIndex: 90 }}>
-      <div className="lp-modal-panel lp-health-add-dialog" role="dialog" aria-modal="true" aria-label={editing ? "Edit medication" : "Add medication"}>
-        <header className="lp-health-dialog-head">
+      <div className="lp-modal-panel lp-health-add-dialog lp-health-medication-dialog" role="dialog" aria-modal="true" aria-label={editing ? "Edit medication" : "Add medication"}>
+        <header className="lp-health-dialog-head lp-health-medication-head">
           <div>
             <h2>{editing ? "Edit medication" : "Add medication"}</h2>
             <p>{editing ? "Correct the saved medication details." : "Save this medication to the selected Health profile."}</p>
@@ -79,7 +79,7 @@ function AddMedicationDialog({
             <X size={18} />
           </button>
         </header>
-        <div className="lp-health-form-grid">
+        <div className="lp-health-form-grid lp-health-medication-form">
           <label>
             <span>Name</span>
             <input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="Medication name" />
