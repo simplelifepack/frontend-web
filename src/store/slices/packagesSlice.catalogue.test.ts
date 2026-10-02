@@ -1,19 +1,23 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { cache, list } = vi.hoisted(() => ({
-  cache: new Map<string, { key: string; query: any; response: any }>(),
+type MockPackageQuery = { limit?: number; page?: number; search?: string; sort?: string };
+type MockCachedPage = { key: string; query: MockPackageQuery; response: unknown };
+
+const { cache, list, get } = vi.hoisted(() => ({
+  cache: new Map<string, MockCachedPage>(),
   list: vi.fn(),
+  get: vi.fn(),
 }));
 
 vi.mock("@/packages/packageCatalogueCache", () => ({
-  packagePageCacheKey: (query: any = {}) => `packages:limit=${query.limit ?? 20}:page=${query.page ?? 1}:sort=${query.sort ?? "category"}:search=${query.search ?? ""}`,
+  packagePageCacheKey: (query: MockPackageQuery = {}) => `packages:limit=${query.limit ?? 20}:page=${query.page ?? 1}:sort=${query.sort ?? "category"}:search=${query.search ?? ""}`,
   readAllPackagePages: vi.fn(async () => [...cache.values()]),
   readPackagePage: vi.fn(async (key: string) => cache.get(key) ?? null),
-  writePackagePage: vi.fn(async (page: any) => { cache.set(page.key, page); }),
+  writePackagePage: vi.fn(async (page: MockCachedPage) => { cache.set(page.key, page); }),
   clearPackageCatalogueCache: vi.fn(async () => { cache.clear(); }),
 }));
-vi.mock("@/lib/api", () => ({ api: { packages: { list, get: vi.fn() } } }));
+vi.mock("@/lib/api", () => ({ api: { packages: { list, get } } }));
 
 import reducer, { fetchPackages, setActivePackageQuery } from "./packagesSlice";
 
@@ -35,7 +39,7 @@ const pageRecord = (page: number, result: ReturnType<typeof response>) => ({ key
 const store = () => configureStore({ reducer: { packages: reducer } });
 
 describe("persistent package catalogue", () => {
-  beforeEach(() => { cache.clear(); list.mockReset(); });
+  beforeEach(() => { cache.clear(); list.mockReset(); get.mockReset(); });
 
   it("fetches and caches an empty first page once", async () => {
     list.mockResolvedValue(response(1, 1)); const app = store();
@@ -104,5 +108,19 @@ describe("persistent package catalogue", () => {
     await app.dispatch(fetchPackages({ page: 1 }));
     expect(list).toHaveBeenCalledTimes(1);
     expect(app.getState().packages.items).toHaveLength(20);
+  });
+
+  it("hydrates searched packages with requirements from package detail", async () => {
+    const searchResponse = response(1, 1, 1);
+    searchResponse.items[0].requirements = [];
+    get.mockResolvedValue({ ...searchResponse.items[0], requirements: [{ id: "req-1", title: "Passport", required: true, acceptedDocumentTypes: ["passport"] }] });
+    list.mockResolvedValue(searchResponse);
+    const app = store();
+
+    await app.dispatch(fetchPackages({ page: 1, search: "passport renewal", sort: "relevance" }));
+
+    expect(get).toHaveBeenCalledWith("pack-1");
+    expect(app.getState().packages.items[0].requirements).toHaveLength(1);
+    expect(cache.get("packages:limit=20:page=1:sort=relevance:search=passport renewal")?.response.items[0].requirements).toHaveLength(1);
   });
 });

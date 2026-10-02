@@ -9,13 +9,23 @@ import AddMedicationDialog from "./AddMedicationDialog";
 type MedicationForm = {
   name: string;
   dose: string;
-  frequency: string;
-  duration: string;
-  quantity: string;
-  repeats: boolean;
-  runsOutAt: string;
+  whenToTake: Array<"morning" | "afternoon" | "night">;
+  mealTiming: "before_food" | "after_food" | "with_food" | "any_time" | "";
+  repeatRunsOut: string;
   status: "continuing" | "stopped";
   stoppedAt: string;
+};
+
+const timeLabels: Record<"morning" | "afternoon" | "night", string> = {
+  morning: "Morning",
+  afternoon: "Afternoon",
+  night: "Night",
+};
+const mealLabels: Record<"before_food" | "after_food" | "with_food" | "any_time", string> = {
+  before_food: "Before Food",
+  after_food: "After Food",
+  with_food: "With Food",
+  any_time: "Any Time",
 };
 
 function MedicationSummary({
@@ -171,9 +181,11 @@ function medicationDetail(item: HealthTimelineEvent) {
       ? `Stopped${item.medication.stoppedAt ? ` ${formatDate(item.medication.stoppedAt)}` : ""}`
       : "Not confirmed";
   const repeatDue = medication?.runsOutAt ? `repeat due ${formatDate(medication.runsOutAt)}` : "";
+  const when = medication?.whenToTake?.length ? medication.whenToTake.map((item) => timeLabels[item]).join(", ") : medication?.frequency ?? "";
+  const mealTiming = medication?.mealTiming ? mealLabels[medication.mealTiming] : "";
   return {
     dose: medication?.dose ?? "",
-    frequency: medication?.frequency ?? "",
+    frequency: [when, mealTiming].filter(Boolean).join(" · "),
     confirmation: [stoppedLabel, repeatDue].filter(Boolean).join(" · "),
   };
 }
@@ -183,14 +195,28 @@ function formFromMedication(item: HealthTimelineEvent): MedicationForm {
   return {
     name: medication?.name ?? item.title,
     dose: medication?.dose ?? "",
-    frequency: medication?.frequency ?? "",
-    duration: medication?.duration ?? "",
-    quantity: medication?.quantity ?? "",
-    repeats: Boolean(medication?.repeats),
-    runsOutAt: medication?.runsOutAt?.slice(0, 10) ?? "",
+    whenToTake: medication?.whenToTake?.length ? medication.whenToTake : inferWhenToTake(medication?.frequency),
+    mealTiming: medication?.mealTiming ?? inferMealTiming(medication?.frequency),
+    repeatRunsOut: (medication?.repeatRunsOut ?? medication?.runsOutAt)?.slice(0, 10) ?? "",
     status: medication?.status === "stopped" ? "stopped" : "continuing",
     stoppedAt: medication?.stoppedAt?.slice(0, 10) ?? "",
   };
+}
+
+function inferWhenToTake(frequency: string | null | undefined): Array<"morning" | "afternoon" | "night"> {
+  if (!frequency) return [];
+  const text = frequency.toLowerCase();
+  return (["morning", "afternoon", "night"] as const).filter((item) => new RegExp(`\\b${item}\\b`, "i").test(text));
+}
+
+function inferMealTiming(frequency: string | null | undefined): MedicationForm["mealTiming"] {
+  if (!frequency) return "";
+  const text = frequency.toLowerCase();
+  if (/\bbefore\s+(food|meal|meals)\b/.test(text)) return "before_food";
+  if (/\bafter\s+(food|meal|meals)\b/.test(text)) return "after_food";
+  if (/\bwith\s+(food|meal|meals)\b/.test(text)) return "with_food";
+  if (/\bany\s*time\b/.test(text)) return "any_time";
+  return "";
 }
 
 function today() {

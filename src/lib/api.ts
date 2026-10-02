@@ -145,7 +145,7 @@ export const api = {
   },
   health: {
     reminders: () => request<HealthHomeReminder[]>("/api/health/reminders", { requiresAuth: true, dedupeMs: 0 }),
-    createReminder: (payload: { memberId: string; title: string; dueDate: string }) =>
+    createReminder: (payload: { memberId: string; title: string; type: "appointment" | "medicine" | "refill" | "other"; dueDate: string; frequency: "once" | "daily" | "weekly" | "monthly" }) =>
       request('/api/health/reminders', { method: 'POST', body: payload, requiresAuth: true }),
     members: () => request<HealthMember[]>("/api/health/members", { requiresAuth: true, dedupeMs: 0 }),
     createMember: (payload: { name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null }) =>
@@ -180,9 +180,9 @@ export const api = {
       request<HealthAvailableMetric[]>(`/api/health/members/${encodeURIComponent(memberId)}/available-metrics?${toQueryString({ search })}`, { requiresAuth: true, dedupeMs: 0 }),
     timeline: (memberId: string) =>
       request<HealthTimelineEvent[]>(`/api/health/members/${encodeURIComponent(memberId)}/timeline`, { requiresAuth: true, dedupeMs: 0 }),
-    createMedication: (memberId: string, payload: { name: string; dose: string; frequency?: string | null; repeats: boolean; runsOutAt?: string | null }) =>
+    createMedication: (memberId: string, payload: { name: string; dose: string; whenToTake: Array<"morning" | "afternoon" | "night">; mealTiming: "before_food" | "after_food" | "with_food" | "any_time"; repeatRunsOut?: string | null }) =>
       request<HealthMedication>(`/api/health/members/${encodeURIComponent(memberId)}/medications`, { method: "POST", body: payload, requiresAuth: true }),
-    updateMedication: (medicationId: string, payload: Partial<{ name: string; dose: string | null; frequency: string | null; duration: string | null; quantity: string | null; repeats: boolean; runsOutAt: string | null; status: "continuing" | "stopped"; stoppedAt: string | null }>) =>
+    updateMedication: (medicationId: string, payload: Partial<{ name: string; dose: string | null; whenToTake: Array<"morning" | "afternoon" | "night">; mealTiming: "before_food" | "after_food" | "with_food" | "any_time" | null; repeatRunsOut: string | null; frequency: string | null; duration: string | null; quantity: string | null; repeats: boolean; runsOutAt: string | null; status: "continuing" | "stopped"; stoppedAt: string | null }>) =>
       request<HealthMedication>(`/api/health/medications/${encodeURIComponent(medicationId)}`, { method: "PATCH", body: payload, requiresAuth: true }),
     deleteMedication: (medicationId: string) =>
       request<void>(`/api/health/medications/${encodeURIComponent(medicationId)}`, { method: "DELETE", requiresAuth: true }),

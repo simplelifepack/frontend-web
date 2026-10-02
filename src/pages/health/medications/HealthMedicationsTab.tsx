@@ -18,9 +18,9 @@ function HealthMedicationsTab({
         await api.health.createMedication(selectedMember.id, {
           name: form.name.trim(),
           dose: form.dose.trim(),
-          frequency: form.frequency.trim() || null,
-          repeats: form.repeats,
-          runsOutAt: form.runsOutAt || null,
+          whenToTake: form.whenToTake,
+          mealTiming: form.mealTiming || "any_time",
+          repeatRunsOut: form.repeatRunsOut || null,
         });
         await refreshHealth(selectedMember.id);
       }}
@@ -28,11 +28,9 @@ function HealthMedicationsTab({
         await api.health.updateMedication(medicationId, {
           name: form.name.trim(),
           dose: form.dose.trim() || null,
-          frequency: form.frequency.trim() || null,
-          duration: form.duration.trim() || null,
-          quantity: form.quantity.trim() || null,
-          repeats: form.repeats,
-          runsOutAt: form.runsOutAt || null,
+          whenToTake: form.whenToTake,
+          mealTiming: form.mealTiming || null,
+          repeatRunsOut: form.repeatRunsOut || null,
           status: form.status,
           stoppedAt: form.status === "stopped" ? form.stoppedAt || null : null,
         });

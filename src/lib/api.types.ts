@@ -271,6 +271,9 @@ export type HealthRecordDetail = HealthRecord & {
     name: string;
     dose?: string | null;
     frequency?: string | null;
+    whenToTake?: Array<"morning" | "afternoon" | "night">;
+    mealTiming?: "before_food" | "after_food" | "with_food" | "any_time" | null;
+    repeatRunsOut?: string | null;
     duration?: string | null;
     quantity?: string | null;
     repeats?: boolean;
@@ -288,7 +291,9 @@ export type HealthRecordDetail = HealthRecord & {
   reminders: Array<{
     id: string;
     title: string;
+    type?: "appointment" | "medicine" | "refill" | "other" | string;
     dueDate: string | null;
+    frequency?: "once" | "daily" | "weekly" | "monthly" | string;
     origin: string;
     status: string;
   }>;
@@ -297,7 +302,9 @@ export type HealthRecordDetail = HealthRecord & {
 export type HealthHomeReminder = {
   id: string;
   title: string;
+  type?: "appointment" | "medicine" | "refill" | "other" | string;
   dueDate: string | null;
+  frequency?: "once" | "daily" | "weekly" | "monthly" | string;
   memberId?: string;
   memberName: string;
   origin: string;
@@ -386,9 +393,12 @@ export type HealthTimelineEvent = {
     name: string;
     dose?: string | null;
     frequency?: string | null;
+    whenToTake?: Array<"morning" | "afternoon" | "night">;
+    mealTiming?: "before_food" | "after_food" | "with_food" | "any_time" | null;
     duration?: string | null;
     quantity?: string | null;
     repeats: boolean;
+    repeatRunsOut?: string | null;
     runsOutAt?: string | null;
     status: "continuing" | "stopped" | string;
     stoppedAt?: string | null;
@@ -401,10 +411,13 @@ export type HealthMedication = {
   name: string;
   dose?: string | null;
   frequency?: string | null;
+  whenToTake?: Array<"morning" | "afternoon" | "night">;
+  mealTiming?: "before_food" | "after_food" | "with_food" | "any_time" | null;
   duration?: string | null;
   quantity?: string | null;
   status: "continuing" | "stopped" | string;
   repeats: boolean;
+  repeatRunsOut?: string | null;
   runsOutAt?: string | null;
   stoppedAt?: string | null;
   createdAt: string;

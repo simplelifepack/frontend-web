@@ -5,23 +5,26 @@ import { btnGhost, btnPrimary } from "@/constants/theme";
 type MedicationForm = {
   name: string;
   dose: string;
-  frequency: string;
-  duration: string;
-  quantity: string;
-  repeats: boolean;
-  runsOutAt: string;
+  whenToTake: MedicationTime[];
+  mealTiming: MealTiming | "";
+  repeatRunsOut: string;
   status: "continuing" | "stopped";
   stoppedAt: string;
 };
-type FrequencyUnit = "hours" | "days" | "weeks" | "months" | "years";
+type MedicationTime = "morning" | "afternoon" | "night";
+type MealTiming = "before_food" | "after_food" | "with_food" | "any_time";
 
-const frequencyCounts = ["", "1", "2", "3", "4", "6", "8", "12"];
-
-function formatFrequency(count: string, unit: FrequencyUnit) {
-  if (!count) return "";
-  const singular = unit.slice(0, -1);
-  return `Every ${count} ${count === "1" ? singular : unit}`;
-}
+const timeOptions: Array<{ value: MedicationTime; label: string }> = [
+  { value: "morning", label: "Morning" },
+  { value: "afternoon", label: "Afternoon" },
+  { value: "night", label: "Night" },
+];
+const mealOptions: Array<{ value: MealTiming; label: string }> = [
+  { value: "before_food", label: "Before Food" },
+  { value: "after_food", label: "After Food" },
+  { value: "with_food", label: "With Food" },
+  { value: "any_time", label: "Any Time" },
+];
 
 function AddMedicationDialog({
   onClose,
@@ -37,30 +40,34 @@ function AddMedicationDialog({
     initialMedication ?? {
       name: "",
       dose: "",
-      frequency: "",
-      duration: "",
-      quantity: "",
-      repeats: false,
-      runsOutAt: "",
+      whenToTake: [],
+      mealTiming: "",
+      repeatRunsOut: "",
       status: "continuing",
       stoppedAt: "",
     },
   );
-  const [frequencyCount, setFrequencyCount] = useState("");
-  const [frequencyUnit, setFrequencyUnit] = useState<FrequencyUnit>("days");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const isValid = form.name.trim() && form.dose.trim() && form.whenToTake.length > 0 && form.mealTiming;
   const update = <K extends keyof MedicationForm>(key: K, value: MedicationForm[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
+  const toggleTime = (value: MedicationTime) =>
+    setForm((current) => ({
+      ...current,
+      whenToTake: current.whenToTake.includes(value)
+        ? current.whenToTake.filter((item) => item !== value)
+        : [...current.whenToTake, value],
+    }));
   const submit = async () => {
-    if (!form.name.trim() || (!editing && !form.dose.trim())) {
-      setError(editing ? "Name is required." : "Name and dose are required.");
+    if (!isValid) {
+      setError("Name, dose, when to take it, and meal timing are required.");
       return;
     }
     setSaving(true);
     setError("");
     try {
-      await onCreate({ ...form, frequency: formatFrequency(frequencyCount, frequencyUnit) || form.frequency });
+      await onCreate(form);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : editing ? "Medication could not be saved." : "Medication could not be added.");
@@ -80,72 +87,44 @@ function AddMedicationDialog({
           </button>
         </header>
         <div className="lp-health-form-grid lp-health-medication-form">
-          <label>
+          <label className="lp-health-med-name">
             <span>Name</span>
-            <input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="Medication name" />
+            <input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="e.g. Metformin" />
           </label>
-          <label>
+          <label className="lp-health-med-dose">
             <span>Dose</span>
-            <input value={form.dose} onChange={(event) => update("dose", event.target.value)} placeholder="500 mg, 10 ml, 1 tablet" />
+            <input value={form.dose} onChange={(event) => update("dose", event.target.value)} placeholder="500 mg" />
           </label>
-          <label>
-            <span>Frequency</span>
-            <input value={form.frequency} onChange={(event) => update("frequency", event.target.value)} placeholder="Twice daily, after food" />
-          </label>
-          <fieldset className="lp-health-frequency-row">
-            <span>Quick frequency</span>
-            <label>
-              <span>Every</span>
-              <select value={frequencyCount} onChange={(event) => setFrequencyCount(event.target.value)}>
-                <option value="">Not set</option>
-                {frequencyCounts.filter(Boolean).map((count) => <option key={count} value={count}>{count}</option>)}
-              </select>
-            </label>
-            <label>
-              <span>Frequency unit</span>
-              <select value={frequencyUnit} onChange={(event) => setFrequencyUnit(event.target.value as FrequencyUnit)}>
-                <option value="hours">Hours</option>
-                <option value="days">Days</option>
-                <option value="weeks">Weeks</option>
-                <option value="months">Months</option>
-                <option value="years">Years</option>
-              </select>
-            </label>
+          <fieldset className="lp-health-med-when">
+            <span>When to take it</span>
+            <div className="lp-health-segmented" aria-label="When to take it">
+              {timeOptions.map((option) => (
+                <button key={option.value} type="button" className={form.whenToTake.includes(option.value) ? "selected" : ""} onClick={() => toggleTime(option.value)}>
+                  {option.label}
+                </button>
+              ))}
+            </div>
           </fieldset>
-          <label>
-            <span>Duration</span>
-            <input value={form.duration} onChange={(event) => update("duration", event.target.value)} placeholder="5 days, 3 months" />
+          <label className="lp-health-med-repeat">
+            <span>Repeat runs out</span>
+            <input type="date" value={form.repeatRunsOut} onChange={(event) => update("repeatRunsOut", event.target.value)} placeholder="dd/mm/yyyy" />
           </label>
-          <label>
-            <span>Quantity</span>
-            <input value={form.quantity} onChange={(event) => update("quantity", event.target.value)} placeholder="30 tablets, 1 bottle" />
-          </label>
-          <label>
-            <span>Runs out</span>
-            <input type="date" value={form.runsOutAt} onChange={(event) => update("runsOutAt", event.target.value)} />
-          </label>
-          <label>
-            <span>Status</span>
-            <select value={form.status} onChange={(event) => update("status", event.target.value as MedicationForm["status"])}>
-              <option value="continuing">Still continuing</option>
-              <option value="stopped">Stopped</option>
-            </select>
-          </label>
-          {form.status === "stopped" ? (
-            <label>
-              <span>Stopped date</span>
-              <input type="date" value={form.stoppedAt} onChange={(event) => update("stoppedAt", event.target.value)} />
-            </label>
-          ) : null}
-          <label className="lp-health-check-row">
-            <input type="checkbox" checked={form.repeats} onChange={(event) => update("repeats", event.target.checked)} />
-            <span>Repeats / ongoing</span>
-          </label>
+          <fieldset className="lp-health-med-meals">
+            <span>With meals</span>
+            <div className="lp-health-segmented" aria-label="With meals">
+              {mealOptions.map((option) => (
+                <button key={option.value} type="button" className={form.mealTiming === option.value ? "selected" : ""} onClick={() => update("mealTiming", option.value)}>
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          <p className="lp-health-med-note">Repeat date is optional.</p>
         </div>
         {error ? <div className="lp-health-form-error">{error}</div> : null}
         <footer>
           <button type="button" style={btnGhost} disabled={saving} onClick={onClose}>Cancel</button>
-          <button type="button" style={btnPrimary} disabled={saving} onClick={submit}>
+          <button type="button" style={btnPrimary} disabled={saving || !isValid} onClick={submit}>
             {saving ? (editing ? "Saving..." : "Adding...") : editing ? "Save changes" : "Add medication"}
           </button>
         </footer>

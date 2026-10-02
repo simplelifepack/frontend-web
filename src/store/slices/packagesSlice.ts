@@ -66,8 +66,11 @@ export const fetchPackages = createAsyncThunk(
     const hydratedPages = (await readAllPackagePages().catch(() => [])).filter(isValidCachedPage);
     const cachedPage = hydratedPages.find((page) => page.key === key) ?? await readPackagePage(key).catch(() => null);
     const cached = cachedPage && isValidCachedPage(cachedPage) ? cachedPage : null;
-    if (cached) return { key, query: resolved, response: cached.response, hydratedPages, source: "cache" as const };
-    const response = await api.packages.list(resolved);
+    if (cached) {
+      const response = await hydrateSearchRequirements(resolved, cached.response);
+      return { key, query: resolved, response, hydratedPages, source: "cache" as const };
+    }
+    const response = await hydrateSearchRequirements(resolved, await api.packages.list(resolved));
     const page: CachedPackagePage = { key, query: resolved, response };
     await writePackagePage(page).catch(() => undefined);
     return {
@@ -178,6 +181,15 @@ function mergeUniquePackages(existing: PackageListItem[], incoming: PackageListI
   const byId = new Map(existing.map((item) => [item.id, item]));
   incoming.forEach((item) => byId.set(item.id, item));
   return [...byId.values()];
+}
+
+async function hydrateSearchRequirements(query: PackageListQuery, response: PackageListResponse): Promise<PackageListResponse> {
+  if (!query.search) return response;
+  const hydratedItems = await Promise.all(response.items.map(async (item) => {
+    if (Array.isArray(item.requirements) && item.requirements.length > 0) return item;
+    return api.packages.get(item.slug);
+  }));
+  return { ...response, items: hydratedItems };
 }
 
 function isValidCachedPage(page: CachedPackagePage | null | undefined): page is CachedPackagePage {

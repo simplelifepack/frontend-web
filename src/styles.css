@@ -4432,6 +4432,93 @@ button.lp-pack-check-row:hover {
   overflow-y: auto;
   padding-right: 4px;
 }
+.lp-health-medication-form.lp-health-form-grid {
+  grid-template-columns: minmax(0, 1.55fr) minmax(180px, 0.85fr);
+  gap: 16px;
+}
+.lp-health-med-name {
+  grid-column: 1;
+}
+.lp-health-med-dose {
+  grid-column: 2;
+}
+.lp-health-med-when {
+  grid-column: 1;
+}
+.lp-health-med-repeat {
+  grid-column: 2;
+}
+.lp-health-med-meals,
+.lp-health-med-note {
+  grid-column: 1 / -1;
+}
+.lp-health-med-note {
+  margin: -2px 0 0;
+  color: var(--lp-muted);
+  font-size: 13px;
+}
+.lp-health-reminder-form {
+  display: grid;
+  gap: 16px;
+}
+.lp-health-reminder-form label,
+.lp-health-reminder-choice {
+  min-width: 0;
+}
+.lp-health-reminder-title,
+.lp-health-reminder-due {
+  display: grid;
+  gap: 8px;
+  color: var(--lp-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.lp-health-reminder-choice {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+}
+.lp-health-reminder-choice > span {
+  color: var(--lp-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.lp-health-med-when,
+.lp-health-med-meals {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+}
+.lp-health-med-when > span,
+.lp-health-med-meals > span {
+  color: var(--lp-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.lp-health-segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.lp-health-segmented button {
+  min-height: 42px;
+  border: 1px solid var(--lp-border);
+  border-radius: 10px;
+  background: var(--lp-raised);
+  color: var(--lp-text);
+  padding: 9px 13px;
+  font-weight: 800;
+}
+.lp-health-segmented button.selected {
+  border-color: color-mix(in srgb, var(--lp-action) 60%, transparent);
+  background: color-mix(in srgb, var(--lp-action) 16%, var(--lp-panel));
+  color: var(--lp-action);
+}
 .lp-health-dialog-head button {
   flex: 0 0 auto;
   display: grid;
@@ -4901,12 +4988,34 @@ button.lp-pack-check-row:hover {
   color: var(--lp-text);
   text-align: left;
 }
+.lp-health-add-dialog > .lp-health-medication-form .lp-health-segmented button {
+  justify-content: center;
+  gap: 0;
+  text-align: center;
+  background: var(--lp-raised);
+}
+.lp-health-add-dialog > .lp-health-medication-form .lp-health-segmented button.selected {
+  border-color: color-mix(in srgb, var(--lp-action) 60%, transparent);
+  background: color-mix(in srgb, var(--lp-action) 16%, var(--lp-panel));
+  color: var(--lp-action);
+}
 .lp-health-add-dialog footer {
   flex: 0 0 auto;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 16px;
+}
+@media (max-width: 620px) {
+  .lp-health-medication-form.lp-health-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .lp-health-med-name,
+  .lp-health-med-dose,
+  .lp-health-med-when,
+  .lp-health-med-repeat {
+    grid-column: 1;
+  }
 }
 .lp-reading-backdrop {
   background: var(--lpv-scrim);

@@ -36,6 +36,21 @@ type VisitContext = {
   recordIds: string[];
 };
 type VisitDocument = { record: HealthRecord; document?: DocumentRecord };
+type ReminderType = "appointment" | "medicine" | "refill" | "other";
+type ReminderFrequency = "once" | "daily" | "weekly" | "monthly";
+
+const reminderTypeOptions: Array<{ value: ReminderType; label: string }> = [
+  { value: "appointment", label: "Appointment" },
+  { value: "medicine", label: "Take a medicine" },
+  { value: "refill", label: "Refill" },
+  { value: "other", label: "Something else" },
+];
+const reminderFrequencyOptions: Array<{ value: ReminderFrequency; label: string }> = [
+  { value: "once", label: "Once" },
+  { value: "daily", label: "Every day" },
+  { value: "weekly", label: "Every week" },
+  { value: "monthly", label: "Every month" },
+];
 
 export default function HealthDialog({
   kind,
@@ -56,6 +71,8 @@ export default function HealthDialog({
 }) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
+  const [reminderType, setReminderType] = useState<ReminderType | "">("");
+  const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency | "">("");
   const [bloodGroup, setBloodGroup] = useState(member.bloodGroup || "Unknown");
   const [conditions, setConditions] = useState(member.conditions || "");
   const [allergies, setAllergies] = useState(member.allergies || "");
@@ -83,14 +100,20 @@ export default function HealthDialog({
     reading: "Log reading",
   };
   const save = async () => {
+    if (kind === "reminder" && (!title.trim() || !reminderType || !date || !reminderFrequency)) {
+      setError("Title, what for, due date, and how often are required.");
+      return;
+    }
     setSaving(true);
     setError("");
     try {
       if (kind === "reminder")
         await api.health.createReminder({
           memberId: member.id,
-          title,
+          title: title.trim(),
+          type: reminderType || "other",
           dueDate: date,
+          frequency: reminderFrequency || "once",
         });
       else
         await api.health.updateMember(member.id, {
@@ -165,28 +188,50 @@ export default function HealthDialog({
               e.preventDefault();
               void save();
             }}
-            className="lp-health-form"
+            className="lp-health-form lp-health-reminder-form"
           >
-            <label>
-              Reminder
+            <label className="lp-health-reminder-title">
+              Title
               <input
                 required
                 maxLength={180}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Cardiology follow-up"
               />
             </label>
-            <label>
-              Due date
+            <fieldset className="lp-health-reminder-choice">
+              <span>What for</span>
+              <div className="lp-health-segmented" aria-label="What for">
+                {reminderTypeOptions.map((option) => (
+                  <button key={option.value} type="button" className={reminderType === option.value ? "selected" : ""} onClick={() => setReminderType(option.value)}>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <label className="lp-health-reminder-due">
+              Due
               <input
                 required
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                placeholder="dd/mm/yyyy"
               />
             </label>
-            <button style={btnPrimary} disabled={saving}>
-              Save reminder
+            <fieldset className="lp-health-reminder-choice">
+              <span>How often</span>
+              <div className="lp-health-segmented" aria-label="How often">
+                {reminderFrequencyOptions.map((option) => (
+                  <button key={option.value} type="button" className={reminderFrequency === option.value ? "selected" : ""} onClick={() => setReminderFrequency(option.value)}>
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+            <button style={btnPrimary} disabled={saving || !title.trim() || !reminderType || !date || !reminderFrequency}>
+              Add reminder
             </button>
           </form>
         ) : null}

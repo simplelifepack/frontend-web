@@ -28,6 +28,7 @@ vi.mock("@/lib/api", () => ({
       timeline: vi.fn(),
       measurements: vi.fn(),
       createMeasurement: vi.fn(),
+      createReminder: vi.fn(),
       availableMetrics: vi.fn(),
       createMedication: vi.fn(),
       updateRecord: vi.fn(),
@@ -136,7 +137,10 @@ const manualMedication = {
   memberId: "member-a",
   name: "Metformin",
   dose: "500 mg",
-  frequency: "Twice daily",
+  frequency: "morning, night",
+  whenToTake: ["morning", "night"],
+  mealTiming: "after_food",
+  repeatRunsOut: "2026-10-25",
   repeats: true,
   runsOutAt: "2026-10-25",
   status: "continuing",
@@ -342,10 +346,39 @@ describe("Health page orchestration", () => {
     vi.mocked(api.health.measurements).mockResolvedValue([]);
     vi.mocked(api.health.availableMetrics).mockResolvedValue([]);
     vi.mocked(api.health.createMedication).mockResolvedValue(manualMedication);
+    vi.mocked(api.health.createReminder).mockResolvedValue({
+      id: "reminder-a",
+      title: "Cardiology follow-up",
+      type: "appointment",
+      dueDate: "2026-10-25",
+      frequency: "weekly",
+      memberId: "member-a",
+      memberName: "Alex Example",
+      origin: "manual",
+      status: "active",
+    });
     vi.mocked(api.documents.list).mockResolvedValue([]);
 
     renderHealthPage();
     await screen.findByRole("heading", { name: "Alex Example" });
+    const remindersCard = screen.getByText("Reminders").closest(".lp-health-reminders-card")!;
+    fireEvent.click(within(remindersCard as HTMLElement).getByRole("button", { name: "Add" }));
+    const reminderDialog = await screen.findByRole("dialog", { name: "Add reminder" });
+    expect(within(reminderDialog).getByRole<HTMLButtonElement>("button", { name: "Add reminder" }).disabled).toBe(true);
+    fireEvent.change(within(reminderDialog).getByLabelText("Title"), { target: { value: "Cardiology follow-up" } });
+    fireEvent.click(within(reminderDialog).getByRole("button", { name: "Appointment" }));
+    fireEvent.change(within(reminderDialog).getByLabelText("Due"), { target: { value: "2026-10-25" } });
+    fireEvent.click(within(reminderDialog).getByRole("button", { name: "Every week" }));
+    fireEvent.click(within(reminderDialog).getByRole("button", { name: "Add reminder" }));
+    await waitFor(() =>
+      expect(api.health.createReminder).toHaveBeenCalledWith({
+        memberId: "member-a",
+        title: "Cardiology follow-up",
+        type: "appointment",
+        dueDate: "2026-10-25",
+        frequency: "weekly",
+      }),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Timeline" }));
     expect(await screen.findByText("Test reading 118 mg/dL")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Medications" }));
@@ -359,25 +392,24 @@ describe("Health page orchestration", () => {
       }),
     );
     const medicationDialog = await screen.findByRole("dialog", { name: "Add medication" });
-    fireEvent.click(within(medicationDialog).getByRole("button", { name: "Add medication" }));
-    expect(await within(medicationDialog).findByText("Name and dose are required.")).toBeTruthy();
+    expect(within(medicationDialog).getByRole<HTMLButtonElement>("button", { name: "Add medication" }).disabled).toBe(true);
     fireEvent.change(within(medicationDialog).getByLabelText("Name"), { target: { value: "Metformin" } });
     fireEvent.change(within(medicationDialog).getByLabelText("Dose"), { target: { value: "500 mg" } });
-    fireEvent.change(within(medicationDialog).getByLabelText("Every"), { target: { value: "2" } });
-    fireEvent.change(within(medicationDialog).getByLabelText("Frequency unit"), { target: { value: "years" } });
-    fireEvent.change(within(medicationDialog).getByLabelText("Runs out"), { target: { value: "2026-10-25" } });
-    fireEvent.click(within(medicationDialog).getByLabelText("Repeats / ongoing"));
+    fireEvent.click(within(medicationDialog).getByRole("button", { name: "Morning" }));
+    fireEvent.click(within(medicationDialog).getByRole("button", { name: "Night" }));
+    fireEvent.change(within(medicationDialog).getByLabelText("Repeat runs out"), { target: { value: "2026-10-25" } });
+    fireEvent.click(within(medicationDialog).getByRole("button", { name: "After Food" }));
     fireEvent.click(within(medicationDialog).getByRole("button", { name: "Add medication" }));
     await waitFor(() =>
       expect(api.health.createMedication).toHaveBeenCalledWith("member-a", {
         name: "Metformin",
         dose: "500 mg",
-        frequency: "Every 2 years",
-        repeats: true,
-        runsOutAt: "2026-10-25",
+        whenToTake: ["morning", "night"],
+        mealTiming: "after_food",
+        repeatRunsOut: "2026-10-25",
       }),
     );
-    expect(api.health.timeline).toHaveBeenCalledTimes(2);
+    expect(api.health.timeline).toHaveBeenCalledTimes(3);
 
     fireEvent.click(screen.getByRole("button", { name: "In an emergency" }));
     expect(
