@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import { T } from "@/constants/theme";
 
 type RingProps = {
@@ -7,39 +9,52 @@ type RingProps = {
 };
 
 export default function Ring({ score, size = 64, color }: RingProps) {
-  const stroke = size > 52 ? 6 : 5;
-  const radius = (size - stroke * 2) / 2 - 2;
   const value = Number.isFinite(score) ? Math.min(100, Math.max(0, Math.round(score))) : 0;
-  const strokeColor = color ?? (value >= 100 ? T.mint : value >= 70 ? T.readiness : T.coral);
-  const center = size / 2;
+  const stroke = size >= 56 ? 5 : 4;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const targetOffset = circumference - (value / 100) * circumference;
+  const strokeColor = color ?? (value >= 80 ? T.mint : value >= 40 ? T.readiness : T.coral);
+  const [offset, setOffset] = useState(circumference);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setOffset(targetOffset));
+    return () => cancelAnimationFrame(frame);
+  }, [targetOffset]);
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <circle cx={center} cy={center} r={radius} fill="none" stroke={T.border} strokeWidth={stroke} />
-      <circle
-        data-testid="readiness-ring-progress"
-        cx={center}
-        cy={center}
-        r={radius}
-        fill="none"
-        stroke={strokeColor}
-        strokeWidth={stroke}
-        strokeLinecap="round"
-        pathLength="100"
-        strokeDasharray={`${value} 100`}
-        transform={`rotate(-90 ${center} ${center})`}
-      />
-      <text
-        x={center}
-        y={center + size * 0.08}
-        textAnchor="middle"
-        fontFamily="ui-monospace, monospace"
-        fontSize={size * 0.24}
-        fontWeight="700"
-        fill={T.white}
+    <div style={{ position: "relative", width: size, height: size }}>
+      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={T.raised} strokeWidth={stroke} />
+        <circle
+          data-testid="readiness-ring-progress"
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 700ms cubic-bezier(.22,.9,.3,1)" }}
+        />
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "grid",
+          placeItems: "center",
+          color: T.white,
+          fontFamily: "ui-monospace, monospace",
+          fontSize: size >= 56 ? 15 : 12,
+          fontVariantNumeric: "tabular-nums",
+          fontWeight: 700,
+        }}
       >
         {value}
-      </text>
-    </svg>
+      </div>
+    </div>
   );
 }

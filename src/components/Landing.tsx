@@ -175,17 +175,17 @@ function ReadinessMock() {
         </span>
       </div>
       <div style={{ display: "grid", gap: 16 }}>
-        <Bar label="Schengen visa" score={82} delay={0.1} color={C.action} />
-        <Bar label="Home loan" score={95} delay={0.25} color={C.emerald} />
-        <Bar label="Job switch" score={90} delay={0.4} color={C.emerald} />
-        <Bar label="Hospital visit" score={67} delay={0.55} color={C.action} />
+        <Bar label="Travel paperwork" score={82} delay={0.1} color={C.action} />
+        <Bar label="Financial checklist" score={95} delay={0.25} color={C.emerald} />
+        <Bar label="Work transition" score={90} delay={0.4} color={C.emerald} />
+        <Bar label="Care visit" score={67} delay={0.55} color={C.action} />
       </div>
     </div>
   );
 }
 function PackDetail() {
-  const inc = ["Passport", "Bank statement", "Payslip", "Tax return"];
-  const add = ["DS-160 confirmation"];
+  const inc = ["Identity proof", "Financial record", "Income record", "Supporting form"];
+  const add = ["Confirmation document"];
   return (
     <div className="lp-mock" style={{ padding: 18 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
@@ -202,7 +202,7 @@ function PackDetail() {
           <Plane size={19} color={C.blue} />
         </span>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>US visa pack</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>Ready pack</div>
           <div style={{ fontSize: 12, color: C.muted, fontFamily: "'JetBrains Mono',monospace" }}>4 of 5 ready</div>
         </div>
       </div>
@@ -534,10 +534,10 @@ function BrandKey({ x, y, r, color, carve }: { x: number; y: number; r: number; 
   );
 }
 
-function MomentScene({ kind }: { kind: "visa" | "hospital" | "home" | "legacy" }) {
+function MomentScene({ kind }: { kind: "travel" | "care" | "home" | "legacy" }) {
   const scenes: Record<string, { sky: string; label: string; draw: ReactNode }> = {
-    visa: {
-      label: "A passport and travel papers laid out on a desk beside a cup of coffee",
+    travel: {
+      label: "Travel papers laid out on a desk beside a cup of coffee",
       sky: "linear-gradient(165deg,#F2EBDA,#EDE3CE)",
       draw: (
         <>
@@ -581,7 +581,7 @@ function MomentScene({ kind }: { kind: "visa" | "hospital" | "home" | "legacy" }
         </>
       ),
     },
-    hospital: {
+    care: {
       label: "A phone showing a ready document pack beside paperwork, late at night",
       sky: "linear-gradient(160deg,#2A3140,#1F252E)",
       draw: (
@@ -612,7 +612,7 @@ function MomentScene({ kind }: { kind: "visa" | "hospital" | "home" | "legacy" }
       ),
     },
     home: {
-      label: "Two keys resting on a home-loan checklist",
+      label: "Two keys resting on a checklist",
       sky: "linear-gradient(165deg,#F3EFE3,#EEE8D6)",
       draw: (
         <>
@@ -691,7 +691,7 @@ function MomentScene({ kind }: { kind: "visa" | "hospital" | "home" | "legacy" }
 }
 
 const MOMENTS: {
-  kind: "visa" | "hospital" | "home" | "legacy";
+  kind: "travel" | "care" | "home" | "legacy";
   img?: string;
   title: string;
   body: string;
@@ -700,24 +700,24 @@ const MOMENTS: {
   progress?: [number, number];
 }[] = [
   {
-    kind: "visa",
-    title: "Visa interview on Monday",
-    body: "Passport, bank statements, ITR, insurance: assembled and export-ready before you finish your coffee.",
-    chip: "Schengen pack",
+    kind: "travel",
+    title: "Appointment on Monday",
+    body: "Identity, financial, and supporting records: assembled and export-ready before you finish your coffee.",
+    chip: "Ready pack",
     state: "ready",
   },
   {
-    kind: "hospital",
-    title: "Hospital at 2 a.m.",
-    body: "Policy, ID, prescriptions, and reports in one cashless pack, when nobody can think straight.",
-    chip: "Admission pack",
+    kind: "care",
+    title: "Care visit at 2 a.m.",
+    body: "Coverage, ID, prescriptions, and reports in one pack, when nobody can think straight.",
+    chip: "Care pack",
     state: "ready",
   },
   {
     kind: "home",
-    title: "Keys to a new home",
-    body: "The full salaried home-loan checklist, matched against what you already have on file.",
-    chip: "Home loan",
+    title: "Keys to a new place",
+    body: "The full checklist, matched against what you already have on file.",
+    chip: "In progress",
     state: "progress",
     progress: [6, 9],
   },
@@ -1427,8 +1427,8 @@ export default function Landing({
               </span>
             </h1>
             <p className="lp-sub">
-              Readiness quietly gathers, classifies, and assembles every passport, policy, payslip, and prescription, so
-              any visa, loan, job switch, or hospital visit is only a few taps away.
+              Readiness quietly gathers, classifies, and assembles your important records, so the next big moment is
+              only a few taps away.
             </p>
             <div className="lp-herocta">
               <button
@@ -1492,7 +1492,7 @@ export default function Landing({
             For life's real moments
           </div>
           <h2 className="lp-h2">
-            A new job. A new home. A trip abroad. A day at the hospital. Whatever comes next, the right papers are
+            A new role. A new place. A trip. A care visit. Whatever comes next, the right papers are
             already gathered and waiting.
           </h2>
           <p
@@ -1510,7 +1510,7 @@ export default function Landing({
           title="Assemble any pack in a tap."
           body="Choose a life event. Readiness gathers the right documents from your archive, shows exactly what is ready, and gently points out anything still to add."
           points={[
-            "Visa, loan, hospital, tax, job",
+            "Any database-backed package",
             "Ready and to-add, clearly shown",
             "Export a clean pack in seconds",
           ]}
@@ -1523,7 +1523,7 @@ export default function Landing({
           body="Link Email, Drive, or DigiLocker, or simply add a photo. Readiness reads each document, files it in the right place, and builds a living graph of your family's papers."
           points={[
             "Sorted automatically as it arrives",
-            "Identity, finance, insurance, property, health",
+            "Your important document areas",
             "Re-tag anything in one tap",
           ]}
           mock={<DocGraph />}
@@ -1747,7 +1747,7 @@ export default function Landing({
               </p>
               <div style={{ display: "grid", gap: 8, margin: "10px 0 20px" }}>
                 {[
-                  "All 100+ life-event packs, prepared before you need them",
+                  "All available packages, prepared before you need them",
                   "AI reads, files and scores every document, without limits",
                   "Family access levels with SOS handoff",
                   "Gmail, Drive and DigiLocker feed the vault automatically",
@@ -1783,7 +1783,7 @@ export default function Landing({
           {[
             ["Encrypted storage", "50 MB", "For your whole family"],
             ["Documents the AI reads and files", "3 a month", "Unlimited"],
-            ["Curated life-event packs", "1 sample pack", "All 100+"],
+            ["Curated packages", "1 sample pack", "All available"],
             ["Readiness scores", "On your sample pack", "Across every pack"],
             ["Modules: Documents, Health, Wealth, Trust", "Browse and add manually", "Full AI automation"],
             ["Family access levels + SOS handoff", "—", "Included"],

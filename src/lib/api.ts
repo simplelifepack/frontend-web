@@ -3,7 +3,8 @@ import { streamRequest } from "./http-client";
 import { API_URL, downloadBlob, request } from "./http-client";
 import { documentsApi } from "./documents-api";
 import type {
-  AccountUsage, AuthResponse, AuthUser, BootstrapResponse,
+  AccountUsage, AuthResponse, AuthUser, BootstrapResponse, CustomPackDraftResponse,
+  CustomPackPayload,
   DynamicFormCategory, DynamicFormSchema, DynamicFormSubtype,
   DriveScanResult, DriveStatus, ForgotPasswordResponse,
   GmailCandidate, GmailImportResult, GmailStatus,
@@ -200,6 +201,8 @@ export const api = {
       })}`, { requiresAuth: true, dedupeMs: 5_000 }),
     get: (slug: string) =>
       request<PackSummary>(`/api/packages/${encodeURIComponent(slug)}`, { requiresAuth: true }),
+    refresh: (slug: string) =>
+      request<{ package: PackSummary; changed: boolean; message: string }>(`/api/packages/${encodeURIComponent(slug)}/refresh`, { method: "POST", requiresAuth: true }),
     streamSearchOrGenerate: (packageType: string, documentLabels: string[], onDelta: (text: string) => void, signal?: AbortSignal) =>
       streamRequest<PackageSearchOrGenerateResponse>("/api/packages/search-or-generate", { packageType, documentLabels: publicDocumentLabels(documentLabels) }, onDelta, signal),
     searchOrGenerate: (packageType: string, documentLabels: string[]) =>
@@ -208,6 +211,18 @@ export const api = {
         body: { packageType, documentLabels: publicDocumentLabels(documentLabels) },
         requiresAuth: true,
       }),
+    draftCustom: (packageType: string, documentLabels: string[]) =>
+      request<CustomPackDraftResponse>("/api/packages/custom/draft", {
+        method: "POST",
+        body: { packageType, documentLabels: publicDocumentLabels(documentLabels) },
+        requiresAuth: true,
+      }),
+    createCustom: (payload: CustomPackPayload) =>
+      request<{ package: PackSummary }>("/api/packages/custom", { method: "POST", body: payload, requiresAuth: true }),
+    updateCustom: (slug: string, payload: CustomPackPayload) =>
+      request<{ package: PackSummary }>(`/api/packages/${encodeURIComponent(slug)}/custom`, { method: "PATCH", body: payload, requiresAuth: true }),
+    deleteCustom: (slug: string) =>
+      request<void>(`/api/packages/${encodeURIComponent(slug)}/custom`, { method: "DELETE", requiresAuth: true }),
     getByIds: (ids: string[]) =>
       request<PackageLookup[]>(`/packages?ids=${encodeURIComponent(ids.join(","))}`, { requiresAuth: true }),
     assignRequirementDocument: (slug: string, requirementId: string, payload: { documentId: string; assignmentSource: Exclude<RequirementAssignmentSource, "AUTO"> }) =>

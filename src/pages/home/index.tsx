@@ -96,7 +96,7 @@ export default function HomePage() {
     {
       icons: [Wallet, ShieldCheck],
       text: expiring.length
-        ? `${expiring.length} record${expiring.length === 1 ? "" : "s"} need renewal attention before they affect a life-event pack.`
+        ? `${expiring.length} record${expiring.length === 1 ? "" : "s"} need renewal attention before they affect a package.`
         : "No saved documents currently expire within the next 60 days.",
       route: "/wealth",
       tone: expiring.length ? T.warning : T.mint,

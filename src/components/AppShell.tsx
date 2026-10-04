@@ -76,7 +76,7 @@ export default function AppShell({ children }: AppShellProps) {
             <span><FileText size={21} strokeWidth={2.3} /></span>
             {navOpen && (
               <div>
-                <BrandWordmark size={18} color="var(--lp-heading)" />
+                <BrandWordmark size={16} color="var(--lp-heading)" gold="var(--lp-readiness)" />
                 <small>READY FOR LIFE</small>
               </div>
             )}

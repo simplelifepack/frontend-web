@@ -24,7 +24,7 @@ export const TABS: LandingTab[] = [
     body: "Link Gmail, Drive, or DigiLocker, or simply drop files in. Readiness reads each one, sorts it into the right place, and builds a living graph of your documents.",
     points: [
       "Auto-classified on upload",
-      "Identity, finance, insurance, property, medical",
+      "Your important document areas",
       "Re-tag anything in one tap",
     ],
   },
@@ -33,7 +33,7 @@ export const TABS: LandingTab[] = [
     label: "Life-event packages",
     icon: Plane,
     head: "Prepare for any event in minutes.",
-    body: "Ask for a Schengen visa, a home loan, a job switch. Readiness assembles the exact pack, marks what is ready, flags what is missing, and exports a clean ZIP.",
+    body: "Ask for the moment you are preparing for. Readiness assembles the exact pack, marks what is ready, flags what is missing, and exports a clean ZIP.",
     points: [
       "Readiness score from your real vault",
       "Missing items flagged, not guessed",

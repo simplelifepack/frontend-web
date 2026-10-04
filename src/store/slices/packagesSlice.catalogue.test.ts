@@ -114,7 +114,7 @@ describe("persistent package catalogue", () => {
     const searchResponse = response(1, 1, 1);
     searchResponse.items[0].requirements = [];
     get.mockResolvedValue({ ...searchResponse.items[0], requirements: [{ id: "req-1", title: "Passport", required: true, acceptedDocumentTypes: ["passport"] }] });
-    list.mockResolvedValue(searchResponse);
+    list.mockResolvedValueOnce(searchResponse).mockResolvedValueOnce(response(1, 1, 1));
     const app = store();
 
     await app.dispatch(fetchPackages({ page: 1, search: "passport renewal", sort: "relevance" }));
@@ -122,5 +122,36 @@ describe("persistent package catalogue", () => {
     expect(get).toHaveBeenCalledWith("pack-1");
     expect(app.getState().packages.items[0].requirements).toHaveLength(1);
     expect(cache.get("packages:limit=20:page=1:sort=relevance:search=passport renewal")?.response.items[0].requirements).toHaveLength(1);
+  });
+
+  it("refreshes stale category pages after a package is found through search", async () => {
+    cache.set(key(1), pageRecord(1, response(1, 1, 1)));
+    const searchResponse = response(1, 99, 1);
+    searchResponse.items[0].category = "Travel & Immigration";
+    searchResponse.items[0].requirements = [{ id: "req-visa", title: "Visa form", required: true, acceptedDocumentTypes: ["visa_form"] }];
+    const refreshedCategory = response(1, 1, 2);
+    refreshedCategory.items[1] = searchResponse.items[0];
+    list.mockResolvedValueOnce(searchResponse).mockResolvedValueOnce(refreshedCategory);
+    const app = store();
+
+    await app.dispatch(fetchPackages({ page: 1, search: "Uganda Visa", sort: "relevance" }));
+
+    app.dispatch(setActivePackageQuery({ category: "Travel & Immigration", page: 1, limit: 20, sort: "category" }));
+    expect(list).toHaveBeenCalledTimes(2);
+    expect(app.getState().packages.items.map((item) => item.slug)).toContain("pack-99");
+    expect(cache.get(key(1))?.response.items.map((item) => item.slug)).toContain("pack-99");
+  });
+
+  it("does not reuse stale cached search results", async () => {
+    const searchKey = "packages:limit=20:page=1:sort=relevance:search=uganda";
+    cache.set(searchKey, { key: searchKey, query: { limit: 20, page: 1, search: "uganda", sort: "relevance" }, response: response(1, 1, 1) });
+    list.mockResolvedValue({ ...response(1, 1, 0), query: "uganda" });
+    const app = store();
+
+    await app.dispatch(fetchPackages({ page: 1, search: "uganda", sort: "relevance" }));
+
+    expect(list).toHaveBeenCalledTimes(1);
+    expect(app.getState().packages.items).toHaveLength(0);
+    expect(cache.get(searchKey)?.response.items).toHaveLength(0);
   });
 });

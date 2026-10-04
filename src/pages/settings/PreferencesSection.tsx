@@ -79,7 +79,7 @@ export default function PreferencesSection() {
       />
       <PreferenceRow
         label="Passport"
-        sub="For a visa, the documents asked of you depend on this, not on where you live."
+        sub="Some packages depend on this, not only on where you live."
         control={<SearchablePreferenceSelect ariaLabel="Passport country" disabled={saving === "passportCountry"} options={countryOptions} value={preferences.passportCountry} placeholder="Choose passport" onChange={(passportCountry) => void update({ passportCountry }, "passportCountry")} />}
       />
       <PreferenceRow

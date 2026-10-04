@@ -7,6 +7,7 @@ import { calculatePackReadiness } from "./calculatePackageReadiness";
 const selectPackages = (state: RootState) => state.packages.items;
 const selectCataloguePackages = (state: RootState) => state.packages.catalogueItems;
 const selectDocuments = (state: RootState) => state.documents.items;
+const selectPackageDetails = (state: RootState) => state.packages.detailsBySlug;
 
 export type DerivedPackSummary = PackageListItem & {
   completion: number;
@@ -34,9 +35,9 @@ export const selectCataloguePackageCards = createSelector([selectCataloguePackag
 
 export function makeSelectPackageReadiness() {
   return createSelector(
-    [selectPackages, selectDocuments, (_state: RootState, slug: string) => slug],
-    (packages, documents, slug) => {
-      const pack = packages.find((item) => item.slug === slug);
+    [selectPackages, selectPackageDetails, selectDocuments, (_state: RootState, slug: string) => slug],
+    (packages, details, documents, slug) => {
+      const pack = details[slug] ?? packages.find((item) => item.slug === slug);
       return pack ? calculatePackReadiness(pack.requirements, documents) : null;
     },
   );

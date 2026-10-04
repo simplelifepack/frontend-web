@@ -5,6 +5,10 @@ type Entry = {
 
 const requests = new Map<string, Entry>();
 
+export function invalidateRequests(prefix: string) {
+  for (const key of requests.keys()) if (key.startsWith(prefix)) requests.delete(key);
+}
+
 export function dedupeRequest<T>(
   key: string,
   intervalMs: number,

@@ -4,7 +4,7 @@ const DB_NAME = "readiness-package-catalogue";
 // Compatibility: migrate the existing public package cache before deleting its old database.
 const LEGACY_DB_NAME = "lifepack-package-catalogue";
 const DB_VERSION = 2;
-const CACHE_KEY_VERSION = "v3";
+const CACHE_KEY_VERSION = "v7";
 const STORE_NAME = "pages";
 
 export type CachedPackagePage = {

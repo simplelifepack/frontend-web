@@ -101,8 +101,8 @@ export default function RecentSearches({ items, onSelect }: RecentSearchesProps)
               No recent searches yet
             </div>
             <div style={{ color: T.muted, fontSize: 13, marginTop: 6 }}>
-              Search for a document pack like Passport renewal, Home loan, or
-              Bike loan to see it here.
+              Search for a document pack or describe what you need to see it
+              here.
             </div>
           </Card>
         )}

@@ -1,5 +1,4 @@
 import { fuzzyPhraseConfidence } from "./fuzzyMatcher";
-import { packageKeywordIndex } from "./packageKeywords";
 import { compactSearchText, normalizeSearchText } from "./normalizer";
 import { weightedKeywordConfidence } from "./ranking";
 import { tokenize } from "./tokenizer";
@@ -9,7 +8,7 @@ export { LOCAL_MATCH_THRESHOLD } from "./confidence";
 
 export function searchPackageKeywords(
   input: string,
-  index: PackageKeywordEntry[] = packageKeywordIndex,
+  index: PackageKeywordEntry[] = [],
 ): LocalSearchMatch[] {
   const query = normalizeSearchText(input);
   if (!query) return [];

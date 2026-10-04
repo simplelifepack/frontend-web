@@ -452,14 +452,21 @@ export type PackSummary = {
   id: string;
   slug: string;
   title: string;
+  subtitle?: string;
   category: string;
+  aliases?: string[];
+  searchMetadata?: PackageSearchMetadata;
   description: string;
+  createdBy?: string;
   source?: {
     name?: string;
     title?: string;
     url?: string;
     lastCheckedAt?: string;
   };
+  verificationSources?: VerificationSource[];
+  verificationStatus?: string;
+  lastVerifiedAt?: string;
   requirements: PackageRequirement[];
 };
 
@@ -475,23 +482,38 @@ export type PackageListItem = {
   id: string;
   slug: string;
   title: string;
+  subtitle?: string;
   category: string;
+  aliases?: string[];
+  searchMetadata?: PackageSearchMetadata;
   description: string;
+  createdBy?: string;
   source?: PackSummary["source"];
+  verificationSources?: VerificationSource[];
+  verificationStatus?: string;
+  lastVerifiedAt?: string;
   requirements: PackageRequirement[];
 };
 
 export type PackageSearchMetadata = {
+  confidence?: string;
+  disclaimer?: string;
+  passportCountries?: string[];
   intent?: string;
   searchPhrases: string[];
   jurisdiction?: string;
   destination?: string;
   purpose?: string;
   subject?: string;
+  referenceId?: string;
+  referenceSource?: string;
+  uiAccent?: string;
+  uiIcon?: string;
 };
 
 export type PackageListResponse = {
   query: string;
+  categories?: string[];
   items: PackageListItem[];
   matches: Array<{
     id: string;
@@ -778,6 +800,47 @@ export type PackageSearchOrGenerateResponse = {
   confidence: number | null;
   matchReason: string | null;
   package: PackSummary;
+};
+
+export type CustomPackPayload = {
+  description?: string;
+  requirements: string[];
+  searchMetadata?: Record<string, unknown>;
+  source?: {
+    name?: string;
+    title?: string;
+    url?: string;
+    lastCheckedAt?: string;
+  };
+  title: string;
+  verificationSources?: VerificationSource[];
+  verificationStatus?: string;
+};
+
+export type CustomPackDraftResponse = {
+  draft: {
+    packageName: string;
+    category: string;
+    description: string;
+    searchMetadata: PackageSearchMetadata;
+    sourceTitle: string;
+    sourceUrl: string;
+    sourceOrganization: string;
+    lastChecked: string;
+    verificationSources: VerificationSource[];
+    lastVerifiedAt: string | null;
+    verificationStatus: string;
+    requiredDocuments: Array<{
+      id: string;
+      category: string;
+      documentType: string;
+      owner: string;
+      name: string;
+      title: string;
+      required: boolean;
+      whyNeeded: string;
+    }>;
+  };
 };
 
 export type AccountUsage = {

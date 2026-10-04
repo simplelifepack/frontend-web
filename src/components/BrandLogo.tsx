@@ -15,6 +15,7 @@ type BrandMarkProps = {
 type BrandWordmarkProps = {
   size?: number;
   color?: string;
+  gold?: string;
   accent?: string;
   tick?: boolean;
 };
@@ -62,14 +63,17 @@ export function BrandMark({
 export function BrandWordmark({
   size = 17,
   color = BRAND_CHARCOAL,
+  gold,
   accent = BRAND_ACCENT,
-  tick = true,
+  tick = false,
 }: BrandWordmarkProps) {
+  const highlight = gold ?? accent;
   const base: CSSProperties = {
-    fontFamily: "'Nunito Sans','Space Grotesk',system-ui,sans-serif",
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     fontWeight: 800,
     fontSize: size,
-    letterSpacing: "-0.02em",
+    letterSpacing: 0,
     color,
     display: "inline-flex",
     alignItems: "baseline",
@@ -79,7 +83,7 @@ export function BrandWordmark({
   if (!tick) {
     return (
       <span style={base}>
-        Readi<span style={{ color: accent }}>N</span>es
+        Readi<span style={{ color: highlight }}>N</span>es
       </span>
     );
   }
@@ -103,9 +107,9 @@ export function BrandWordmark({
           strokeLinejoin="round"
           strokeWidth={8}
         />
-        <circle cx="22.5" cy="4.5" r="4" fill={accent} />
+        <circle cx="22.5" cy="4.5" r="4" fill={highlight} />
       </svg>
-      <span style={{ color: accent }}>N</span>es
+      <span style={{ color: highlight }}>N</span>es
     </span>
   );
 }

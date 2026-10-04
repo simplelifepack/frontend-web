@@ -187,7 +187,7 @@ export default function PackList({
             <Plane size={21} color={T.purple} />
           </span>
           <div style={{ color: T.white, fontSize: 15, fontWeight: 800 }}>
-            No life-event packs yet
+            No packages yet
           </div>
           <div style={{ color: T.muted, fontSize: 13, marginTop: 5 }}>
             Packs from the backend will appear here, ready to review and export.

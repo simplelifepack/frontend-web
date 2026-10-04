@@ -9,7 +9,7 @@ import { validateImageUploadBatch } from "@/lib/document-file-validation";
 const categories = documentCategories.map((item) => item.name);
 const acceptedDocumentTypes = ".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf";
 const isPdf = (file: File) => file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-export default function UploadDocumentModal({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved?: (document: DocumentRecord) => void }) {
+export default function UploadDocumentModal({ open, onClose, onSaved, zIndex = 50 }: { open: boolean; onClose: () => void; onSaved?: (document: DocumentRecord) => void; zIndex?: number }) {
   const dispatch = useAppDispatch(); const inputRef = useRef<HTMLInputElement>(null);
   const { pendingAnalysis, analyzeStatus, uploadStatus, error } = useAppSelector((state) => state.documents);
   const [files, setFiles] = useState<File[]>([]);
@@ -64,7 +64,7 @@ export default function UploadDocumentModal({ open, onClose, onSaved }: { open: 
     event.preventDefault();
     addFiles(event.dataTransfer.files);
   };
-  return <div className="lp-modal-backdrop" style={{ zIndex: 50 }}><div className="lp-modal-panel" style={{ width: "min(720px, calc(100vw - 36px))", maxHeight: "86vh", overflow: "auto" }}>
+  return <div className="lp-modal-backdrop" style={{ zIndex }}><div className="lp-modal-panel" style={{ width: "min(720px, calc(100vw - 36px))", maxHeight: "86vh", overflow: "auto" }}>
     <div style={{ display: "flex", justifyContent: "space-between" }}><h2 style={{ color: T.white }}>Upload document pages</h2><button onClick={close} style={btnGhost}>Cancel</button></div>
     {!pendingAnalysis ? <div data-testid="document-drop-zone" onDragOver={(event) => event.preventDefault()} onDrop={onDrop} style={{ border: `1px dashed ${T.border}`, borderRadius: 12, padding: 20 }}>
       <input ref={inputRef} type="file" multiple accept={acceptedDocumentTypes} onChange={(event) => addFiles(event.target.files)} style={{ display: "none" }} />

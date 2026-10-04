@@ -4,17 +4,17 @@ const wrap = "rounded-2xl bg-[#0B0E24] p-5 min-h-[260px] relative overflow-hidde
 
 function PackagesVisual() {
   const rows: Array<[string, boolean]> = [
-    ["Passport", true],
-    ["Payslips (3 mo)", true],
-    ["Bank statements", true],
-    ["Travel insurance", false],
-    ["Hotel booking", false],
+    ["Identity proof", true],
+    ["Income record", true],
+    ["Financial record", true],
+    ["Supporting record", false],
+    ["Confirmation document", false],
   ];
 
   return (
     <div className={wrap}>
       <div className="font-mono text-[11px] tracking-widest text-white/40 uppercase mb-4">
-        Schengen Visa . 82%
+        Ready package . 82%
       </div>
       {rows.map(([label, ok], index) => (
         <div
