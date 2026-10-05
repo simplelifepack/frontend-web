@@ -3,7 +3,7 @@ import { streamRequest } from "./http-client";
 import { API_URL, downloadBlob, request } from "./http-client";
 import { documentsApi } from "./documents-api";
 import type {
-  AccountUsage, AuthResponse, AuthUser, BootstrapResponse, CustomPackDraftResponse,
+  AccountUsage, AuthResponse, AuthUser, BootstrapResponse, CustomPackageGenerationJobResponse, CustomPackDraftResponse,
   CustomPackPayload,
   DynamicFormCategory, DynamicFormSchema, DynamicFormSubtype,
   DriveScanResult, DriveStatus, ForgotPasswordResponse,
@@ -217,6 +217,14 @@ export const api = {
         body: { packageType, documentLabels: publicDocumentLabels(documentLabels) },
         requiresAuth: true,
       }),
+    createCustomGenerationJob: (packageType: string, documentLabels: string[]) =>
+      request<CustomPackageGenerationJobResponse>("/api/packages/custom/generation-jobs", {
+        method: "POST",
+        body: { packageType, documentLabels: publicDocumentLabels(documentLabels) },
+        requiresAuth: true,
+      }),
+    getCustomGenerationJob: (jobId: string) =>
+      request<CustomPackageGenerationJobResponse>(`/api/packages/custom/generation-jobs/${encodeURIComponent(jobId)}`, { requiresAuth: true }),
     createCustom: (payload: CustomPackPayload) =>
       request<{ package: PackSummary }>("/api/packages/custom", { method: "POST", body: payload, requiresAuth: true }),
     updateCustom: (slug: string, payload: CustomPackPayload) =>

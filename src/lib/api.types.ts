@@ -830,6 +830,9 @@ export type CustomPackDraftResponse = {
     verificationSources: VerificationSource[];
     lastVerifiedAt: string | null;
     verificationStatus: string;
+    hasVerifiedOfficialSource?: boolean;
+    confidence?: string;
+    disclaimer?: string;
     requiredDocuments: Array<{
       id: string;
       category: string;
@@ -841,6 +844,31 @@ export type CustomPackDraftResponse = {
       whyNeeded: string;
     }>;
   };
+  job?: CustomPackageGenerationJob;
+};
+
+export type CustomPackageGenerationJob = {
+  id: string;
+  status: "queued" | "researching" | "generating" | "saving" | "completed" | "completed_with_unverified_sources" | "failed";
+  statusMessage: string;
+  draft?: CustomPackDraftResponse["draft"];
+  errorMessage?: string;
+  queuedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  failedAt?: string;
+  queueWaitMs?: number;
+  aiMs?: number;
+  processingMs?: number;
+  retryCount: number;
+  provider429Count: number;
+  hasVerifiedOfficialSource: boolean;
+  confidence?: string;
+  disclaimer?: string;
+};
+
+export type CustomPackageGenerationJobResponse = {
+  job: CustomPackageGenerationJob;
 };
 
 export type AccountUsage = {

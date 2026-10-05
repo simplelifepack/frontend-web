@@ -104,6 +104,17 @@ export const fetchPackages = createAsyncThunk(
   },
 );
 
+export const fetchPackageDetail = createAsyncThunk(
+  "packages/fetchPackageDetail",
+  async (slug: string) => api.packages.get(slug),
+  {
+    condition: (slug, { getState }) => {
+      const state = (getState() as RootState).packages;
+      return Boolean(slug && !state.detailsBySlug[slug]);
+    },
+  },
+);
+
 export const assignRequirementDocument = createAsyncThunk(
   "packages/assignRequirementDocument",
   async (input: { assignmentSource: "USER_SELECTED" | "USER_OVERRIDE"; documentId: string; requirementId: string; slug: string }) => {
@@ -161,7 +172,6 @@ const packagesSlice = createSlice({
         hydratePages(state, [...hydratedPages, ...refreshedPages]);
         response.items.forEach((item) => {
           state.summariesBySlug[item.slug] = item;
-          state.detailsBySlug[item.slug] = item;
         });
         if (!query.search || response.items.length > 0) {
           state.catalogueItems = mergeUniquePackages(state.catalogueItems, response.items);
@@ -183,6 +193,9 @@ const packagesSlice = createSlice({
         state.status = "failed";
         state.searchStatus = "failed";
         state.error = action.error.message ?? "Unable to fetch packages.";
+      })
+      .addCase(fetchPackageDetail.fulfilled, (state, action) => {
+        applyPackSummary(state, action.payload, false);
       })
       .addCase(deleteCustomPack.fulfilled, (state, action) => {
         const slug = action.payload;
@@ -244,7 +257,7 @@ function isValidCachedPage(page: CachedPackagePage | null | undefined): page is 
 
 function hydratePages(state: PackagesState, pages: CachedPackagePage[]) {
   pages.forEach((page) => {
-    page.response.items.forEach((item) => { state.summariesBySlug[item.slug] = item; state.detailsBySlug[item.slug] = item; });
+    page.response.items.forEach((item) => { state.summariesBySlug[item.slug] = item; });
     state.pageKeys[page.key] = page.response.items.map((item) => item.slug);
     state.paginationByKey[page.key] = page.response.pagination;
     if (!page.query.search) state.catalogueItems = mergeUniquePackages(state.catalogueItems, page.response.items);

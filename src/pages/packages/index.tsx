@@ -6,7 +6,7 @@ import SectionHead from "@/components/SectionHead";
 import { T } from "@/constants/theme";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { makeSelectPackageReadiness, selectPackageCards } from "@/readiness/selectors";
-import { assignRequirementDocument, clearRequirementDocument, createCustomPack as createCustomPackThunk, fetchPackages, setActivePackageQuery, setPackageGenerationStatus } from "@/store/slices/packagesSlice";
+import { assignRequirementDocument, clearRequirementDocument, createCustomPack as createCustomPackThunk, fetchPackageDetail, fetchPackages, setActivePackageQuery, setPackageGenerationStatus } from "@/store/slices/packagesSlice";
 import PackageDetailDrawer from "./package-detail-drawer";
 import { matchesPackageCategory, PackageCategoryPills, PackageGrid } from "./package-list-ui";
 import PackageSearchPanel from "./package-search-panel";
@@ -127,6 +127,7 @@ export default function PackagesPage() {
   const openPackage = (slug: string) => {
     setSelectedSlug(slug);
     setDetailOpen(true);
+    void dispatch(fetchPackageDetail(slug));
   };
 
   const openCustomPackModal = (description = "") => {

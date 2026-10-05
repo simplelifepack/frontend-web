@@ -30,8 +30,26 @@ export default function CustomPackModal({
   const [uploadOpen, setUploadOpen] = useState(false);
   const [source, setSource] = useState<CustomPackPayload["source"]>();
   const [verificationSources, setVerificationSources] = useState<VerificationSource[]>([]);
+  const [verificationStatus, setVerificationStatus] = useState("user_created");
+  const [generationMessage, setGenerationMessage] = useState("");
+  const [disclaimer, setDisclaimer] = useState("");
   const [searchMetadata, setSearchMetadata] = useState<CustomPackPayload["searchMetadata"]>();
   const vocab = useMemo(() => [...new Set(supportedDocumentTypes.filter(Boolean))].sort(), [supportedDocumentTypes]);
+
+  const applyDraft = (draft: Awaited<ReturnType<typeof api.packages.draftCustom>>["draft"]) => {
+    setName((current) => current.trim() || draft.packageName);
+    setDesc((current) => current.trim() || draft.description);
+    setReqs(draft.requiredDocuments.map((item) => item.title || item.name).filter(Boolean));
+    setSource(draft.sourceUrl ? {
+      name: draft.sourceOrganization,
+      title: draft.sourceTitle,
+      url: draft.sourceUrl,
+      lastCheckedAt: draft.lastChecked,
+    } : undefined);
+    setVerificationSources(draft.verificationSources);
+    setVerificationStatus(draft.verificationStatus || (draft.verificationSources.length ? "draft_verified" : "user_created"));
+    setDisclaimer(typeof draft.disclaimer === "string" ? draft.disclaimer : "");
+  };
 
   const lookup = async () => {
     const query = desc.trim();
@@ -41,22 +59,30 @@ export default function CustomPackModal({
     setDrafted(true);
     if (!name.trim()) setName(query.replace(/^documents?\s+(needed|required|requested)\s+(for|by)\s+/i, "").slice(0, 80));
     try {
-      const { draft } = await api.packages.draftCustom(query, documentLabels);
-      setName((current) => current.trim() || draft.packageName);
-      setDesc((current) => current.trim() || draft.description);
-      setReqs(draft.requiredDocuments.map((item) => item.title || item.name).filter(Boolean));
-      setSource({
-        name: draft.sourceOrganization,
-        title: draft.sourceTitle,
-        url: draft.sourceUrl,
-        lastCheckedAt: draft.lastChecked,
+      const created = await api.packages.createCustomGenerationJob(query, documentLabels);
+      let job = created.job;
+      setGenerationMessage(job.statusMessage);
+      while (!job.draft && job.status !== "failed") {
+        if (job.status === "queued") await new Promise((resolve) => setTimeout(resolve, 1500));
+        const response = await api.packages.getCustomGenerationJob(job.id);
+        job = response.job;
+        setGenerationMessage(job.statusMessage);
+      }
+      if (!job.draft) throw new Error(job.errorMessage || "Could not generate this package right now.");
+      applyDraft(job.draft);
+      setSearchMetadata({
+        ...job.draft.searchMetadata,
+        searchPhrases: job.draft.searchMetadata.searchPhrases ?? [query],
+        confidence: job.confidence,
+        disclaimer: job.disclaimer,
+        hasVerifiedOfficialSource: job.hasVerifiedOfficialSource,
       });
-      setVerificationSources(draft.verificationSources);
-      setSearchMetadata({ ...draft.searchMetadata, searchPhrases: draft.searchMetadata.searchPhrases ?? [query] });
+      if (job.disclaimer) setDisclaimer(job.disclaimer);
     } catch (lookupError) {
       setReqs((current) => current.length ? current : [""]);
       setError(lookupError instanceof Error ? lookupError.message : "Could not look this up right now. You can still add the documents yourself.");
     } finally {
+      setGenerationMessage("");
       setLoading(false);
     }
   };
@@ -81,7 +107,7 @@ export default function CustomPackModal({
         searchMetadata,
         source,
         verificationSources,
-        verificationStatus: verificationSources.length ? "draft_verified" : "user_created",
+        verificationStatus: verificationSources.length ? verificationStatus : verificationStatus === "unverified_guidance" ? "unverified_guidance" : "user_created",
       });
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not save this custom pack.");
@@ -131,7 +157,7 @@ export default function CustomPackModal({
           </>
         ) : (
           <>
-            {loading ? <div className="lp-pack-generation-state"><Loader2 size={14} className="lp-spin" />Looking up requirements...</div> : null}
+            {loading ? <div className="lp-pack-generation-state"><Loader2 size={14} className="lp-spin" />{generationMessage || "Looking up requirements..."}</div> : null}
             <label className="lp-custom-pack-label">Pack name</label>
             <input className="lp-custom-pack-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Name this pack" />
             <label className="lp-custom-pack-label">Description</label>
@@ -165,6 +191,7 @@ export default function CustomPackModal({
                 {verificationSources.slice(0, 4).map((item) => <a key={item.url} href={item.url} target="_blank" rel="noreferrer">{item.title}</a>)}
               </div>
             ) : null}
+            {disclaimer ? <div className="lp-pack-assignment-error">{disclaimer}</div> : null}
             <footer className="lp-custom-pack-actions">
               <button type="button" style={btnGhost} onClick={onClose}>Cancel</button>
               <button type="button" style={btnPrimary} disabled={!name.trim() || !reqs.some((item) => item.trim()) || saving} onClick={() => void save()}>
