@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import UploadDocumentModal from "@/components/UploadDocumentModal";
 import { btnGhost, btnPrimary, T } from "@/constants/theme";
 import { api, type CustomPackPayload, type DocumentRecord, type PackSummary, type VerificationSource } from "@/lib/api";
+import { sourceProviderName } from "./package-source-display";
 
 type CustomPackModalProps = {
   documentLabels: string[];
@@ -188,7 +189,7 @@ export default function CustomPackModal({
             {verificationSources.length ? (
               <div className="lp-custom-pack-source">
                 <strong>Live sourced draft</strong>
-                {verificationSources.slice(0, 4).map((item) => <a key={item.url} href={item.url} target="_blank" rel="noreferrer">{item.title}</a>)}
+                {verificationSources.slice(0, 4).map((item) => <a key={item.url} href={item.url} target="_blank" rel="noreferrer" title={item.title}>{sourceProviderName(item)}</a>)}
               </div>
             ) : null}
             {disclaimer ? <div className="lp-pack-assignment-error">{disclaimer}</div> : null}

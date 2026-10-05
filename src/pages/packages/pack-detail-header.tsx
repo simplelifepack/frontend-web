@@ -4,6 +4,7 @@ import { T } from "@/constants/theme";
 import type { PackSummary } from "@/lib/api";
 import { ExternalLink, RefreshCw, ShieldCheck, X } from "lucide-react";
 import { packageMeta } from "./package-list-ui";
+import { sourceProviderName } from "./package-source-display";
 import { usePackageRefresh } from "./use-package-refresh";
 
 type PackDetailHeaderProps = {
@@ -24,6 +25,7 @@ function formatPackageDate(value?: string | null) {
 
 function packageSource(pack: PackSummary) {
   return {
+    provider: pack.source ? sourceProviderName(pack.source) : "Official source",
     title: pack.source?.title ?? pack.source?.name ?? "Official source",
     url: pack.source?.url ?? "",
     checked: formatPackageDate(pack.source?.lastCheckedAt),
@@ -43,15 +45,15 @@ export default function PackDetailHeader({ completion, isComplete, pack, readyCo
       </div>
       {pack.createdBy && pack.createdBy !== "seed" ? <div className="lp-pack-custom-badge">Custom / generated pack</div> : null}
       <div className="lp-pack-drawer-source">
-        <span>{pack.verificationSources?.length ? "Sources" : `Curated list · ${source.title}${source.checked ? ` · last checked ${source.checked}` : ""}`}</span>
+        <span>{pack.verificationSources?.length ? "Sources" : `Curated list · ${source.provider}${source.checked ? ` · last checked ${source.checked}` : ""}`}</span>
         {pack.verificationSources?.slice(0, 3).map((item) => (
           item.url ? (
             <a href={item.url} target="_blank" rel="noreferrer" title={item.title || item.url} key={`${item.title}-${item.url}`}>
               {item.type === "government" || item.type === "official" || item.type === "authority" ? <ShieldCheck size={12} /> : <ExternalLink size={12} />}
-              {item.title || item.organization || item.url}
+              {sourceProviderName(item)}
             </a>
           ) : (
-            <span className="lp-pack-source-pill" key={item.title}>{item.title || item.organization}</span>
+            <span className="lp-pack-source-pill" key={item.title}>{sourceProviderName(item)}</span>
           )
         ))}
         {source.checked ? <span className="lp-pack-source-date">Checked {source.checked}</span> : null}

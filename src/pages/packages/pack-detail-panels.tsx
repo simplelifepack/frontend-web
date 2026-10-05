@@ -1,6 +1,7 @@
 import type { DocumentRecord, PackSummary } from "@/lib/api";
 import type { DerivedRequirement } from "@/readiness/calculatePackageReadiness";
 import { AlertTriangle, Check, CheckCircle2, ChevronRight, Download, ExternalLink, Eye, FolderOpen, Loader2, ShieldCheck, Upload, X } from "lucide-react";
+import { sourceHostname, sourceProviderName } from "./package-source-display";
 
 export function documentName(document: DocumentRecord | undefined, fallback = "Selected document") {
   return document?.displayName || document?.title || document?.originalName || fallback;
@@ -13,25 +14,26 @@ function formatPackageDate(value?: string | null) {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(date);
 }
 
-function sourceHost(url: string) {
-  try { return new URL(url).hostname.replace(/^www\./, ""); }
-  catch { return url; }
-}
-
 export function PackageSourceList({ pack }: { pack: PackSummary }) {
   if (!pack.verificationSources?.length) return null;
   return (
     <section className="lp-pack-source-list">
       <h3>Sources</h3>
-      {pack.verificationSources.slice(0, 4).map((source) => (
-        <a href={source.url} target="_blank" rel="noreferrer" key={`${source.title}-${source.url}`}>
-          <span>
-            <strong>{source.title}</strong>
-            <small>{source.organization || sourceHost(source.url)} · checked {formatPackageDate(source.retrievedAt) ?? "recently"}</small>
-          </span>
-          {source.type === "government" || source.type === "official" || source.type === "authority" ? <ShieldCheck size={15} /> : <ExternalLink size={15} />}
-        </a>
-      ))}
+      {pack.verificationSources.slice(0, 4).map((source) => {
+        const provider = sourceProviderName(source);
+        const host = sourceHostname(source.url);
+        const checked = formatPackageDate(source.retrievedAt) ?? "recently";
+        const details = [source.title, host, `checked ${checked}`].filter(Boolean).join(" · ");
+        return (
+          <a href={source.url} target="_blank" rel="noreferrer" key={`${source.title}-${source.url}`}>
+            <span>
+              <strong>{provider}</strong>
+              <small>{details}</small>
+            </span>
+            {source.type === "government" || source.type === "official" || source.type === "authority" ? <ShieldCheck size={15} /> : <ExternalLink size={15} />}
+          </a>
+        );
+      })}
       <p>Sources help verify the checklist, but institutions can still ask for more.</p>
     </section>
   );
