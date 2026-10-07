@@ -11,7 +11,7 @@ export const notificationApi = {
       method: "POST",
       body: { endpoint },
       requiresAuth: true,
-      dedupeMs: 0,
+      dedupeMs: 2_000,
     }),
   register: (subscription: PushSubscriptionPayload) =>
     request<Pick<PushNotificationStatus, "deviceEnabled">>("/api/notifications/subscriptions", {

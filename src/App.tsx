@@ -1,14 +1,19 @@
 import SettingsPage from "./pages/settings";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import AppShell from "@/components/AppShell";
 import AuthLayout from "@/components/AuthLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import BootstrapSkeleton from "@/components/BootstrapSkeleton";
+import PinSetupGate from "@/components/PinSetupGate";
+import { preferencesApi } from "@/lib/preferences-api";
+import { persistHomeCurrency } from "@/lib/preferences-storage";
+import { persistTheme } from "@/lib/theme";
 import LandingPage from "@/pages/landing";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializeApp } from "@/store/bootstrap";
+import { fetchDocuments } from "@/store/slices/documentsSlice";
 import { fetchPackages } from "@/store/slices/packagesSlice";
 import { restoreSession } from "@/store/slices/authSlice";
 
@@ -48,6 +53,7 @@ function LandingRoute() {
   const destination = state?.from?.pathname ?? "/home";
 
   if (token && user) {
+    if (!user.pinConfigured) return <PinSetupGate />;
     if (!initialized) return <BootstrapSkeleton />;
     return (
       <AppShell>
@@ -62,7 +68,9 @@ function LandingRoute() {
 export default function App() {
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const { token, initialized, initializationStatus, sessionStatus } = useAppSelector((state) => state.auth);
+  const { token, user, initialized, initializationStatus, sessionStatus } = useAppSelector((state) => state.auth);
+  const documentStatus = useAppSelector((state) => state.documents.status);
+  const preferencesTokenRef = useRef<string | null>(null);
   const isPublicEntryPath = publicEntryPaths.has(location.pathname) || location.pathname.startsWith("/invite/");
 
   useEffect(() => {
@@ -70,16 +78,33 @@ export default function App() {
   }, [dispatch, isPublicEntryPath, sessionStatus]);
 
   useEffect(() => {
-    if (token && !initialized && initializationStatus === "idle") {
+    if (token && user?.pinConfigured && !initialized && initializationStatus === "idle") {
       void dispatch(initializeApp());
     }
-  }, [dispatch, initializationStatus, initialized, token]);
+  }, [dispatch, initializationStatus, initialized, token, user?.pinConfigured]);
 
   useEffect(() => {
-    if (token && initialized) {
+    if (token && user?.pinConfigured && initialized) {
       void dispatch(fetchPackages({ limit: 20, page: 1 }));
     }
-  }, [dispatch, initialized, token]);
+  }, [dispatch, initialized, token, user?.pinConfigured]);
+
+  useEffect(() => {
+    if (token && user?.pinConfigured && initialized && documentStatus === "idle") {
+      void dispatch(fetchDocuments());
+    }
+  }, [dispatch, documentStatus, initialized, token, user?.pinConfigured]);
+
+  useEffect(() => {
+    if (!token || !user?.pinConfigured || !initialized || preferencesTokenRef.current === token) return;
+    preferencesTokenRef.current = token;
+    void preferencesApi.get().then((preferences) => {
+      persistTheme(preferences.appearance);
+      persistHomeCurrency(preferences.homeCurrency);
+    }).catch(() => {
+      preferencesTokenRef.current = null;
+    });
+  }, [initialized, token, user?.pinConfigured]);
 
   return (
     <Suspense fallback={null}>

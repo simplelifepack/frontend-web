@@ -1,4 +1,4 @@
-import { Camera, ChevronDown, Search, UploadCloud } from "lucide-react";
+import { Camera, ChevronDown, FileCheck2, Search, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -22,12 +22,14 @@ import DocumentRows from "./document-rows";
 type DocumentsOverviewProps = {
   documents: DocumentRecord[];
   error: string | null;
+  onOpenDigiLocker: () => void;
   status: "idle" | "loading" | "succeeded" | "failed";
 };
 
 export default function DocumentsOverview({
   documents,
   error,
+  onOpenDigiLocker,
   status,
 }: DocumentsOverviewProps) {
   const [searchParams] = useSearchParams();
@@ -97,6 +99,9 @@ export default function DocumentsOverview({
             </button>
             <button type="button" onClick={openUpload} style={btnGhost}>
               <Camera size={16} /> Scan
+            </button>
+            <button type="button" onClick={onOpenDigiLocker} style={btnGhost}>
+              <FileCheck2 size={16} /> DigiLocker
             </button>
           </div>
         }

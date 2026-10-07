@@ -4,6 +4,7 @@ export type AuthUser = {
   id?: string;
   name: string;
   email: string;
+  pinConfigured?: boolean;
 };
 
 export type AuthResponse = {
@@ -82,7 +83,7 @@ export type DocumentRecord = {
   fields: unknown;
   createdAt: string;
   updatedAt: string;
-  source: "MANUAL_UPLOAD" | "GMAIL" | "GOOGLE_DRIVE";
+  source: "MANUAL_UPLOAD" | "GMAIL" | "GOOGLE_DRIVE" | "DIGILOCKER";
   sourceProvider?: string | null;
   driveFileId?: string | null;
   openUrl?: string | null;
@@ -102,6 +103,44 @@ export type DriveStatus = {
   total: number;
   indexedCount: number;
   error: string | null;
+};
+
+export type DigiLockerStatus = {
+  configured: boolean;
+  environment: "sandbox" | "production";
+  supportedDocuments: Array<"AADHAAR" | "PAN" | "DRIVING_LICENSE">;
+  message: string | null;
+};
+
+export type DigiLockerSession = {
+  id: string;
+  status: "PENDING" | "AUTHENTICATED" | "EXPIRED" | "CONSENT_DENIED" | "CANCELLED" | "FAILED" | string;
+  statusMessage?: string | null;
+  consentUrl?: string | null;
+  requestedDocuments: string[];
+  availableDocuments: string[];
+  expiresAt?: string | null;
+  authenticatedAt?: string | null;
+};
+
+export type DigiLockerDocumentOption = {
+  type: "AADHAAR" | "PAN" | "DRIVING_LICENSE";
+  label: string;
+  status: "available";
+};
+
+export type DigiLockerDocumentsResponse = {
+  session: DigiLockerSession;
+  documents: DigiLockerDocumentOption[];
+};
+
+export type DigiLockerImportResponse = {
+  results: Array<{
+    documentType: string;
+    status: "ready_for_review" | "failed";
+    analysis?: AnalyzeDocumentResponse;
+    message?: string;
+  }>;
 };
 
 export type DriveScanResult = {
@@ -308,6 +347,14 @@ export type HealthHomeReminder = {
   memberId?: string;
   memberName: string;
   origin: string;
+};
+
+export type HealthHomeAttention = {
+  reminders: HealthHomeReminder[];
+  medications: Array<HealthTimelineEvent & {
+    memberId: string;
+    memberName: string;
+  }>;
 };
 
 export type HealthMemberResolution = {
@@ -682,24 +729,24 @@ export type WealthRecordPayload = {
 
 export type WealthRecord = WealthRecordPayload & {
   id: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   attachments: Array<{
     id: string;
     documentId: string;
-    originalName: string;
+    originalName?: string;
     title?: string | null;
-    category: string;
-    mimeType: string;
-    size: number;
+    category?: string;
+    mimeType?: string;
+    size?: number;
   }>;
   loanBreakdown?: {
-    principal: number;
-    interest: number;
-    payments: number;
+    principal?: number;
+    interest?: number;
+    payments?: number;
     outstanding: number;
-    monthsElapsed: number;
-    calculationType: string;
+    monthsElapsed?: number;
+    calculationType?: string;
   } | null;
 };
 

@@ -3,7 +3,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { BrandMark, BrandWordmark } from "./BrandLogo";
 import { api } from "@/lib/api";
 import { useAppDispatch } from "@/store/hooks";
-import { googleLogin, login, signup } from "@/store/slices/authSlice";
+import { googleLogin, login, loginWithPin, signup } from "@/store/slices/authSlice";
 import GoogleSignInButton from "./GoogleSignInButton";
 import { toast } from "sonner";
 import {
@@ -833,11 +833,12 @@ function AuthModal({
 }) {
   const dispatch = useAppDispatch();
   const [mode, setMode] = useState<"signin" | "signup">(initMode);
-  const [screen, setScreen] = useState<"start" | "creds" | "signup-code" | "forgot-email" | "forgot-code" | "forgot-password">("start");
+  const [screen, setScreen] = useState<"start" | "creds" | "pin-creds" | "signup-code" | "forgot-email" | "forgot-code" | "forgot-password">("start");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
+  const [pin, setPin] = useState("");
   const [err, setErr] = useState("");
   const [otp, setOtp] = useState("");
   const [resetPw, setResetPw] = useState("");
@@ -923,6 +924,23 @@ function AuthModal({
       onAuthed(mode === "signup", result.user.name);
     } catch {
       setErr(navigator.onLine ? "We could not authenticate that Google account." : "Check your connection and try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  const submitPin = async () => {
+    setErr("");
+    if (submitting) return;
+    if (!email.trim() || !pin.match(/^\d{6}$/)) return setErr("Enter your email and 6-digit PIN.");
+    setSubmitting(true);
+    try {
+      const result = await dispatch(loginWithPin({ email: email.trim(), pin })).unwrap();
+      if (result.deletionCancelled) {
+        toast.success("Welcome back. Your account deletion request has been cancelled.");
+      }
+      onAuthed(false, result.user.name);
+    } catch (error) {
+      setErr(error instanceof Error ? error.message : "Unable to sign in with PIN.");
     } finally {
       setSubmitting(false);
     }
@@ -1050,6 +1068,8 @@ function AuthModal({
                   ? "Check your email"
                   : screen === "forgot-password"
                       ? "Create a new password"
+                  : screen === "pin-creds"
+                      ? "Sign in with PIN"
                   : mode === "signin"
                     ? "Welcome back"
                     : "Create your account"}
@@ -1121,6 +1141,29 @@ function AuthModal({
                 >
                   Continue with email
                 </button>
+                {mode === "signin" ? (
+                  <button
+                    onClick={() => {
+                      setErr("");
+                      setScreen("pin-creds");
+                    }}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: `1px solid ${auth.border}`,
+                      borderRadius: 0,
+                      padding: "13px",
+                      fontSize: 14.5,
+                      fontWeight: 700,
+                      color: auth.heading,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      marginTop: 10,
+                    }}
+                  >
+                    Sign in with PIN
+                  </button>
+                ) : null}
               </div>
               {mode === "signin" && (
                 <button
@@ -1169,6 +1212,29 @@ function AuthModal({
               {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
               <button onClick={submit} className="lp-cta" style={{ width: "100%", justifyContent: "center", marginTop: 14 }}>
                 {submitting ? "Working..." : mode === "signin" ? "Sign in" : "Create my Readiness"} <ArrowRight size={15} />
+              </button>
+              <button onClick={() => { setScreen("start"); setErr(""); }} style={ghostBtn}>
+                ← Other sign-in options
+              </button>
+            </>
+          )}
+
+          {screen === "pin-creds" && (
+            <>
+              <input style={inp} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                style={inp}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                placeholder="6-digit PIN"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onKeyDown={(e) => e.key === "Enter" && submitPin()}
+              />
+              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
+              <button onClick={submitPin} className="lp-cta" style={{ width: "100%", justifyContent: "center", marginTop: 14 }}>
+                {submitting ? "Working..." : "Sign in with PIN"} <ArrowRight size={15} />
               </button>
               <button onClick={() => { setScreen("start"); setErr(""); }} style={ghostBtn}>
                 ← Other sign-in options

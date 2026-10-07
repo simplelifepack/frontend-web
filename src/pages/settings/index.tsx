@@ -3,6 +3,7 @@ import {
   HardDrive,
   HelpCircle,
   Info,
+  KeyRound,
   Lock,
   LogOut,
   MessageSquare,
@@ -19,6 +20,7 @@ import { api } from "@/lib/api";
 import { T } from "@/constants/theme";
 import { Overlay, Row, Section, settingsInputStyle, TextBlock } from "./settings-ui";
 import AccountChangeModal from "./AccountChangeModals";
+import PinChangeModal from "./PinChangeModal";
 import PreferencesSection from "./PreferencesSection";
 import { AccountDataSection, DeleteAccountSection } from "./SettingsDataSections";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -47,6 +49,7 @@ export default function SettingsPage() {
   const { data: usage } = useAppSelector((state) => state.usage);
   const [modal, setModal] = useState<ModalKind>(null);
   const [accountModal, setAccountModal] = useState<AccountModalKind>(null);
+  const [pinModalOpen, setPinModalOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const initial = (account?.name || account?.email || "?").trim().charAt(0).toUpperCase();
 
@@ -91,6 +94,7 @@ export default function SettingsPage() {
             <Row icon={Users} label="Family and Access" sub="Members, access levels, emergency contacts and SOS handoff" onClick={() => navigate("/family")} />
             <Row icon={Lock} label="Change Email" sub="Request a change to your email address" onClick={() => setAccountModal("email")} />
             <Row icon={ShieldCheck} label="Change Password" sub="Update your account password" onClick={() => setAccountModal("password")} />
+            <Row icon={KeyRound} label="Change R-pin" sub="Update the R-pin used for quick sign-in" onClick={() => setPinModalOpen(true)} />
           </Section>
           <PreferencesSection />
           <Section label="Storage">
@@ -138,6 +142,9 @@ export default function SettingsPage() {
       ) : null}
       {accountModal && account?.email ? (
         <AccountChangeModal kind={accountModal} currentEmail={account.email} onClose={() => setAccountModal(null)} />
+      ) : null}
+      {pinModalOpen && account?.email ? (
+        <PinChangeModal currentEmail={account.email} onClose={() => setPinModalOpen(false)} />
       ) : null}
     </div>
   );

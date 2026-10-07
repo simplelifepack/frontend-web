@@ -43,6 +43,11 @@ export const login = createAsyncThunk(
   async (payload: { email: string; password: string }) => api.auth.login(payload),
 );
 
+export const loginWithPin = createAsyncThunk(
+  "auth/loginWithPin",
+  async (payload: { email: string; pin: string }) => api.auth.loginWithPin(payload),
+);
+
 export const signup = createAsyncThunk(
   "auth/signup",
   async (payload: { name: string; email: string; password: string; otp: string }) => api.auth.signup(payload),
@@ -97,6 +102,22 @@ const authSlice = createSlice({
         state.status = "failed";
         state.error = action.error.message ?? "Unable to sign in.";
       })
+      .addCase(loginWithPin.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(loginWithPin.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.token = action.payload.accessToken ?? action.payload.token;
+        state.user = action.payload.user;
+        setAccessToken(state.token);
+        state.sessionStatus = "authenticated";
+        state.initialized = false;
+      })
+      .addCase(loginWithPin.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message ?? "Unable to sign in with PIN.";
+      })
       .addCase(signup.pending, (state) => {
         state.status = "loading";
         state.error = null;
@@ -149,7 +170,7 @@ const authSlice = createSlice({
         state.initializationError = null;
       })
       .addCase(initializeApp.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+        state.user = { ...state.user, ...action.payload.user };
         state.initialized = true;
         state.initializationStatus = "succeeded";
       })

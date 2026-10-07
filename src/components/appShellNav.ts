@@ -27,8 +27,8 @@ export const SHELL_NAV = [
   { key: "wealth", label: "Wealth", icon: Wallet },
 ] as const;
 
-export function routeFromPath(pathname: string): WorkspaceRoute {
+export function routeFromPath(pathname: string): WorkspaceRoute | null {
   if (pathname.startsWith("/documents")) return "documents";
   const match = Object.entries(ROUTE_PATHS).find(([, path]) => path === pathname);
-  return (match?.[0] as WorkspaceRoute | undefined) ?? "home";
+  return (match?.[0] as WorkspaceRoute | undefined) ?? null;
 }

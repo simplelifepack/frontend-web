@@ -103,8 +103,11 @@ export function request<T>(path: string, options: RequestOptions = {}) {
   const dedupeMs = options.dedupeMs ?? (method === "GET" ? DEFAULT_GET_DEDUPE_MS : 0);
   if (dedupeMs <= 0) return performRequest<T>(path, options);
   const authKey = options.requiresAuth ? getAccessToken() ?? "" : "";
+  const bodyKey = options.body && !(options.body instanceof FormData)
+    ? JSON.stringify(options.body)
+    : "";
   return dedupeRequest(
-    `${method}:${path}:${authKey}`,
+    `${method}:${path}:${bodyKey}:${authKey}`,
     dedupeMs,
     () => performRequest<T>(path, options),
   );

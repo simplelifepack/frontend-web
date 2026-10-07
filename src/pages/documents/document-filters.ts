@@ -41,6 +41,7 @@ export function documentPerson(
 export function documentSource(document: DocumentRecord) {
   if (document.source === "GMAIL") return "gmail";
   if (document.source === "GOOGLE_DRIVE") return "drive";
+  if (document.source === "DIGILOCKER") return "digilocker";
   if (String(document.source) === "SCAN" || document.sourceProvider === "SCAN")
     return "scanned";
   return "uploaded";
@@ -51,6 +52,7 @@ export const sourceNames: Record<string, string> = {
   scanned: "Scanned",
   gmail: "Gmail",
   drive: "Google Drive",
+  digilocker: "DigiLocker",
 };
 
 function expiryTime(document: DocumentRecord) {

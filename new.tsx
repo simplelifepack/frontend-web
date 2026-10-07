@@ -320,8 +320,8 @@ const P = (
   conditional,
   accent: PACK_CAT_META[cat].color,
   icon: icon || PACK_CAT_META[cat].icon,
-  source: source || PACK_CAT_META[cat].source,
-  lastChecked: "Jul 25, 2026",
+  source: source ?? PACK_CAT_META[cat].source,
+  lastChecked: source === "" ? "" : "Jul 25, 2026",
 });
 const EVENTS = [
   /* Travel & Immigration (12) — flagship visas verified against published consular checklists */
@@ -341,6 +341,8 @@ const EVENTS = [
       "Employment Proof",
       "ITR Acknowledgement",
       "Payslip",
+      "Cover Letter",
+      "Signed Declarations",
     ],
     ["ITR Acknowledgement"],
     undefined,
@@ -380,7 +382,7 @@ const EVENTS = [
     ],
     ["Accommodation Proof"],
     undefined,
-    "UK Home Office standard visitor guidance",
+    "GOV.UK standard visitor guidance",
   ),
   P(
     "canada",
@@ -394,6 +396,7 @@ const EVENTS = [
       "Employment Proof",
       "Invitation Letter",
       "Biometrics Confirmation",
+      "Visa Fee Receipt",
     ],
     ["Invitation Letter"],
     undefined,
@@ -421,6 +424,7 @@ const EVENTS = [
       "Bank Statement",
       "Flight Reservation",
       "Travel Itinerary",
+      "Cover Letter",
     ],
     undefined,
     undefined,
@@ -444,7 +448,7 @@ const EVENTS = [
     ["Passport", "Passport Photos", "Flight Reservation", "Hotel Booking", "Bank Statement"],
     undefined,
     undefined,
-    "UAE ICP / airline visa-desk checklists",
+    "GDRFA Dubai visit visa requirements",
   ),
   P(
     "h1b-stamp",
@@ -588,10 +592,10 @@ const EVENTS = [
     "Identity & Civic",
     "Passport renewal",
     "Reissue of passport",
-    ["Passport", "Address Proof", "Passport Photos"],
+    ["Passport", "Address Proof"],
     ["Date of Birth Proof"],
     undefined,
-    "Passport Seva (MEA) reissue advisor",
+    "Passport Seva reissue of passport checklist",
   ),
   P(
     "minor-passport",
@@ -608,8 +612,8 @@ const EVENTS = [
     "Identity & Civic",
     "PAN card application",
     "Form 49A",
-    ["Identity Proof", "Address Proof", "Date of Birth Proof", "Passport Photos"],
-    undefined,
+    ["Identity Proof", "Address Proof", "Date of Birth Proof"],
+    ["Passport Photos"],
     undefined,
     "Income Tax Dept. Form 49A requirements",
   ),
@@ -638,8 +642,8 @@ const EVENTS = [
     "Identity & Civic",
     "Driving license",
     "New license (Sarathi)",
-    ["Identity Proof", "Address Proof", "Date of Birth Proof", "Passport Photos", "Medical Fitness Certificate"],
-    ["Medical Fitness Certificate"],
+    ["Identity Proof", "Passport Photos", "Medical Fitness Certificate", "Form 4 Application"],
+    ["Address Proof", "Date of Birth Proof", "Medical Fitness Certificate"],
     Car,
     "Parivahan Sarathi document list",
   ),
@@ -658,7 +662,7 @@ const EVENTS = [
     "Identity & Civic",
     "Vehicle registration",
     "New vehicle (Form 20)",
-    ["Sale Invoice", "Vehicle Insurance", "Identity Proof", "Address Proof"],
+    ["Form 20 Application", "Sale Invoice", "Vehicle Insurance", "Identity Proof", "Address Proof"],
     ["PUC Certificate"],
     Car,
     "RTO Form 20 registration checklist",
@@ -730,9 +734,9 @@ const EVENTS = [
     "Car loan",
     "Vehicle finance",
     ["PAN Card", "Identity Proof", "Income Proof", "Bank Statement", "Auto Quotation"],
-    undefined,
+    ["Date of Birth Proof"],
     Car,
-    "Published lender checklists (salaried)",
+    "State Bank of India vehicle loan documents",
   ),
   P(
     "personal-loan",
@@ -742,7 +746,7 @@ const EVENTS = [
     ["PAN Card", "Identity Proof", "Address Proof", "Payslip", "Bank Statement"],
     undefined,
     undefined,
-    "Published lender checklists (salaried)",
+    "Bank of Baroda personal loan documents",
   ),
   P(
     "education-loan",
@@ -750,7 +754,7 @@ const EVENTS = [
     "Education loan",
     "Study finance",
     ["Admission Letter", "PAN Card", "Identity Proof", "Proof of Funds", "Income Proof", "Marksheet"],
-    ["Collateral Deed"],
+    ["Collateral Deed", "Passport Photos", "Fee Structure"],
     undefined,
     "Published lender education-loan checklists",
   ),
@@ -779,10 +783,10 @@ const EVENTS = [
     "Money & Tax",
     "Demat and trading account",
     "Invest in markets",
-    ["PAN Card", "Identity Proof", "Bank Statement", "Cancelled Cheque", "Passport Photos"],
+    ["Account Opening Form", "PAN Card", "Identity Proof", "Bank Statement", "Cancelled Cheque", "Passport Photos"],
     undefined,
     undefined,
-    "SEBI KYC requirements",
+    "NSDL demat account opening guidance",
   ),
   P(
     "ppf",
@@ -799,7 +803,7 @@ const EVENTS = [
     "Money & Tax",
     "NPS account opening",
     "Retirement savings",
-    ["PAN Card", "Identity Proof", "Address Proof", "Cancelled Cheque", "Nominee Form"],
+    ["Subscriber Registration Form", "PAN Card", "Identity Proof", "Address Proof", "Cancelled Cheque", "Nominee Form"],
     undefined,
     undefined,
     "PFRDA subscriber registration",
@@ -832,7 +836,7 @@ const EVENTS = [
     ["PAN Card", "Bank Statement", "Cancelled Cheque"],
     ["Relieving Letter"],
     undefined,
-    "EPFO Form 19/10C requirements",
+    "",
   ),
   P(
     "loan-closure",
@@ -860,8 +864,8 @@ const EVENTS = [
     "Jobs & Employment",
     "New job onboarding",
     "Day-one paperwork",
-    ["Identity Proof", "PAN Card", "Degree Certificate", "Relieving Letter", "Cancelled Cheque", "Passport Photos"],
-    undefined,
+    ["Identity Proof", "PAN Card", "Degree Certificate", "Relieving Letter", "Cancelled Cheque"],
+    ["Marksheet", "Passport Photos"],
     undefined,
     "Published employer onboarding checklists",
   ),
@@ -870,7 +874,7 @@ const EVENTS = [
     "Jobs & Employment",
     "Government job application",
     "Recruitment paperwork",
-    ["Identity Proof", "Degree Certificate", "Marksheet", "Passport Photos"],
+    ["Identity Proof", "Degree Certificate", "Marksheet", "Passport Photos", "Specimen Signature"],
     ["Domicile Certificate", "Income Certificate"],
     undefined,
     "Recruitment notification requirements",
@@ -940,8 +944,8 @@ const EVENTS = [
     "Jobs & Employment",
     "Professional council registration",
     "Doctors, CAs, lawyers",
-    ["Degree Certificate", "Marksheet", "Identity Proof", "Passport Photos"],
-    ["Internship Certificate"],
+    ["Degree Certificate", "Marksheet", "Passport Photos"],
+    ["Identity Proof", "Internship Certificate"],
     undefined,
     "Professional council requirements",
   ),
@@ -954,7 +958,7 @@ const EVENTS = [
     ["Birth Certificate", "Passport Photos", "Address Proof", "Identity Proof", "Immunization Record"],
     ["Transfer Certificate"],
     undefined,
-    "Published school admission checklists",
+    "Kendriya Vidyalaya Sangathan admission guidelines",
   ),
   P(
     "college-adm",
@@ -992,14 +996,14 @@ const EVENTS = [
     ],
     undefined,
     undefined,
-    "University international-office checklists",
+    "UCAS application guidance",
   ),
   P(
     "comp-exam",
     "Education",
     "Competitive exam application",
     "UPSC, SSC, banking",
-    ["Identity Proof", "Passport Photos", "Degree Certificate", "Marksheet"],
+    ["Identity Proof", "Passport Photos", "Degree Certificate", "Marksheet", "Hand-written Declaration"],
     ["Domicile Certificate"],
     undefined,
     "Exam notification requirements",
@@ -1012,7 +1016,7 @@ const EVENTS = [
     ["Birth Certificate", "Passport Photos", "Identity Proof", "Marksheet"],
     undefined,
     undefined,
-    "Board registration requirements",
+    "",
   ),
   P(
     "scholarship",
@@ -1022,15 +1026,15 @@ const EVENTS = [
     ["Marksheet", "Income Certificate", "Identity Proof", "Bank Statement", "Admission Letter"],
     undefined,
     undefined,
-    "NSP scholarship portal requirements",
+    "",
   ),
   P(
     "school-transfer",
     "Education",
     "School transfer",
     "Moving cities",
-    ["Transfer Certificate", "Marksheet", "Address Proof", "Birth Certificate"],
-    undefined,
+    ["Transfer Certificate", "Marksheet", "Birth Certificate"],
+    ["Address Proof", "Passport Photos"],
     undefined,
     "Published school admission checklists",
   ),
@@ -1042,7 +1046,7 @@ const EVENTS = [
     ["Degree Certificate", "Marksheet", "Passport", "Transcripts"],
     undefined,
     undefined,
-    "WES/ECA and MEA apostille requirements",
+    "",
   ),
   P(
     "dup-marksheet",
@@ -1052,7 +1056,7 @@ const EVENTS = [
     ["Identity Proof", "Affidavit", "Passport Photos"],
     ["Police Complaint"],
     undefined,
-    "Board/university reissue procedure",
+    "",
   ),
   /* Health (11) — claims verified against the IRDAI Master Circular document set */
   P(
@@ -1060,10 +1064,10 @@ const EVENTS = [
     "Health",
     "Hospital admission",
     "Cashless pack",
-    ["Health Insurance", "Photo ID", "Prescription", "Lab Report"],
-    ["Discharge Summary"],
+    ["Health Insurance", "Photo ID", "Prescription"],
+    ["Lab Report", "Discharge Summary"],
     undefined,
-    "Insurer cashless admission checklists",
+    "Manipal Hospitals admission process",
   ),
   P(
     "claim-reimb",
@@ -1082,7 +1086,7 @@ const EVENTS = [
     ],
     undefined,
     undefined,
-    "IRDAI Master Circular, 29 May 2024",
+    "HDFC ERGO and ICICI Lombard reimbursement claim documents",
   ),
   P(
     "cashless-preauth",
@@ -1112,7 +1116,7 @@ const EVENTS = [
     ["Health Insurance", "Photo ID", "Prescription", "Lab Report"],
     undefined,
     undefined,
-    "Insurer maternity checklists",
+    "Cloudnine Hospitals important documents",
   ),
   P(
     "vaccination",
@@ -1122,7 +1126,7 @@ const EVENTS = [
     ["Immunization Record", "Birth Certificate", "Identity Proof"],
     undefined,
     undefined,
-    "School and travel health requirements",
+    "MoHFW IHR vaccination record guidance",
   ),
   P(
     "emp-med-reimb",
@@ -1173,7 +1177,7 @@ const EVENTS = [
     ],
     ["Approved Building Plan", "Property Valuation"],
     Landmark,
-    "SBI / HDFC published salaried checklists",
+    "State Bank of India home loan documents",
   ),
   P(
     "property",
@@ -1203,7 +1207,7 @@ const EVENTS = [
     ["Identity Proof", "Passport Photos", "Employment Proof", "Payslip", "Rental Agreement"],
     undefined,
     undefined,
-    "Standard landlord requirements",
+    "",
   ),
   P(
     "rent-landlord",
@@ -1213,7 +1217,7 @@ const EVENTS = [
     ["Property Ownership Proof", "Property Tax", "Identity Proof", "Rental Agreement", "Utility Bill"],
     undefined,
     undefined,
-    "Registration office requirements",
+    "",
   ),
   P(
     "tenant-verify",
@@ -1281,8 +1285,8 @@ const EVENTS = [
     "Family & Life",
     "Marriage registration",
     "Certificate application",
-    ["Identity Proof", "Address Proof", "Passport Photos", "Date of Birth Proof"],
-    ["Marriage Invitation"],
+    ["Address Proof", "Passport Photos", "Date of Birth Proof"],
+    ["Marriage Invitation", "Identity Proof"],
     undefined,
     "Marriage registrar requirements",
   ),
@@ -1328,10 +1332,10 @@ const EVENTS = [
     "Family & Life",
     "Add family member to insurance",
     "Spouse or child",
-    ["Marriage Certificate", "Birth Certificate", "Identity Proof", "Health Insurance"],
+    ["Marriage Certificate", "Birth Certificate", "Health Insurance"],
+    ["Identity Proof", "Address Proof", "Passport Photos"],
     undefined,
-    undefined,
-    "Insurer endorsement requirements",
+    "Star Health family member addition requirements",
   ),
   P(
     "will-prep",
@@ -1341,7 +1345,7 @@ const EVENTS = [
     ["Identity Proof", "Property Ownership Proof", "Investment Statement", "Bank Statement", "Nominee Form"],
     undefined,
     undefined,
-    "Standard estate documentation practice",
+    "",
   ),
   P(
     "nominee-update",
@@ -1351,7 +1355,7 @@ const EVENTS = [
     ["Nominee Form", "Identity Proof"],
     ["Marriage Certificate", "Birth Certificate"],
     undefined,
-    "Institution nomination forms",
+    "NSDL nominee update guidance",
   ),
   P(
     "life-claim",
@@ -1378,10 +1382,10 @@ const EVENTS = [
     "Family & Life",
     "Legal heir certificate",
     "Establish heirship",
-    ["Death Certificate", "Identity Proof", "Address Proof", "Affidavit"],
+    ["Death Certificate", "Address Proof", "Affidavit"],
+    ["Identity Proof"],
     undefined,
-    undefined,
-    "Tahsildar office requirements",
+    "Chennai District legal heir certificate requirements",
   ),
   P(
     "succession",
@@ -1391,14 +1395,14 @@ const EVENTS = [
     ["Death Certificate", "Legal Heir Certificate"],
     ["Property Deed", "Investment Statement"],
     undefined,
-    "Civil court filing requirements",
+    "",
   ),
   P(
     "pension",
     "Family & Life",
     "Pension application",
     "Retirement begins",
-    ["Identity Proof", "Bank Statement", "Passport Photos", "Relieving Letter", "Pension Order"],
+    ["Identity Proof", "Bank Statement", "Passport Photos", "Relieving Letter", "Pension Order", "Wage Particulars Certificate"],
     undefined,
     undefined,
     "Pension disbursing authority checklists",
@@ -1408,7 +1412,7 @@ const EVENTS = [
     "Family & Life",
     "Family pension claim",
     "Survivor benefits",
-    ["Death Certificate", "Pension Order", "Identity Proof", "Bank Statement", "Marriage Certificate"],
+    ["Death Certificate", "Pension Order", "Identity Proof", "Bank Statement", "Marriage Certificate", "Wage Particulars Certificate", "Family Details Form 4"],
     undefined,
     undefined,
     "Pension disbursing authority checklists",
@@ -3612,7 +3616,9 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                     ? `${countryFlag(store.country)} ${seeded.source} · checked ${fmtDate(seeded.checked)}`
                     : researched
                       ? isHome && live.origin === "curated"
-                        ? `Curated list · ${ev.source} · last checked ${ev.lastChecked}`
+                        ? ev.source
+                          ? `Curated list · ${ev.source}${ev.lastChecked ? ` · last checked ${ev.lastChecked}` : ""}`
+                          : "Never checked"
                         : `${countryFlag(store.country)} ${countryName(store.country)} · from published sources${live.lastChecked ? `, checked ${fmtDate(live.lastChecked)}` : ""}`
                       : `Not yet researched for ${countryName(store.country)}`}
               </span>
@@ -3672,7 +3678,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 </>
               ) : (
                 <span style={{ flex: "1 1 auto" }}>
-                  {checking ? "Checking published sources…" : `Curated for ${countryName(store.country)}.`}
+                  {checking ? "Checking published sources…" : ev.source ? `Curated for ${countryName(store.country)}.` : "No source available yet."}
                 </span>
               )}
               <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>

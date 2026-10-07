@@ -59,7 +59,7 @@ export const saveDocument = createAsyncThunk(
   "documents/saveDocument",
   async (payload: SaveDocumentPayload, { getState, dispatch }) => {
     const response = await api.documents.save(payload);
-    void dispatch(refreshUsage());
+    void dispatch(refreshUsage(true));
     const currentUserId = (getState() as RootState).auth.user?.id;
     return {
       document: {
@@ -72,18 +72,18 @@ export const saveDocument = createAsyncThunk(
 
 export const deleteDocument = createAsyncThunk("documents/deleteDocument", async (id: string, { dispatch }) => {
   await api.documents.delete(id);
-  void dispatch(refreshUsage());
+  void dispatch(refreshUsage(true));
   return id;
 });
 export const deleteDocuments = createAsyncThunk("documents/deleteDocuments", async (ids: string[], { dispatch }) => {
   await api.documents.bulkDelete(ids);
-  void dispatch(refreshUsage());
+  void dispatch(refreshUsage(true));
   return ids;
 });
 
 export const addDocumentPages = createAsyncThunk("documents/addDocumentPages", async (input: { documentId: string; files: File[] }, { dispatch }) => {
   const response = await api.documents.addPageFiles(input.documentId, input.files);
-  void dispatch(refreshUsage());
+  void dispatch(refreshUsage(true));
   return response.document;
 });
 
@@ -96,12 +96,12 @@ export const replaceDocumentPage = createAsyncThunk("documents/replaceDocumentPa
   const tempFileId = analysis.files[0]?.tempFileId;
   if (!tempFileId) throw new Error("Unable to prepare replacement page.");
   const response = await api.documents.replacePage(input.documentId, input.pageId, tempFileId);
-  void dispatch(refreshUsage());
+  void dispatch(refreshUsage(true));
   return response.document;
 });
 
 export const deleteDocumentPage = createAsyncThunk("documents/deleteDocumentPage", async (input: { documentId: string; pageId: string }, { dispatch }) => {
-  const response = await api.documents.deletePage(input.documentId, input.pageId); void dispatch(refreshUsage()); return response.document;
+  const response = await api.documents.deletePage(input.documentId, input.pageId); void dispatch(refreshUsage(true)); return response.document;
 });
 
 const documentsSlice = createSlice({

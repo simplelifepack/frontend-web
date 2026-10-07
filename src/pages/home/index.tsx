@@ -20,7 +20,7 @@ import Ring from "@/components/Ring";
 import SectionHead from "@/components/SectionHead";
 import { A, btnGhost, T } from "@/constants/theme";
 import { api, type DocumentRecord, type WealthRecord } from "@/lib/api";
-import type { HealthHomeReminder } from "@/lib/api.types";
+import type { HealthHomeAttention } from "@/lib/api.types";
 import { expiryValue } from "@/pages/documents/document-utils";
 import { useAppSelector } from "@/store/hooks";
 import { documentAttention, healthAttention, daysUntil, medicationAttention, wealthAttention, type HealthMedicationAttention } from "./attention";
@@ -36,20 +36,21 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { items: documents, documentCount } = useAppSelector((state) => state.documents);
   const user = useAppSelector((state) => state.auth.user);
-  const [healthReminders, setHealthReminders] = useState<HealthHomeReminder[]>([]);
+  const [healthAttentionData, setHealthAttentionData] = useState<HealthHomeAttention>({ reminders: [], medications: [] });
   const [healthMedications, setHealthMedications] = useState<HealthMedicationAttention[]>([]);
   const [wealthRecords, setWealthRecords] = useState<WealthRecord[]>([]);
 
   useEffect(() => {
     let active = true;
-    void api.health.reminders().then((reminders) => { if (active) setHealthReminders(reminders); }).catch(() => { if (active) setHealthReminders([]); });
-    void api.health.members().then(async (members) => {
-      const timelines = await Promise.all(members.map(async (member) => {
-        const events = await api.health.timeline(member.id);
-        return events.map((event) => ({ ...event, memberId: member.id, memberName: member.name }));
-      }));
-      if (active) setHealthMedications(timelines.flat());
-    }).catch(() => { if (active) setHealthMedications([]); });
+    void api.health.homeAttention().then((attention) => {
+      if (!active) return;
+      setHealthAttentionData(attention);
+      setHealthMedications(attention.medications);
+    }).catch(() => {
+      if (!active) return;
+      setHealthAttentionData({ reminders: [], medications: [] });
+      setHealthMedications([]);
+    });
     void api.wealth.records().then((records) => { if (active) setWealthRecords(records); }).catch(() => { if (active) setWealthRecords([]); });
     return () => { active = false; };
   }, []);
@@ -73,10 +74,10 @@ export default function HomePage() {
   );
   const attentionItems = useMemo(() => [
     ...documentAttention(documents),
-    ...healthAttention(healthReminders),
+    ...healthAttention(healthAttentionData.reminders),
     ...medicationAttention(healthMedications),
     ...wealthAttention(wealthRecords),
-  ], [documents, healthMedications, healthReminders, wealthRecords]);
+  ], [documents, healthAttentionData.reminders, healthMedications, wealthRecords]);
   const readiness = documentCount
     ? Math.round(((documentCount - unknown.length) / documentCount) * 100)
     : 0;

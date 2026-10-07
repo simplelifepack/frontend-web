@@ -124,7 +124,7 @@ export function recordAmount(record: WealthRecord) {
   if (domain === "asset") return numberValue(details.value ?? details.amount ?? details.marketValue);
   if (domain === "protection") return numberValue(details.coverageAmount ?? details.sumAssured ?? details.premium ?? details.amount);
   if (domain === "lentBorrowed") return numberValue(details.amount ?? details.principalAmount);
-  return calculateLoanBreakdown(record)?.outstanding ?? numberValue(details.principalAmount ?? details.amount);
+  return record.loanBreakdown?.outstanding ?? calculateLoanBreakdown(record)?.outstanding ?? numberValue(details.principalAmount ?? details.amount);
 }
 
 export function recordCurrency(record: WealthRecord) {

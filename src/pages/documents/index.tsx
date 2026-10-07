@@ -4,7 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import Card from "@/components/Card";
 import { btnGhost, T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
-import { api, type DriveStatus, type GmailStatus } from "@/lib/api";
+// Gmail/Drive integrations are paused for now because their buttons are not exposed.
+// Restore this import when those entry points come back:
+// import { api, type DriveStatus, type GmailStatus } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchDocumentById,
@@ -15,22 +17,23 @@ import { categories, safeCategory } from "./document-utils";
 const CategoryDocuments = lazy(() => import("./category-documents"));
 const DocumentDetail = lazy(() => import("./document-detail"));
 const DocumentsOverview = lazy(() => import("./documents-overview"));
-const GmailImportDialog = lazy(() => import("./gmail-import-dialog"));
-const DriveDialog = lazy(() => import("./drive-dialog"));
+// const GmailImportDialog = lazy(() => import("./gmail-import-dialog"));
+// const DriveDialog = lazy(() => import("./drive-dialog"));
+const DigiLockerDialog = lazy(() => import("./digilocker-dialog"));
 
-const emptyDriveStatus: DriveStatus = {
-  connected: false,
-  account: null,
-  scanStatus: "idle",
-  lastScannedAt: null,
-  lastSuccessfulSync: null,
-  scanning: false,
-  phase: null,
-  processed: 0,
-  total: 0,
-  indexedCount: 0,
-  error: null,
-};
+// const emptyDriveStatus: DriveStatus = {
+//   connected: false,
+//   account: null,
+//   scanStatus: "idle",
+//   lastScannedAt: null,
+//   lastSuccessfulSync: null,
+//   scanning: false,
+//   phase: null,
+//   processed: 0,
+//   total: 0,
+//   indexedCount: 0,
+//   error: null,
+// };
 
 function hasDocumentDetails(document: DocumentRecord | undefined) {
   return Boolean(
@@ -57,55 +60,65 @@ export default function DocumentsPage() {
     detailStatus,
     error,
   } = useAppSelector((state) => state.documents);
-  const [gmailOpen, setGmailOpen] = useState(false);
-  const [driveOpen, setDriveOpen] = useState(false);
-  const [, setGmailStatus] = useState<GmailStatus>({
-    connected: false,
-    account: null,
-    lastScannedAt: null,
-    scanning: false,
-  });
-  const [, setDriveStatus] = useState<DriveStatus>(emptyDriveStatus);
+  // const [gmailOpen, setGmailOpen] = useState(false);
+  // const [driveOpen, setDriveOpen] = useState(false);
+  const [digiLockerOpen, setDigiLockerOpen] = useState(false);
+  const [digiLockerSessionId, setDigiLockerSessionId] = useState<string | null>(null);
+  // const [, setGmailStatus] = useState<GmailStatus>({
+  //   connected: false,
+  //   account: null,
+  //   lastScannedAt: null,
+  //   scanning: false,
+  // });
+  // const [, setDriveStatus] = useState<DriveStatus>(emptyDriveStatus);
 
-  useEffect(() => {
-    void api.gmail
-      .status()
-      .then(setGmailStatus)
-      .catch(() => undefined);
-  }, []);
-  useEffect(() => {
-    void api.drive
-      .status()
-      .then(setDriveStatus)
-      .catch(() => undefined);
-  }, []);
+  // Gmail/Drive status calls are paused with the dormant UI.
+  // useEffect(() => {
+  //   void api.gmail
+  //     .status()
+  //     .then(setGmailStatus)
+  //     .catch(() => undefined);
+  // }, []);
+  // useEffect(() => {
+  //   void api.drive
+  //     .status()
+  //     .then(setDriveStatus)
+  //     .catch(() => undefined);
+  // }, []);
   useEffect(() => {
     if (status === "idle") void dispatch(fetchDocuments());
   }, [dispatch, status]);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const provider = params.has("drive")
-      ? "drive"
-      : params.has("gmail")
-        ? "gmail"
-        : null;
-    if (!provider) return;
-    const oauthStatus = params.get(provider);
-    if (oauthStatus !== "connected" && oauthStatus !== "error") return;
-    if (provider === "drive") {
-      void api.drive
-        .status()
-        .then(setDriveStatus)
-        .catch(() => undefined);
-      setDriveOpen(true);
-    } else {
-      void api.gmail
-        .status(true)
-        .then(setGmailStatus)
-        .catch(() => undefined);
-      setGmailOpen(true);
+    // Gmail/Drive OAuth callback handling is paused with the dormant UI.
+    // const provider = params.has("drive")
+    //   ? "drive"
+    //   : params.has("gmail")
+    //     ? "gmail"
+    //     : null;
+    // if (provider) {
+    //   const oauthStatus = params.get(provider);
+    //   if (oauthStatus !== "connected" && oauthStatus !== "error") return;
+    //   if (provider === "drive") {
+    //     void api.drive
+    //       .status()
+    //       .then(setDriveStatus)
+    //       .catch(() => undefined);
+    //     setDriveOpen(true);
+    //   } else {
+    //     void api.gmail
+    //       .status(true)
+    //       .then(setGmailStatus)
+    //       .catch(() => undefined);
+    //     setGmailOpen(true);
+    //   }
+    //   navigate("/documents", { replace: true });
+    // }
+    if (params.has("digilocker_session")) {
+      setDigiLockerSessionId(params.get("digilocker_session"));
+      setDigiLockerOpen(true);
+      navigate("/documents", { replace: true });
     }
-    navigate("/documents", { replace: true });
   }, [navigate]);
 
   const category = categoryParam ? safeCategory(categoryParam) : null;
@@ -189,9 +202,15 @@ export default function DocumentsPage() {
         <DocumentsOverview
           documents={documents}
           error={error}
+          onOpenDigiLocker={() => {
+            setDigiLockerSessionId(null);
+            setDigiLockerOpen(true);
+          }}
           status={status}
         />
       </Suspense>
+      {/* Gmail/Drive dialogs are paused with the dormant UI. */}
+      {/*
       <Suspense fallback={null}>
         <GmailImportDialog
           open={gmailOpen}
@@ -205,6 +224,15 @@ export default function DocumentsPage() {
           onClose={() => setDriveOpen(false)}
           onStatusChange={setDriveStatus}
           onDocumentsChanged={() => void dispatch(fetchDocuments())}
+        />
+      </Suspense>
+      */}
+      <Suspense fallback={null}>
+        <DigiLockerDialog
+          open={digiLockerOpen}
+          initialSessionId={digiLockerSessionId}
+          onClose={() => setDigiLockerOpen(false)}
+          onImported={() => void dispatch(fetchDocuments())}
         />
       </Suspense>
     </>

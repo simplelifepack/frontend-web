@@ -3233,6 +3233,10 @@ button.lp-pack-check-row:hover {
   border-radius: 10px;
   color: var(--lp-heading);
 }
+.lp-shell-settings.active svg {
+  color: var(--lp-action);
+  stroke: var(--lp-action);
+}
 .lp-health-overview-bottom > div {
   min-height: 440px;
 }

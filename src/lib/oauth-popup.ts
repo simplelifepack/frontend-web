@@ -18,8 +18,10 @@ const allowedOAuthOrigins = new Set([
   new URL(API_URL, window.location.origin).origin,
 ]);
 
-function isTrustedOAuthMessage(event: MessageEvent<OAuthPopupMessage>) {
-  return allowedOAuthOrigins.has(event.origin);
+function isTrustedOAuthMessage(event: MessageEvent<OAuthPopupMessage>, expectedSource: Window | null) {
+  return expectedSource !== null
+    && event.source === expectedSource
+    && allowedOAuthOrigins.has(event.origin);
 }
 
 function isOAuthMessage(payload: OAuthPopupMessage, provider: OAuthPopupProvider) {
@@ -72,7 +74,7 @@ export function useGoogleOAuthPopup({ provider, popupName, onResult, onCancel }:
 
   useEffect(() => {
     const listener = (event: MessageEvent<OAuthPopupMessage>) => {
-      if (!isTrustedOAuthMessage(event) || !isOAuthMessage(event.data, provider) || handledRef.current) return;
+      if (!isTrustedOAuthMessage(event, popupRef.current) || !isOAuthMessage(event.data, provider) || handledRef.current) return;
       handledRef.current = true;
       cleanupPopup(true);
       callbacksRef.current.onResult(event.data as Required<Pick<OAuthPopupMessage, "provider" | "status">> & OAuthPopupMessage);

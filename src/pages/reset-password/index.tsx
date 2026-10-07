@@ -1,5 +1,5 @@
 import BrandLogo from "@/components/BrandLogo";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
 import { api } from "@/lib/api";
@@ -9,12 +9,20 @@ export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { token: authToken, user } = useAppSelector((state) => state.auth);
-  const resetToken = useMemo(() => searchParams.get("token")?.trim() ?? "", [searchParams]);
+  const [resetToken] = useState(() => searchParams.get("token")?.trim() ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!searchParams.has("token")) return;
+    const sanitized = new URLSearchParams(searchParams);
+    sanitized.delete("token");
+    const query = sanitized.toString();
+    window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+  }, [searchParams]);
 
   if (authToken && user) {
     return <Navigate to="/" replace />;

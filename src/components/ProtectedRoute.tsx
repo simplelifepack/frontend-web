@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializeApp } from "@/store/bootstrap";
 import { restoreSession } from "@/store/slices/authSlice";
 import BootstrapSkeleton from "./BootstrapSkeleton";
+import PinSetupGate from "./PinSetupGate";
 
 export default function ProtectedRoute() {
   const dispatch = useAppDispatch();
@@ -17,6 +18,8 @@ export default function ProtectedRoute() {
   }, [dispatch, sessionStatus]);
 
   if (sessionStatus === "idle" || sessionStatus === "loading") return <BootstrapSkeleton />;
+
+  if (token && user && !user.pinConfigured) return <PinSetupGate />;
 
   if (token && (!initialized || !user) && (status === "loading" || initializationStatus === "loading" || initializationStatus === "idle")) {
     return <BootstrapSkeleton />;

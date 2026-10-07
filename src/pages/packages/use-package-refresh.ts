@@ -28,7 +28,7 @@ export function usePackageRefresh(slug: string) {
     } finally {
       pending.current.delete(slug);
       setBusySlug(current => current === slug ? null : current);
-      void dispatch(refreshUsage());
+      void dispatch(refreshUsage(true));
     }
   };
   return { refresh, refreshing: busySlug === slug, feedback: feedback?.slug === slug ? feedback : null };

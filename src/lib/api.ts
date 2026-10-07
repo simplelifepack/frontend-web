@@ -2,16 +2,15 @@ import { publicDocumentLabels } from "./public-document-labels";
 import { streamRequest } from "./http-client";
 import { API_URL, downloadBlob, request } from "./http-client";
 import { documentsApi } from "./documents-api";
+import { healthApi } from "./health-api";
 import type {
   AccountUsage, AuthResponse, AuthUser, BootstrapResponse, CustomPackageGenerationJobResponse, CustomPackDraftResponse,
   CustomPackPayload,
   DynamicFormCategory, DynamicFormSchema, DynamicFormSubtype,
   DriveScanResult, DriveStatus, ForgotPasswordResponse,
+  DigiLockerDocumentsResponse, DigiLockerImportResponse, DigiLockerSession, DigiLockerStatus,
   GmailCandidate, GmailImportResult, GmailStatus,
-  HealthAvailableMetric, HealthHomeReminder, HealthMeasurement, HealthMedication,
-  HealthMember, HealthOverview, HealthProcessResponse,
-  HealthRecord, HealthRecordDetail, HealthTimelineEvent,
-  TrackedHealthMetric, PackSummary, PackageListQuery, PackageListResponse,
+  PackSummary, PackageListQuery, PackageListResponse,
   PackageLookup, PackageSearchOrGenerateResponse, ResetPasswordResponse,
   RequirementAssignmentSource,
   TrustCenterResponse, TrustInvitation, TrustMember,
@@ -38,6 +37,8 @@ export const api = {
       request<AuthResponse>("/auth/signup", { method: "POST", body: payload }),
     login: (payload: { email: string; password: string }) =>
       request<AuthResponse>("/auth/login", { method: "POST", body: payload }),
+    loginWithPin: (payload: { email: string; pin: string }) =>
+      request<AuthResponse>("/auth/login/pin", { method: "POST", body: payload }),
     google: (payload: { credential: string }) =>
       request<AuthResponse>("/auth/google", { method: "POST", body: payload }),
     refresh: () => request<AuthResponse>("/auth/refresh", { method: "POST" }),
@@ -59,6 +60,14 @@ export const api = {
       request<ForgotPasswordResponse>("/auth/account/change-password/request", { method: "POST", body: payload, requiresAuth: true }),
     verifyPasswordChange: (payload: { otp: string }) =>
       request<ForgotPasswordResponse>("/auth/account/change-password/verify", { method: "POST", body: payload, requiresAuth: true }),
+    setupPin: (payload: { pin: string }) =>
+      request<{ message: string; user: AuthUser }>("/auth/account/pin/setup", { method: "POST", body: payload, requiresAuth: true }),
+    changePin: (payload: { currentPin: string; newPin: string }) =>
+      request<ForgotPasswordResponse>("/auth/account/pin/change", { method: "POST", body: payload, requiresAuth: true }),
+    requestPinReset: () =>
+      request<ForgotPasswordResponse>("/auth/account/pin/reset/request", { method: "POST", requiresAuth: true }),
+    resetPin: (payload: { otp: string; newPin: string }) =>
+      request<ForgotPasswordResponse>("/auth/account/pin/reset/verify", { method: "POST", body: payload, requiresAuth: true }),
     me: () => request<{ user: AuthUser }>("/auth/me", { requiresAuth: true }),
   },
   gmail: {
@@ -80,6 +89,19 @@ export const api = {
     scan: (full = false, duplicateAction: "replace" | "keep_both" | "ignore" = "ignore") =>
       request<DriveScanResult>("/api/integrations/drive/scan", { method: "POST", body: { full, duplicateAction }, requiresAuth: true }),
     disconnect: () => request<void>("/api/integrations/drive", { method: "DELETE", requiresAuth: true }),
+  },
+  digilocker: {
+    status: () => request<DigiLockerStatus>("/api/integrations/digilocker/status", { requiresAuth: true, dedupeMs: 0 }),
+    start: (redirectUrl: string) =>
+      request<DigiLockerSession>("/api/integrations/digilocker/sessions", { method: "POST", body: { redirectUrl }, requiresAuth: true }),
+    sessionStatus: (sessionId: string) =>
+      request<DigiLockerSession>(`/api/integrations/digilocker/sessions/${encodeURIComponent(sessionId)}/status`, { requiresAuth: true, dedupeMs: 0 }),
+    cancel: (sessionId: string) =>
+      request<DigiLockerSession>(`/api/integrations/digilocker/sessions/${encodeURIComponent(sessionId)}/cancel`, { method: "POST", requiresAuth: true }),
+    documents: (sessionId: string) =>
+      request<DigiLockerDocumentsResponse>(`/api/integrations/digilocker/sessions/${encodeURIComponent(sessionId)}/documents`, { requiresAuth: true, dedupeMs: 0 }),
+    import: (sessionId: string, documentTypes: string[]) =>
+      request<DigiLockerImportResponse>(`/api/integrations/digilocker/sessions/${encodeURIComponent(sessionId)}/import`, { method: "POST", body: { documentTypes }, requiresAuth: true }),
   },
   documents: documentsApi,
   account: { requestExport: () => request<{ id: string; status: string; expiresAt?: string | null }>("/api/account/export", { method: "POST", requiresAuth: true }), exportStatus: (jobId: string) => request<{ id: string; status: string; expiresAt?: string | null; errorMessage?: string | null }>(`/api/account/export/${encodeURIComponent(jobId)}`, { requiresAuth: true, dedupeMs: 0 }), downloadExport: (jobId: string) => downloadBlob(`/api/account/export/${encodeURIComponent(jobId)}/download`, { requiresAuth: true }), scheduleDeletion: (phrase: string) => request<{ message: string; scheduledDeletionAt: string }>("/api/account/deletion", { method: "POST", body: { phrase }, requiresAuth: true }) },
@@ -123,6 +145,8 @@ export const api = {
   },
   wealth: {
     records: () => request<WealthRecord[]>("/api/wealth/records", { requiresAuth: true }),
+    record: (id: string) =>
+      request<WealthRecord>(`/api/wealth/records/${encodeURIComponent(id)}`, { requiresAuth: true, dedupeMs: 2_000 }),
     createRecord: (payload: WealthRecordPayload) =>
       request<WealthRecord>("/api/wealth/records", { method: "POST", body: payload, requiresAuth: true }),
     updateRecord: (id: string, payload: WealthRecordPayload) =>
@@ -144,50 +168,7 @@ export const api = {
         requiresAuth: true,
       }),
   },
-  health: {
-    reminders: () => request<HealthHomeReminder[]>("/api/health/reminders", { requiresAuth: true, dedupeMs: 0 }),
-    createReminder: (payload: { memberId: string; title: string; type: "appointment" | "medicine" | "refill" | "other"; dueDate: string; frequency: "once" | "daily" | "weekly" | "monthly" }) =>
-      request('/api/health/reminders', { method: 'POST', body: payload, requiresAuth: true }),
-    members: () => request<HealthMember[]>("/api/health/members", { requiresAuth: true, dedupeMs: 0 }),
-    createMember: (payload: { name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null }) =>
-      request<HealthMember>("/api/health/members", { method: "POST", body: payload, requiresAuth: true }),
-    updateMember: (memberId: string, payload: Partial<{ name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null; conditions?: string | null; allergies?: string | null; emergencyContactName?: string | null; emergencyContactPhone?: string | null; primaryDoctor?: string | null; insuranceProvider?: string | null; insurancePolicyNumber?: string | null }>) =>
-      request<HealthMember>(`/api/health/members/${encodeURIComponent(memberId)}`, { method: "PATCH", body: payload, requiresAuth: true }),
-    deleteMember: (memberId: string) =>
-      request<void>(`/api/health/members/${encodeURIComponent(memberId)}`, { method: "DELETE", requiresAuth: true }),
-    overview: (memberId: string) =>
-      request<HealthOverview>(`/api/health/members/${encodeURIComponent(memberId)}/overview`, { requiresAuth: true, dedupeMs: 0 }),
-    records: (memberId: string) =>
-      request<HealthRecord[]>(`/api/health/members/${encodeURIComponent(memberId)}/records`, { requiresAuth: true, dedupeMs: 0 }),
-    createRecord: (payload: { memberId?: string; documentId: string; type?: "lab_report" | "medical_report" | "prescription" }) =>
-      request<HealthProcessResponse>("/api/health/records", { method: "POST", body: payload, requiresAuth: true }),
-    updateRecord: (recordId: string, payload: { type?: "lab_report" | "medical_report" | "prescription" }) =>
-      request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}`, { method: "PATCH", body: payload, requiresAuth: true }),
-    record: (recordId: string) =>
-      request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}`, { requiresAuth: true, dedupeMs: 0 }),
-    deleteRecord: (recordId: string) =>
-      request<void>(`/api/health/records/${encodeURIComponent(recordId)}`, { method: "DELETE", requiresAuth: true }),
-    measurements: (memberId: string, metric?: string) =>
-      request<HealthMeasurement[]>(`/api/health/members/${encodeURIComponent(memberId)}/measurements${metric ? `?metric=${encodeURIComponent(metric)}` : ""}`, { requiresAuth: true, dedupeMs: 0 }),
-    createMeasurement: (memberId: string, payload: { metricKey: string; displayName: string; originalName?: string; value: number; secondaryValue?: number | null; unit: string; context?: string | null; bodySite?: string | null; referenceMin?: number | null; referenceMax?: number | null; referenceText?: string | null; measuredAt: string }) =>
-      request<HealthMeasurement>(`/api/health/members/${encodeURIComponent(memberId)}/measurements`, { method: "POST", body: payload, requiresAuth: true }),
-    trackedMetrics: (memberId: string) =>
-      request<TrackedHealthMetric[]>(`/api/health/members/${encodeURIComponent(memberId)}/tracked-metrics`, { requiresAuth: true, dedupeMs: 0 }),
-    trackMetric: (memberId: string, payload: { metricKey: string; displayName: string; context?: string | null; bodySite?: string | null }) =>
-      request<TrackedHealthMetric>(`/api/health/members/${encodeURIComponent(memberId)}/tracked-metrics`, { method: "POST", body: payload, requiresAuth: true }),
-    untrackMetric: (memberId: string, trackedId: string) =>
-      request<void>(`/api/health/members/${encodeURIComponent(memberId)}/tracked-metrics/${encodeURIComponent(trackedId)}`, { method: "DELETE", requiresAuth: true }),
-    availableMetrics: (memberId: string, search = "") =>
-      request<HealthAvailableMetric[]>(`/api/health/members/${encodeURIComponent(memberId)}/available-metrics?${toQueryString({ search })}`, { requiresAuth: true, dedupeMs: 0 }),
-    timeline: (memberId: string) =>
-      request<HealthTimelineEvent[]>(`/api/health/members/${encodeURIComponent(memberId)}/timeline`, { requiresAuth: true, dedupeMs: 0 }),
-    createMedication: (memberId: string, payload: { name: string; dose: string; whenToTake: Array<"morning" | "afternoon" | "night">; mealTiming: "before_food" | "after_food" | "with_food" | "any_time"; repeatRunsOut?: string | null }) =>
-      request<HealthMedication>(`/api/health/members/${encodeURIComponent(memberId)}/medications`, { method: "POST", body: payload, requiresAuth: true }),
-    updateMedication: (medicationId: string, payload: Partial<{ name: string; dose: string | null; whenToTake: Array<"morning" | "afternoon" | "night">; mealTiming: "before_food" | "after_food" | "with_food" | "any_time" | null; repeatRunsOut: string | null; frequency: string | null; duration: string | null; quantity: string | null; repeats: boolean; runsOutAt: string | null; status: "continuing" | "stopped"; stoppedAt: string | null }>) =>
-      request<HealthMedication>(`/api/health/medications/${encodeURIComponent(medicationId)}`, { method: "PATCH", body: payload, requiresAuth: true }),
-    deleteMedication: (medicationId: string) =>
-      request<void>(`/api/health/medications/${encodeURIComponent(medicationId)}`, { method: "DELETE", requiresAuth: true }),
-  },
+  health: healthApi,
   packages: {
     list: (query: PackageListQuery = {}) =>
       request<PackageListResponse>(`/api/packages?${toQueryString({

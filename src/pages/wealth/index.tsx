@@ -1,8 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import {
-  Plus,
-  Search,
-} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Plus, Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 import SectionHead from "@/components/SectionHead";
@@ -26,27 +23,22 @@ import {
   typeLabels,
 } from "./wealth-view";
 
-
 export default function WealthPage() {
   const dispatch = useAppDispatch();
   const location = useLocation();
   const docsLoaded = useAppSelector((state) => state.documents.loaded);
   const user = useAppSelector((state) => state.auth.user);
   const [records, setRecords] = useState<WealthRecord[]>([]);
-  const [captureOpen, setCaptureOpen] = useState<
-    "asset" | "proof" | "money" | null
-  >(null);
+  const [captureOpen, setCaptureOpen] = useState<"asset" | "proof" | "money" | null>(null);
   const [actionSheetOpen, setActionSheetOpen] = useState(false);
   const [handoffOpen, setHandoffOpen] = useState(false);
   const [editingHolding, setEditingHolding] = useState<WealthRecord | null>(null);
-  const [action, setAction] = useState<{
-    mode: "edit" | "note" | "attach" | "delete";
-    record: WealthRecord;
-  } | null>(null);
+  const [action, setAction] = useState<{ mode: "edit" | "note" | "attach" | "delete"; record: WealthRecord } | null>(null);
   const [query, setQuery] = useState("");
   const [showMath, setShowMath] = useState(false);
   const [category, setCategory] = useState<WealthCategory>("all");
   const [homeCurrency, setHomeCurrency] = useState(getStoredHomeCurrency);
+  const handledDeepLink = useRef("");
   const stats = useMemo(() => dashboardStats(records, homeCurrency), [homeCurrency, records]);
   const shownRecords = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -68,11 +60,10 @@ export default function WealthPage() {
     [homeCurrency, shownRecords],
   );
 
-  const load = async () => {
-    setRecords(await api.wealth.records());
-  };
   useEffect(() => {
-    void load();
+    void api.wealth.records().then(setRecords);
+  }, []);
+  useEffect(() => {
     if (!docsLoaded) void dispatch(fetchDocuments());
   }, [dispatch, docsLoaded]);
   useEffect(() => {
@@ -80,39 +71,51 @@ export default function WealthPage() {
     window.addEventListener("readiness-preferences-changed", refreshPreferences);
     return () => window.removeEventListener("readiness-preferences-changed", refreshPreferences);
   }, []);
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const record = records.find((item) => item.id === params.get("record"));
-    if (!record) return;
-    const mode = params.get("action");
-    if (mode === "attach" || mode === "note") setAction({ mode, record });
-    else openRecord(record);
-  }, [location.search, records]);
 
-  const saved = (record: WealthRecord) =>
-    setRecords((current) => [
-      record,
-      ...current.filter((item) => item.id !== record.id),
-    ]);
-  const deleted = (id: string) =>
-    setRecords((current) => current.filter((item) => item.id !== id));
-  const openRecord = (record: WealthRecord) => {
-    if (classifyWealthRecord(record) === "lentBorrowed") {
-      setAction({ mode: "edit", record });
+  const saved = useCallback((record: WealthRecord) => setRecords((current) => [record, ...current.filter((item) => item.id !== record.id)]), []);
+  const fullRecord = useCallback(async (record: WealthRecord) => {
+    const full = await api.wealth.record(record.id);
+    saved(full);
+    return full;
+  }, [saved]);
+  const openAction = useCallback(async (mode: "edit" | "note" | "attach" | "delete", record: WealthRecord) => {
+    setAction({ mode, record: await fullRecord(record) });
+  }, [fullRecord]);
+  const openRecord = useCallback(async (record: WealthRecord) => {
+    const full = await fullRecord(record);
+    if (classifyWealthRecord(full) === "lentBorrowed") {
+      setAction({ mode: "edit", record: full });
       return;
     }
-    setEditingHolding(record);
-  };
+    setEditingHolding(full);
+  }, [fullRecord]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const recordId = params.get("record");
+    const key = `${recordId ?? ""}:${params.get("action") ?? ""}`;
+    if (!recordId || handledDeepLink.current === key) return;
+    const record = records.find((item) => item.id === recordId);
+    if (!record) return;
+    handledDeepLink.current = key;
+    const mode = params.get("action");
+    if (mode === "attach" || mode === "note") void openAction(mode, record);
+    else void openRecord(record);
+  }, [location.search, openAction, openRecord, records]);
+
+  const deleted = (id: string) =>
+    setRecords((current) => current.filter((item) => item.id !== id));
   const toggleSettled = async (record: WealthRecord, settled: boolean) => {
+    const full = await fullRecord(record);
     const updated = await api.wealth.updateRecord(
-      record.id,
-      payloadFromRecord(record, {
-        details: { ...record.details, followUpDone: settled },
-        followUpDate: settled ? null : record.followUpDate,
+      full.id,
+      payloadFromRecord(full, {
+        details: { ...full.details, followUpDone: settled },
+        followUpDate: settled ? null : full.followUpDate,
       }),
     );
     saved(updated);
-    if (editingHolding?.id === record.id) setEditingHolding(updated);
+    if (editingHolding?.id === full.id) setEditingHolding(updated);
   };
   const goLent = () => {
     if (category !== "all" && category !== "Lent and borrowed") setCategory("Lent and borrowed");
@@ -175,13 +178,13 @@ export default function WealthPage() {
       {showMath ? <ReadinessMath records={records} /> : null}
       <NeedsAttention
         records={shownRecords}
-        onSelect={openRecord}
-        onAction={(mode, record) => setAction({ mode, record })}
+        onSelect={(record) => void openRecord(record)}
+        onAction={(mode, record) => void openAction(mode, record)}
       />
       {!shownRecords.length ? (
         <EmptyWealth query={query} onCapture={() => setCaptureOpen("asset")} />
       ) : null}
-      <WealthSections category={category} stats={shownStats} onCategory={setCategory} onRecord={() => setCaptureOpen("money")} onSelect={openRecord} onSettle={toggleSettled} />
+      <WealthSections category={category} stats={shownStats} onCategory={setCategory} onRecord={() => setCaptureOpen("money")} onSelect={(record) => void openRecord(record)} onSettle={toggleSettled} />
       {captureOpen ? (
         <CaptureProofDialog
           mode={captureOpen}
