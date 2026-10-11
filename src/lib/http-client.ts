@@ -19,6 +19,7 @@ type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   requiresAuth?: boolean;
   retryOnUnauthorized?: boolean;
+  signal?: AbortSignal;
 };
 
 const DEFAULT_GET_DEDUPE_MS = 500;
@@ -82,6 +83,7 @@ async function performRequest<T>(path: string, options: RequestOptions = {}) {
     headers,
     body: body as BodyInit | undefined,
     credentials: "include",
+    signal: options.signal,
   });
   const data = (await response.json().catch(() => ({}))) as { code?: string; message?: string };
   if (

@@ -77,16 +77,16 @@ export default function PreferencesSection() {
         sub="Where you prepare documents. Sets which packs and requirements you see."
         control={<SearchablePreferenceSelect ariaLabel="Country" disabled={saving === "country"} options={countryOptions} value={preferences.country} placeholder="Choose country" onChange={(country) => void update({ country }, "country")} />}
       />
-      <PreferenceRow
+      {/* <PreferenceRow
         label="Passport"
         sub="Some packages depend on this, not only on where you live."
         control={<SearchablePreferenceSelect ariaLabel="Passport country" disabled={saving === "passportCountry"} options={countryOptions} value={preferences.passportCountry} placeholder="Choose passport" onChange={(passportCountry) => void update({ passportCountry }, "passportCountry")} />}
-      />
-      <PreferenceRow
+      /> */}
+      {/* <PreferenceRow
         label="Home currency"
         sub="Indicative rate, bundled with the app"
         control={<SearchablePreferenceSelect ariaLabel="Home currency" disabled={saving === "homeCurrency"} options={currencyOptions} value={preferences.homeCurrency} placeholder="Choose currency" onChange={(homeCurrency) => void update({ homeCurrency }, "homeCurrency")} />}
-      />
+      /> */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderTop: `1px solid ${T.border}` }}>
         <Moon size={16} color={T.muted} />
         <span style={{ flex: 1, minWidth: 0 }}>

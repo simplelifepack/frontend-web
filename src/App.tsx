@@ -25,6 +25,7 @@ const HomePage = lazy(() => import("@/pages/home"));
 const InvitePage = lazy(() => import("@/pages/invite"));
 const LegacyPage = lazy(() => import("@/pages/legacy"));
 const PackagesPage = lazy(() => import("@/pages/packages"));
+const CoffeePackagesPage = lazy(() => import("@/pages/admin/packages"));
 const ResetPasswordPage = lazy(() => import("@/pages/reset-password"));
 const TrustPage = lazy(() => import("@/pages/trust"));
 const WealthPage = lazy(() => import("@/pages/wealth"));
@@ -144,6 +145,7 @@ export default function App() {
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/packages" element={<PackagesPage />} />
+            <Route path="/coffee/packages" element={<CoffeePackagesPage />} />
             <Route path="/documents" element={<DocumentsPage />} />
             <Route path="/documents/:category" element={<DocumentsPage />} />
             <Route

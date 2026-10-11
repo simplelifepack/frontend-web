@@ -19,7 +19,6 @@ const DocumentDetail = lazy(() => import("./document-detail"));
 const DocumentsOverview = lazy(() => import("./documents-overview"));
 // const GmailImportDialog = lazy(() => import("./gmail-import-dialog"));
 // const DriveDialog = lazy(() => import("./drive-dialog"));
-const DigiLockerDialog = lazy(() => import("./digilocker-dialog"));
 
 // const emptyDriveStatus: DriveStatus = {
 //   connected: false,
@@ -62,8 +61,6 @@ export default function DocumentsPage() {
   } = useAppSelector((state) => state.documents);
   // const [gmailOpen, setGmailOpen] = useState(false);
   // const [driveOpen, setDriveOpen] = useState(false);
-  const [digiLockerOpen, setDigiLockerOpen] = useState(false);
-  const [digiLockerSessionId, setDigiLockerSessionId] = useState<string | null>(null);
   // const [, setGmailStatus] = useState<GmailStatus>({
   //   connected: false,
   //   account: null,
@@ -88,39 +85,6 @@ export default function DocumentsPage() {
   useEffect(() => {
     if (status === "idle") void dispatch(fetchDocuments());
   }, [dispatch, status]);
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    // Gmail/Drive OAuth callback handling is paused with the dormant UI.
-    // const provider = params.has("drive")
-    //   ? "drive"
-    //   : params.has("gmail")
-    //     ? "gmail"
-    //     : null;
-    // if (provider) {
-    //   const oauthStatus = params.get(provider);
-    //   if (oauthStatus !== "connected" && oauthStatus !== "error") return;
-    //   if (provider === "drive") {
-    //     void api.drive
-    //       .status()
-    //       .then(setDriveStatus)
-    //       .catch(() => undefined);
-    //     setDriveOpen(true);
-    //   } else {
-    //     void api.gmail
-    //       .status(true)
-    //       .then(setGmailStatus)
-    //       .catch(() => undefined);
-    //     setGmailOpen(true);
-    //   }
-    //   navigate("/documents", { replace: true });
-    // }
-    if (params.has("digilocker_session")) {
-      setDigiLockerSessionId(params.get("digilocker_session"));
-      setDigiLockerOpen(true);
-      navigate("/documents", { replace: true });
-    }
-  }, [navigate]);
-
   const category = categoryParam ? safeCategory(categoryParam) : null;
   const categoryMeta = categories.find((item) => item.key === category);
   const selectedDocument = documentId
@@ -202,10 +166,6 @@ export default function DocumentsPage() {
         <DocumentsOverview
           documents={documents}
           error={error}
-          onOpenDigiLocker={() => {
-            setDigiLockerSessionId(null);
-            setDigiLockerOpen(true);
-          }}
           status={status}
         />
       </Suspense>
@@ -227,14 +187,6 @@ export default function DocumentsPage() {
         />
       </Suspense>
       */}
-      <Suspense fallback={null}>
-        <DigiLockerDialog
-          open={digiLockerOpen}
-          initialSessionId={digiLockerSessionId}
-          onClose={() => setDigiLockerOpen(false)}
-          onImported={() => void dispatch(fetchDocuments())}
-        />
-      </Suspense>
     </>
   );
 }

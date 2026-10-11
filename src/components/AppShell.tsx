@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useState } from "react";
-import { ChevronsLeft, ChevronsRight, FileText, Settings, Search, X } from "lucide-react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { ChevronsLeft, ChevronsRight, FileText, Settings } from "lucide-react";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 import { T } from "@/constants/theme";
 import { useAppSelector } from "@/store/hooks";
 import AccountMenu from "./AccountMenu";
 import { BrandWordmark } from "./BrandLogo";
-import { ROUTE_PATHS, SHELL_NAV, routeFromPath } from "./appShellNav";
+import GlobalSearch from "./GlobalSearch";
+import { ADMIN_NAV, ROUTE_PATHS, SHELL_NAV, routeFromPath } from "./appShellNav";
 
 const UploadDocumentModal = lazy(() => import("@/components/UploadDocumentModal"));
 
@@ -16,12 +17,11 @@ type AppShellProps = {
 };
 
 export default function AppShell({ children }: AppShellProps) {
-  const navigate = useNavigate();
   const location = useLocation();
   const user = useAppSelector((state) => state.auth.user);
   const currentRoute = routeFromPath(location.pathname);
+  const isPackagesAdmin = user?.email?.toLowerCase() === "admin@readines.com";
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const [navOpen, setNavOpen] = useState(() =>
     typeof window === "undefined" ? true : window.innerWidth > 760,
   );
@@ -117,6 +117,38 @@ export default function AppShell({ children }: AppShellProps) {
               </NavLink>
             );
           })}
+          {isPackagesAdmin && ADMIN_NAV.map((n) => {
+            const Icon = n.icon;
+            const active = location.pathname === n.path;
+            return (
+              <NavLink
+                key={n.key}
+                to={n.path}
+                title={n.label}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: navOpen ? "flex-start" : "center",
+                  gap: navOpen ? 12 : 0,
+                  background: active ? T.raised : "transparent",
+                  color: active ? T.white : T.muted,
+                  border: `1px solid ${active ? T.border : "transparent"}`,
+                  borderRadius: 10,
+                  padding: navOpen ? "10px 12px" : "10px 0",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  textAlign: "left" as const,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap" as const,
+                }}
+              >
+                <Icon size={18} color={active ? T.action : T.muted} style={{ flexShrink: 0 }} />
+                {navOpen ? n.label : ""}
+              </NavLink>
+            );
+          })}
           <NavLink to="/settings" className="lp-shell-settings"><Settings size={18} />{navOpen && "Settings"}</NavLink>
         </nav>
 
@@ -157,26 +189,7 @@ export default function AppShell({ children }: AppShellProps) {
       >
         <div className="lp-shell-inner lp-shell-header">
           <div className="lp-topbar">
-            <label className="lp-global-search">
-              <Search size={15} color={T.muted} />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && query.trim()) {
-                    navigate(`/documents?search=${encodeURIComponent(query.trim())}`);
-                    setQuery("");
-                  }
-                }}
-                placeholder="Search…"
-                aria-label="Search Readiness"
-              />
-              {query ? (
-                <button type="button" onClick={() => setQuery("")} aria-label="Clear search">
-                  <X size={15} />
-                </button>
-              ) : null}
-            </label>
+            <GlobalSearch />
             <AccountMenu user={user} />
           </div>
         </div>

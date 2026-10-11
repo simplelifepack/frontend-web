@@ -1,27 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import Card from "@/components/Card";
 import { api } from "@/lib/api";
 import { preferencesApi } from "@/lib/preferences-api";
-import HealthDialog from "./HealthDialog";
 import HealthPageHeader from "./components/HealthPageHeader";
+import HealthDialog from "./HealthDialog";
 import { useHealthPage } from "./hooks/useHealthPage";
-import Overview from "./overview/Overview";
-import Trends from "./overview/Trends";
-import Timeline from "./timeline/Timeline";
 import HealthMedicationsTab from "./medications/HealthMedicationsTab";
-import Records from "./records/Records";
-import RecordDetailModal from "./records/RecordDetailModal";
-import MeasurementSelectionDialog from "./records/MeasurementSelectionDialog";
-import DeleteRecordDialog from "./records/DeleteRecordDialog";
-import AddRecordDialog from "./records/AddRecordDialog";
-import MemberResolutionDialog from "./members/MemberResolutionDialog";
 import AddMemberDialog from "./members/AddMemberDialog";
+import MemberResolutionDialog from "./members/MemberResolutionDialog";
+import Overview from "./overview/Overview";
+import Timeline from "./timeline/Timeline";
+import Trends from "./overview/Trends";
+import AddRecordDialog from "./records/AddRecordDialog";
+import DeleteRecordDialog from "./records/DeleteRecordDialog";
+import MeasurementSelectionDialog from "./records/MeasurementSelectionDialog";
+import RecordDetailModal from "./records/RecordDetailModal";
+import Records from "./records/Records";
 
 export default function HealthPage() {
   const location = useLocation();
   const [aiProcessingEnabled, setAiProcessingEnabled] = useState(true);
+  const handledDeepLink = useRef("");
   const {
     healthDialog,
     setHealthDialog,
@@ -78,8 +79,7 @@ export default function HealthPage() {
     let cancelled = false;
     const refreshPreferences = () => {
       void preferencesApi.get().then((preferences) => {
-        if (!cancelled)
-          setAiProcessingEnabled(preferences.aiProcessingEnabled);
+        if (!cancelled) setAiProcessingEnabled(preferences.aiProcessingEnabled);
       });
     };
     refreshPreferences();
@@ -95,7 +95,13 @@ export default function HealthPage() {
     const tab = params.get("tab");
     if (memberId && members.some((member) => member.id === memberId)) setSelectedMemberId(memberId);
     if (tab === "Overview" || tab === "Trends" || tab === "Timeline" || tab === "Medications" || tab === "Records") setActiveTab(tab);
-  }, [location.search, members, setActiveTab, setSelectedMemberId]);
+    const recordId = params.get("record");
+    const key = `${memberId ?? ""}:${tab ?? ""}:${recordId ?? ""}`;
+    if (recordId && handledDeepLink.current !== key) {
+      handledDeepLink.current = key;
+      void openHealthRecord(recordId);
+    }
+  }, [location.search, members, openHealthRecord, setActiveTab, setSelectedMemberId]);
   return (
     <div className="lp-route lp-health-route">
       <HealthPageHeader
@@ -105,10 +111,7 @@ export default function HealthPage() {
         activeTab={activeTab}
         upcoming={upcoming}
         recordCount={records.length}
-        medicationCount={records.reduce(
-          (sum, record) => sum + record.medicationCount,
-          0,
-        )}
+        medicationCount={records.reduce((sum, record) => sum + record.medicationCount, 0)}
         onSelectMember={setSelectedMemberId}
         onAddMember={() => setShowAddMember(true)}
         onPrepareVisit={() => setHealthDialog("visit")}
@@ -226,10 +229,7 @@ export default function HealthPage() {
         />
       ) : null}
       {deleteRecord ? (
-        <DeleteRecordDialog
-          onClose={() => setDeleteRecord(null)}
-          onConfirm={() => removeRecord(deleteRecord.id)}
-        />
+        <DeleteRecordDialog onClose={() => setDeleteRecord(null)} onConfirm={() => removeRecord(deleteRecord.id)} />
       ) : null}
       {memberResolution ? (
         <MemberResolutionDialog
@@ -237,10 +237,7 @@ export default function HealthPage() {
           members={members}
           onClose={() => setMemberResolution(null)}
           onCreateProfile={() => {
-            setMemberPrefill({
-              name: memberResolution.patient?.name ?? "",
-              dateOfBirth: memberResolution.patient?.dateOfBirth ?? null,
-            });
+            setMemberPrefill({ name: memberResolution.patient?.name ?? "", dateOfBirth: memberResolution.patient?.dateOfBirth ?? null });
             setShowAddMember(true);
           }}
           onConfirm={confirmMemberResolution}

@@ -21,7 +21,7 @@ export const TABS: LandingTab[] = [
     label: "Discover & classify",
     icon: FolderTree,
     head: "Connect once. Everything files itself.",
-    body: "Link Gmail, Drive, or DigiLocker, or simply drop files in. Readiness reads each one, sorts it into the right place, and builds a living graph of your documents.",
+    body: "Link Gmail or Drive, or simply drop files in. Readiness reads each one, sorts it into the right place, and builds a living graph of your documents.",
     points: [
       "Auto-classified on upload",
       "Your important document areas",

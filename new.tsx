@@ -4784,7 +4784,7 @@ function Documents({ store, toast, go }: any) {
           ))}
         </select>
         <select style={selStyle} value={source} onChange={(e) => setSource(e.target.value)}>
-          {["All", "Upload", "Email", "Drive", "DigiLocker"].map((sName) => (
+          {["All", "Upload", "Email", "Drive"].map((sName) => (
             <option key={sName} style={{ color: "#000" }}>
               {sName}
             </option>

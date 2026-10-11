@@ -1,15 +1,15 @@
-import { publicDocumentLabels } from "./public-document-labels";
 import { streamRequest } from "./http-client";
 import { API_URL, downloadBlob, request } from "./http-client";
 import { documentsApi } from "./documents-api";
 import { healthApi } from "./health-api";
 import type {
-  AccountUsage, AuthResponse, AuthUser, BootstrapResponse, CustomPackageGenerationJobResponse, CustomPackDraftResponse,
+  AccountUsage, AdminCsvImportResult, AdminCsvPreview, AdminPackage, AdminPackageListResponse, AdminPackagePayload,
+  AuthResponse, AuthUser, BootstrapResponse, CustomPackageGenerationJobResponse, CustomPackDraftResponse,
   CustomPackPayload,
   DynamicFormCategory, DynamicFormSchema, DynamicFormSubtype,
   DriveScanResult, DriveStatus, ForgotPasswordResponse,
-  DigiLockerDocumentsResponse, DigiLockerImportResponse, DigiLockerSession, DigiLockerStatus,
   GmailCandidate, GmailImportResult, GmailStatus,
+  GlobalSearchResponse,
   PackSummary, PackageListQuery, PackageListResponse,
   PackageLookup, PackageSearchOrGenerateResponse, ResetPasswordResponse,
   RequirementAssignmentSource,
@@ -90,23 +90,16 @@ export const api = {
       request<DriveScanResult>("/api/integrations/drive/scan", { method: "POST", body: { full, duplicateAction }, requiresAuth: true }),
     disconnect: () => request<void>("/api/integrations/drive", { method: "DELETE", requiresAuth: true }),
   },
-  digilocker: {
-    status: () => request<DigiLockerStatus>("/api/integrations/digilocker/status", { requiresAuth: true, dedupeMs: 0 }),
-    start: (redirectUrl: string) =>
-      request<DigiLockerSession>("/api/integrations/digilocker/sessions", { method: "POST", body: { redirectUrl }, requiresAuth: true }),
-    sessionStatus: (sessionId: string) =>
-      request<DigiLockerSession>(`/api/integrations/digilocker/sessions/${encodeURIComponent(sessionId)}/status`, { requiresAuth: true, dedupeMs: 0 }),
-    cancel: (sessionId: string) =>
-      request<DigiLockerSession>(`/api/integrations/digilocker/sessions/${encodeURIComponent(sessionId)}/cancel`, { method: "POST", requiresAuth: true }),
-    documents: (sessionId: string) =>
-      request<DigiLockerDocumentsResponse>(`/api/integrations/digilocker/sessions/${encodeURIComponent(sessionId)}/documents`, { requiresAuth: true, dedupeMs: 0 }),
-    import: (sessionId: string, documentTypes: string[]) =>
-      request<DigiLockerImportResponse>(`/api/integrations/digilocker/sessions/${encodeURIComponent(sessionId)}/import`, { method: "POST", body: { documentTypes }, requiresAuth: true }),
-  },
   documents: documentsApi,
   account: { requestExport: () => request<{ id: string; status: string; expiresAt?: string | null }>("/api/account/export", { method: "POST", requiresAuth: true }), exportStatus: (jobId: string) => request<{ id: string; status: string; expiresAt?: string | null; errorMessage?: string | null }>(`/api/account/export/${encodeURIComponent(jobId)}`, { requiresAuth: true, dedupeMs: 0 }), downloadExport: (jobId: string) => downloadBlob(`/api/account/export/${encodeURIComponent(jobId)}/download`, { requiresAuth: true }), scheduleDeletion: (phrase: string) => request<{ message: string; scheduledDeletionAt: string }>("/api/account/deletion", { method: "POST", body: { phrase }, requiresAuth: true }) },
   usage: () => request<AccountUsage>("/api/bootstrap/usage", { requiresAuth: true, dedupeMs: 0 }),
   bootstrap: () => request<BootstrapResponse>("/api/bootstrap", { requiresAuth: true }),
+  search: (query: string, limit = 5, signal?: AbortSignal) =>
+    request<GlobalSearchResponse>(`/api/search?${toQueryString({ q: query.slice(0, 160), limit })}`, {
+      requiresAuth: true,
+      dedupeMs: 0,
+      signal,
+    }),
   trust: {
     get: () => request<TrustCenterResponse>("/api/trust", { requiresAuth: true, dedupeMs: 1_000 }),
     getInvitation: (token: string) => request<TrustInvitation>(`/api/trust/invitations/${encodeURIComponent(token)}`),
@@ -185,23 +178,23 @@ export const api = {
     refresh: (slug: string) =>
       request<{ package: PackSummary; changed: boolean; message: string }>(`/api/packages/${encodeURIComponent(slug)}/refresh`, { method: "POST", requiresAuth: true }),
     streamSearchOrGenerate: (packageType: string, documentLabels: string[], onDelta: (text: string) => void, signal?: AbortSignal) =>
-      streamRequest<PackageSearchOrGenerateResponse>("/api/packages/search-or-generate", { packageType, documentLabels: publicDocumentLabels(documentLabels) }, onDelta, signal),
+      streamRequest<PackageSearchOrGenerateResponse>("/api/packages/search-or-generate", { packageType, documentLabels }, onDelta, signal),
     searchOrGenerate: (packageType: string, documentLabels: string[]) =>
       request<PackageSearchOrGenerateResponse>("/api/packages/search-or-generate", {
         method: "POST",
-        body: { packageType, documentLabels: publicDocumentLabels(documentLabels) },
+        body: { packageType, documentLabels },
         requiresAuth: true,
       }),
     draftCustom: (packageType: string, documentLabels: string[]) =>
       request<CustomPackDraftResponse>("/api/packages/custom/draft", {
         method: "POST",
-        body: { packageType, documentLabels: publicDocumentLabels(documentLabels) },
+        body: { packageType, documentLabels },
         requiresAuth: true,
       }),
     createCustomGenerationJob: (packageType: string, documentLabels: string[]) =>
       request<CustomPackageGenerationJobResponse>("/api/packages/custom/generation-jobs", {
         method: "POST",
-        body: { packageType, documentLabels: publicDocumentLabels(documentLabels) },
+        body: { packageType, documentLabels },
         requiresAuth: true,
       }),
     getCustomGenerationJob: (jobId: string) =>
@@ -225,5 +218,26 @@ export const api = {
         method: "DELETE",
         requiresAuth: true,
       }),
+  },
+  adminPackages: {
+    list: (query: { category?: string; limit?: number; page?: number; search?: string } = {}) =>
+      request<AdminPackageListResponse>(`/api/admin/packages?${toQueryString({
+        category: query.category,
+        limit: query.limit ?? 25,
+        page: query.page ?? 1,
+        search: query.search?.slice(0, 160),
+      })}`, { requiresAuth: true, dedupeMs: 0 }),
+    get: (slug: string) => request<AdminPackage>(`/api/admin/packages/${encodeURIComponent(slug)}`, { requiresAuth: true, dedupeMs: 0 }),
+    create: (payload: AdminPackagePayload) =>
+      request<{ package: AdminPackage }>("/api/admin/packages", { method: "POST", body: payload, requiresAuth: true }),
+    update: (slug: string, payload: AdminPackagePayload) =>
+      request<{ package: AdminPackage }>(`/api/admin/packages/${encodeURIComponent(slug)}`, { method: "PATCH", body: payload, requiresAuth: true }),
+    delete: (slug: string) =>
+      request<void>(`/api/admin/packages/${encodeURIComponent(slug)}`, { method: "DELETE", requiresAuth: true }),
+    previewCsv: (csv: string) =>
+      request<AdminCsvPreview>("/api/admin/packages/import/preview", { method: "POST", body: { csv }, requiresAuth: true }),
+    importCsv: (csv: string) =>
+      request<AdminCsvImportResult>("/api/admin/packages/import", { method: "POST", body: { csv }, requiresAuth: true }),
+    downloadTemplate: () => downloadBlob("/api/admin/packages/template.csv", { requiresAuth: true }),
   },
 };

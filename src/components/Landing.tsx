@@ -16,7 +16,6 @@ import {
   Wallet,
   Mail,
   HardDrive,
-  Fingerprint,
   Check,
   CalendarClock,
   Pill,
@@ -1526,9 +1525,6 @@ export default function Landing({
             <HardDrive size={14} /> Drive
           </span>
           <span className="lp-conn">
-            <Fingerprint size={14} /> DigiLocker
-          </span>
-          <span className="lp-conn">
             <UploadCloud size={14} /> Upload &amp; scan
           </span>
         </div>
@@ -1586,7 +1582,7 @@ export default function Landing({
           flip
           eyebrow="Auto-organize"
           title="Connect once. Everything files itself."
-          body="Link Email, Drive, or DigiLocker, or simply add a photo. Readiness reads each document, files it in the right place, and builds a living graph of your family's papers."
+          body="Link Email or Drive, or simply add a photo. Readiness reads each document, files it in the right place, and builds a living graph of your family's papers."
           points={[
             "Sorted automatically as it arrives",
             "Your important document areas",
@@ -1632,7 +1628,7 @@ export default function Landing({
                 n: "01",
                 icon: UploadCloud,
                 t: "Add or connect",
-                d: "Add a photo, drop files in, or link Email, Drive, and DigiLocker.",
+                d: "Add a photo, drop files in, or link Email and Drive.",
               },
               {
                 n: "02",
@@ -1816,7 +1812,7 @@ export default function Landing({
                   "All available packages, prepared before you need them",
                   "AI reads, files and scores every document, without limits",
                   "Family access levels with SOS handoff",
-                  "Gmail, Drive and DigiLocker feed the vault automatically",
+                  "Gmail and Drive feed the vault automatically",
                   "Encrypted storage for your whole family",
                   "And everything in Free, without limits",
                 ].map((f) => (
@@ -1853,7 +1849,7 @@ export default function Landing({
             ["Readiness scores", "On your sample pack", "Across every pack"],
             ["Modules: Documents, Health, Wealth, Trust", "Browse and add manually", "Full AI automation"],
             ["Family access levels + SOS handoff", "—", "Included"],
-            ["Gmail, Drive and DigiLocker connections", "—", "Included"],
+            ["Gmail and Drive connections", "—", "Included"],
             ["Export your documents", "Free, always", "Free, always"],
             ["Your files if you stop paying", "Yours, always", "Yours, always"],
           ].map(([a, b, c], i) => (

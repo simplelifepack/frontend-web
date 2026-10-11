@@ -1,6 +1,7 @@
 import AccountUsage from "@/components/AccountUsage";
 import { refreshUsage } from "@/store/slices/usageSlice";
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import SectionHead from "@/components/SectionHead";
 import { T } from "@/constants/theme";
@@ -17,6 +18,7 @@ const SEARCH_DEBOUNCE_MS = 350;
 
 export default function PackagesPage() {
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const usage = useAppSelector(state => state.usage?.data);
   const quotaReached = usage?.accountTier === "free" && usage.aiUsage.remaining === 0;
   useEffect(() => { void dispatch(refreshUsage()); }, [dispatch]);
@@ -46,12 +48,20 @@ export default function PackagesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [customInitialDescription, setCustomInitialDescription] = useState("");
   const [customModalOpen, setCustomModalOpen] = useState(false);
+  const requestedPack = useMemo(() => new URLSearchParams(location.search).get("pack") ?? "", [location.search]);
 
   useEffect(() => {
     if (!selectedSlug && packs.length) {
       setSelectedSlug(packs[0].slug);
     }
   }, [packs, selectedSlug]);
+
+  useEffect(() => {
+    if (!requestedPack) return;
+    setSelectedSlug(requestedPack);
+    setDetailOpen(true);
+    void dispatch(fetchPackageDetail(requestedPack));
+  }, [dispatch, requestedPack]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

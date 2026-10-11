@@ -83,7 +83,7 @@ export type DocumentRecord = {
   fields: unknown;
   createdAt: string;
   updatedAt: string;
-  source: "MANUAL_UPLOAD" | "GMAIL" | "GOOGLE_DRIVE" | "DIGILOCKER";
+  source: "MANUAL_UPLOAD" | "GMAIL" | "GOOGLE_DRIVE";
   sourceProvider?: string | null;
   driveFileId?: string | null;
   openUrl?: string | null;
@@ -103,44 +103,6 @@ export type DriveStatus = {
   total: number;
   indexedCount: number;
   error: string | null;
-};
-
-export type DigiLockerStatus = {
-  configured: boolean;
-  environment: "sandbox" | "production";
-  supportedDocuments: Array<"AADHAAR" | "PAN" | "DRIVING_LICENSE">;
-  message: string | null;
-};
-
-export type DigiLockerSession = {
-  id: string;
-  status: "PENDING" | "AUTHENTICATED" | "EXPIRED" | "CONSENT_DENIED" | "CANCELLED" | "FAILED" | string;
-  statusMessage?: string | null;
-  consentUrl?: string | null;
-  requestedDocuments: string[];
-  availableDocuments: string[];
-  expiresAt?: string | null;
-  authenticatedAt?: string | null;
-};
-
-export type DigiLockerDocumentOption = {
-  type: "AADHAAR" | "PAN" | "DRIVING_LICENSE";
-  label: string;
-  status: "available";
-};
-
-export type DigiLockerDocumentsResponse = {
-  session: DigiLockerSession;
-  documents: DigiLockerDocumentOption[];
-};
-
-export type DigiLockerImportResponse = {
-  results: Array<{
-    documentType: string;
-    status: "ready_for_review" | "failed";
-    analysis?: AnalyzeDocumentResponse;
-    message?: string;
-  }>;
 };
 
 export type DriveScanResult = {
@@ -611,6 +573,100 @@ export type RequirementAssignment = {
   overriddenAt?: string | null;
 };
 
+export type AdminPackageSource = {
+  name?: string;
+  organization?: string;
+  retrievedAt?: string;
+  title: string;
+  type?: string;
+  url: string;
+};
+
+export type AdminPackageRequirement = {
+  id?: string;
+  title: string;
+  description?: string;
+  required: boolean;
+  group: string;
+  documentType?: string;
+  owner: string;
+  metadata?: Record<string, unknown>;
+  acceptedDocumentTypes: string[];
+  alternativeLabels: string[];
+  sortOrder?: number;
+};
+
+export type AdminPackagePayload = {
+  aliases: string[];
+  applicability?: string;
+  category: string;
+  country?: string;
+  description: string;
+  keywords: string[];
+  lastCheckedAt?: string | null;
+  lastVerifiedAt?: string | null;
+  requirements: AdminPackageRequirement[];
+  searchMetadata?: Record<string, unknown>;
+  slug?: string;
+  sourceName?: string | null;
+  sourceTitle?: string | null;
+  sourceType?: string | null;
+  sourceUrl?: string | null;
+  sources: AdminPackageSource[];
+  subtitle?: string | null;
+  title: string;
+  verificationStatus?: string | null;
+};
+
+export type AdminPackage = Omit<PackSummary, "requirements" | "verificationSources"> & {
+  aliases: string[];
+  createdAt: string;
+  deletedAt?: string | null;
+  keywords: string[];
+  lastCheckedAt?: string | null;
+  lastVerifiedAt?: string | null;
+  requirements: AdminPackageRequirement[];
+  searchMetadata?: Record<string, unknown> | null;
+  sourceName?: string | null;
+  sourceTitle?: string | null;
+  sourceType?: string | null;
+  sourceUrl?: string | null;
+  updatedAt: string;
+  verificationSources?: AdminPackageSource[];
+  version: number;
+};
+
+export type AdminPackageListResponse = {
+  categories: string[];
+  items: AdminPackage[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasNextPage: boolean;
+  };
+};
+
+export type AdminCsvPreviewRow = {
+  rowNumber: number;
+  slug: string;
+  title: string;
+  errors: string[];
+  input?: AdminPackagePayload | null;
+};
+
+export type AdminCsvPreview = {
+  rows: AdminCsvPreviewRow[];
+  summary: { valid: number; invalid: number };
+  errors: string[];
+};
+
+export type AdminCsvImportResult = {
+  successCount: number;
+  failedCount: number;
+  results: Array<{ rowNumber: number; status: "created" | "failed"; errors: string[] }>;
+};
+
 export type FamilyMember = {
   id: string;
   name: string;
@@ -916,6 +972,35 @@ export type CustomPackageGenerationJob = {
 
 export type CustomPackageGenerationJobResponse = {
   job: CustomPackageGenerationJob;
+};
+
+export type GlobalSearchSection =
+  | "packages"
+  | "documents"
+  | "health"
+  | "wealth"
+  | "family"
+  | "trust";
+
+export type GlobalSearchResult = {
+  id: string;
+  title: string;
+  subtitle: string;
+  section: GlobalSearchSection;
+  navigation: {
+    path: string;
+  };
+};
+
+export type GlobalSearchGroup = {
+  section: GlobalSearchSection;
+  label: string;
+  results: GlobalSearchResult[];
+};
+
+export type GlobalSearchResponse = {
+  query: string;
+  groups: GlobalSearchGroup[];
 };
 
 export type AccountUsage = {
