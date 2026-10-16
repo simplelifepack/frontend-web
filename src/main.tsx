@@ -1,27 +1,45 @@
-import React from "react";
+import React, { useSyncExternalStore } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import App from "./App";
-import { Toaster } from "./components/ui/sonner";
+import { ThemeProvider } from "styled-components";
+import { lightTheme, darkTheme, GlobalTypography } from "./design-system";
+import { Toaster } from "./design-system";
 import { store } from "./store";
-import { applyTheme, getStoredTheme } from "./lib/theme";
+import {
+  applyTheme,
+  getStoredTheme,
+  subscribeAppearance,
+  getAppliedAppearance,
+} from "./lib/theme";
 import "./styles.css";
 
 applyTheme(getStoredTheme());
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
 const googleScriptErrorEvent = "readiness:google-script-error";
-const app = (
-  <Provider store={store}>
-    <BrowserRouter>
-      <App />
-      <Toaster position="bottom-right" closeButton />
-    </BrowserRouter>
-  </Provider>
-);
+function Application() {
+  const appearance = useSyncExternalStore(
+    subscribeAppearance,
+    getAppliedAppearance,
+    () => "dark",
+  );
+  return (
+    <Provider store={store}>
+      <ThemeProvider theme={appearance === "dark" ? darkTheme : lightTheme}>
+        <GlobalTypography />
+        <BrowserRouter>
+          <App />
+          <Toaster position="bottom-right" closeButton />
+        </BrowserRouter>
+      </ThemeProvider>
+    </Provider>
+  );
+}
+const app = <Application />;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
@@ -29,14 +47,20 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <GoogleOAuthProvider
         clientId={googleClientId}
         onScriptLoadSuccess={() => {
-          window.dispatchEvent(new CustomEvent(googleScriptErrorEvent, { detail: false }));
+          window.dispatchEvent(
+            new CustomEvent(googleScriptErrorEvent, { detail: false }),
+          );
         }}
         onScriptLoadError={() => {
-          window.dispatchEvent(new CustomEvent(googleScriptErrorEvent, { detail: true }));
+          window.dispatchEvent(
+            new CustomEvent(googleScriptErrorEvent, { detail: true }),
+          );
         }}
       >
         {app}
       </GoogleOAuthProvider>
-    ) : app}
+    ) : (
+      app
+    )}
   </React.StrictMode>,
 );

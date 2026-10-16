@@ -1,3 +1,5 @@
+import { Heading, Text, Button, Card } from "@/design-system";
+
 import {
   FileText,
   FlaskConical,
@@ -7,7 +9,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import Card from "@/components/Card";
+
 import type { HealthRecord } from "@/lib/api.types";
 import { documentTypeLabels, formatDate } from "../healthUtils";
 
@@ -28,21 +30,21 @@ function Records({
     <div className="lp-two-col lp-health-records-view">
       <Card className="lp-health-records-card">
         <div className="lp-health-records-head">
-          <h2>
-            <Stethoscope size={18} /> Records
-          </h2>
-          <button type="button" onClick={onAdd}>
-            <Upload size={18} /> Upload medical record
-          </button>
+          <Heading level={2} size="sm">
+            <Stethoscope aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Records
+          </Heading>
+          <Button variant="primary" type="button" onClick={onAdd}>
+            <Upload aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Upload medical record
+          </Button>
         </div>
-        <p className="lp-health-records-copy">
+        <Text as="p" size="md" weight="medium" className="lp-health-records-copy">
           Upload anything. ReadiNes reads the record on your device to file it,
           pull out the values and the ranges printed beside them, and note the
           doctor, hospital, and specialisation so a visit kit can be assembled.
           It records what the document says and never adds an opinion. A copy
           lands in Documents too.
-        </p>
-        <div className="lp-health-record-list" role="list">
+        </Text>
+        <Text as="div" size="md" className="lp-health-record-list" role="list">
           {records.map((record) => (
             <RecordRow
               key={record.id}
@@ -52,7 +54,7 @@ function Records({
               onDelete={() => onDelete(record)}
             />
           ))}
-        </div>
+        </Text>
       </Card>
     </div>
   );
@@ -88,41 +90,39 @@ function RecordRow({
     >
       <span className={`lp-health-record-dot ${record.type}`} />
       <span className={`lp-health-record-type ${record.type}`}>
-        <Icon size={18} />
+        <Icon aria-hidden="true" focusable="false" size="var(--icon-regular)" />
       </span>
       <span className="lp-health-record-main">
-        <b>{label}</b>
-        <small>
+        <Text as="b" size="md" weight="semibold">{label}</Text>
+        <Text as="small" size="sm">
           {label} · {formatDate(record.documentDate)}
-        </small>
+        </Text>
         <small>
-          <strong>Read on {formatDate(readDate)}</strong>
+          <Text as="strong" size="md" weight="semibold">Read on {formatDate(readDate)}</Text>
           {source ? ` · ${source}` : ` · ${record.processingStatus}`}
         </small>
       </span>
       {onView || onDelete ? (
-        <span className="lp-health-record-actions">
+        <Text size="md" className="lp-health-record-actions">
           {onView ? (
-            <button
+            <Button size="sm" iconOnly variant="tertiary"
               type="button"
-              className="lp-health-record-edit"
               aria-label={`Correct what was read for ${label}`}
               onClick={onView}
             >
-              <Pencil size={18} />
-            </button>
+              <Pencil aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+            </Button>
           ) : null}
           {onDelete ? (
-            <button
+            <Button size="sm" tone="danger" iconOnly variant="tertiary"
               type="button"
-              className="lp-health-record-delete"
               aria-label={`Delete ${label}`}
               onClick={onDelete}
             >
-              <Trash2 size={18} />
-            </button>
+              <Trash2 aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+            </Button>
           ) : null}
-        </span>
+        </Text>
       ) : null}
     </div>
   );

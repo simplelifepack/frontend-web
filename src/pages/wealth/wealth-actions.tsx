@@ -1,13 +1,13 @@
-import { Coins, FileCheck, FileText, Plus, ShieldAlert } from "lucide-react";
+import { Text, DrawerPortal, DrawerBackdrop, DrawerPanel, Button } from "@/design-system";
 
-import { btnGhost } from "@/constants/theme";
+import { Coins, FileCheck, FileText, Plus, ShieldAlert } from "lucide-react";
 
 export function WealthDesktopActions({ onHolding, onProof, onMoney, onSos }: { onHolding: () => void; onProof: () => void; onMoney: () => void; onSos: () => void }) {
   return (
     <div className="lp-wealth-actions">
-      <button type="button" style={btnGhost} onClick={onHolding}><Plus size={15} /> Add holding</button>
-      <button type="button" style={btnGhost} onClick={onProof}><FileCheck size={15} /> Capture proof</button>
-      <button type="button" style={btnGhost} onClick={onMoney}><Coins size={15} /> Money lent / borrowed</button>
+      <Button variant="secondary" type="button" onClick={onHolding}><Plus aria-hidden="true" focusable="false" size={15} /> Add holding</Button>
+      <Button variant="secondary" type="button" onClick={onProof}><FileCheck aria-hidden="true" focusable="false" size={15} /> Capture proof</Button>
+      <Button variant="secondary" type="button" onClick={onMoney}><Coins aria-hidden="true" focusable="false" size={15} /> Money lent / borrowed</Button>
     </div>
   );
 }
@@ -24,9 +24,9 @@ export function WealthActionSheet({
   onMoney: () => void;
 }) {
   return (
-    <>
-      <div className="lp-scrim" onClick={onClose} />
-      <div
+    <DrawerPortal>
+      <DrawerBackdrop aria-label="Close wealth actions" className="lp-scrim" onClick={onClose} />
+      <DrawerPanel onDismiss={onClose} edge="bottom"
         className="lp-sheet"
         role="dialog"
         aria-modal="true"
@@ -34,21 +34,21 @@ export function WealthActionSheet({
       >
         <div className="lp-sheet-grab" />
         <div className="lp-sheet-head">
-          <b>Wealth actions</b>
-          <button type="button" onClick={onClose}>
+          <Text as="b" size="lg" weight="semibold">Wealth actions</Text>
+          <Button size="sm" variant="tertiary" type="button" onClick={onClose}>
             Done
-          </button>
+          </Button>
         </div>
         <button type="button" className="lp-sheet-item" onClick={onDocument}>
-          <FileText size={19} /> From a document in your vault
+          <FileText aria-hidden="true" focusable="false" size={19} /> From a document in your vault
         </button>
         <button type="button" className="lp-sheet-item" onClick={onHolding}>
-          <Plus size={19} /> Without a document (cash, gold, informal)
+          <Plus aria-hidden="true" focusable="false" size={19} /> Without a document (cash, gold, informal)
         </button>
         <button type="button" className="lp-sheet-item" onClick={onMoney}>
-          <Coins size={19} /> Record money lent or borrowed
+          <Coins aria-hidden="true" focusable="false" size={19} /> Record money lent or borrowed
         </button>
-      </div>
-    </>
+      </DrawerPanel>
+    </DrawerPortal>
   );
 }

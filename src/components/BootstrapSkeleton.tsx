@@ -1,3 +1,4 @@
+import { Text } from "@/design-system";
 const navItems = Array.from({ length: 6 });
 const cards = Array.from({ length: 4 });
 
@@ -29,7 +30,7 @@ export default function BootstrapSkeleton() {
           <i className="lp-skeleton-block line eyebrow" />
           <i className="lp-skeleton-block heading" />
           <i className="lp-skeleton-block line subtitle" />
-          <div className="lp-bootstrap-card-grid">
+          <div   className="lp-bootstrap-card-grid">
             {cards.map((_, index) => (
               <div className="lp-bootstrap-card" key={index}>
                 <i className="lp-skeleton-block icon large" />

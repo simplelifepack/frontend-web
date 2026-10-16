@@ -1,3 +1,5 @@
+import { Field, Heading, Text, Input, Button } from "@/design-system";
+
 import BrandLogo from "@/components/BrandLogo";
 import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
@@ -21,7 +23,11 @@ export default function ResetPasswordPage() {
     const sanitized = new URLSearchParams(searchParams);
     sanitized.delete("token");
     const query = sanitized.toString();
-    window.history.replaceState(window.history.state, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}`,
+    );
   }, [searchParams]);
 
   if (authToken && user) {
@@ -48,12 +54,19 @@ export default function ResetPasswordPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await api.auth.resetPassword({ token: resetToken, password });
+      const response = await api.auth.resetPassword({
+        token: resetToken,
+        password,
+      });
       setSuccessMessage(response.message);
       setPassword("");
       setConfirmPassword("");
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unable to reset password.");
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Unable to reset password.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -61,57 +74,73 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <div className="lg:hidden"><BrandLogo height={64} /></div>
-      <h2 className="mt-4 text-3xl font-semibold text-[var(--lp-heading)]">Reset password</h2>
-      <p className="mt-2 text-sm text-[var(--lp-muted)]">
+      <div className="lg:hidden">
+        <BrandLogo height={64} />
+      </div>
+      <Heading level={2} size="md" className="mt-4 text-[var(--lp-heading)]">
+        Reset password
+      </Heading>
+      <Text as="p" size="md" className="mt-2 text-[var(--lp-muted)]">
         Create a new password for your Readiness account.
-      </p>
+      </Text>
 
       <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-        <label className="block">
-          <span className="mb-2 block text-sm text-[var(--lp-text)]">New password</span>
-          <input
+        <Field label="New password">
+          <Input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
             minLength={8}
             required
           />
-        </label>
+        </Field>
 
-        <label className="block">
-          <span className="mb-2 block text-sm text-[var(--lp-text)]">Confirm password</span>
-          <input
+        <Field label="Confirm password">
+          <Input
             type="password"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
-            className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
             minLength={8}
             required
           />
-        </label>
+        </Field>
 
-        {error ? <p className="text-sm text-[var(--lp-coral)]">{error}</p> : null}
-        {successMessage ? <p className="text-sm text-[var(--lp-mint)]">{successMessage}</p> : null}
+        {error ? (
+          <Text as="p" size="md" tone="danger" role="alert">
+            {error}
+          </Text>
+        ) : null}
+        {successMessage ? (
+          <Text
+            as="p"
+            size="md"
+            role="status"
+            style={{ color: "var(--lp-mint)" }}
+          >
+            {successMessage}
+          </Text>
+        ) : null}
 
-        <button
+        <Button
+          size="lg"
+          loading={isSubmitting}
+          variant="primary"
           type="submit"
           disabled={isSubmitting || !resetToken}
-          className="w-full rounded-2xl bg-[var(--lp-action)] px-4 py-3 text-sm font-semibold text-[var(--lp-action-text)] transition hover:bg-[var(--lp-action-hover)] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Resetting..." : "Reset password"}
-        </button>
+        </Button>
       </form>
 
       <div className="mt-6 text-sm">
-        <button
+        <Button
+          size="sm"
+          variant="tertiary"
           type="button"
           onClick={() => navigate("/", { state: { authMode: "signin" } })}
-          className="text-[var(--lp-text)] transition hover:text-[var(--lp-heading)]"
         >
           Go to login
-        </button>
+        </Button>
       </div>
     </div>
   );

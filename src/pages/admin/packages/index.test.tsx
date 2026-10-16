@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import AdminPackagesPage from "./index";
-import { api } from "@/lib/api";
+import { api, type AdminPackage } from "@/lib/api";
 
 const clearPackageCatalogueCache = vi.fn().mockResolvedValue(undefined);
 
@@ -28,7 +28,7 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-const createdPackage = {
+const createdPackage: AdminPackage = {
   aliases: [],
   category: "Testing",
   createdAt: "2026-10-11T00:00:00.000Z",
@@ -89,5 +89,31 @@ describe("AdminPackagesPage add package flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Apply" }));
     await waitFor(() => expect(api.adminPackages.list).toHaveBeenCalledTimes(3));
     expect(screen.getByText("Admin Flow Package")).toBeTruthy();
+  });
+});
+
+describe("admin metadata editing", () => {
+  afterEach(() => { cleanup(); vi.clearAllMocks(); });
+
+  it.each([
+    { metadata: null, country: "", applicability: "" },
+    { metadata: { country: "IN", applicability: "Residents", custom: { retained: true } }, country: "IN", applicability: "Residents" },
+    { metadata: { country: 42, applicability: false, custom: ["retained"] }, country: "", applicability: "" },
+  ])("preserves metadata and reads only string form values: $metadata", async ({ metadata, country, applicability }) => {
+    const pack: AdminPackage = { ...createdPackage, searchMetadata: metadata, lastVerifiedAt: null };
+    vi.mocked(api.adminPackages.list).mockResolvedValue({
+      categories: ["Testing"], items: [pack],
+      pagination: { page: 1, limit: 25, total: 1, hasNextPage: false },
+    });
+    vi.mocked(api.adminPackages.update).mockResolvedValue({ package: pack });
+    render(<AdminPackagesPage />);
+    fireEvent.click(await screen.findByRole("button", { name: /Admin Flow Package/ }));
+    expect((await screen.findByLabelText<HTMLInputElement>("Country")).value).toBe(country);
+    expect(screen.getByLabelText<HTMLInputElement>("Applicability").value).toBe(applicability);
+    fireEvent.click(screen.getByRole("button", { name: /Save changes/ }));
+    await waitFor(() => expect(api.adminPackages.update).toHaveBeenCalledOnce());
+    expect(api.adminPackages.update).toHaveBeenCalledWith(pack.slug, expect.objectContaining({
+      country, applicability, searchMetadata: metadata ?? {}, lastVerifiedAt: null,
+    }));
   });
 });

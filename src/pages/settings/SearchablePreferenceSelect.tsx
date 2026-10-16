@@ -1,4 +1,14 @@
-import { ChevronDown, Search } from "lucide-react";
+import {
+  Text,
+  SearchField,
+  Button,
+  Choice,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/design-system";
+
+import { ChevronDown } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 import { T } from "@/constants/theme";
@@ -20,9 +30,9 @@ export default function SearchablePreferenceSelect({
   placeholder: string;
   value: string | null;
 }) {
+  const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const blurTimer = useRef<number | null>(null);
   const selected = options.find((option) => option.code === value) ?? null;
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -32,75 +42,95 @@ export default function SearchablePreferenceSelect({
     );
   }, [options, query]);
 
-  const closeSoon = () => {
-    blurTimer.current = window.setTimeout(() => setOpen(false), 120);
-  };
-
-  const cancelClose = () => {
-    if (blurTimer.current) window.clearTimeout(blurTimer.current);
-  };
-
   return (
-    <div onBlur={closeSoon} onFocus={cancelClose} style={{ position: "relative", minWidth: 230 }}>
-      <button type="button" disabled={disabled} aria-label={ariaLabel} aria-expanded={open} onClick={() => { setOpen((value) => !value); setQuery(""); }} style={{
-        width: "100%",
-        minHeight: 38,
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        border: `1px solid ${T.border}`,
-        borderRadius: 9,
-        background: T.raised,
-        color: selected ? T.text : T.muted,
-        padding: "7px 10px",
-        fontWeight: 700,
-        cursor: disabled ? "wait" : "pointer",
-      }}>
-        <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left" }}>
-          {selected ? optionLabel(selected) : placeholder}
-        </span>
-        <ChevronDown size={15} color={T.faint} />
-      </button>
-      {open ? (
-        <div style={{
-          position: "absolute",
-          zIndex: 30,
-          right: 0,
-          top: "calc(100% + 8px)",
-          width: "min(330px, calc(100vw - 42px))",
-          border: `1px solid ${T.border}`,
-          borderRadius: 12,
-          background: T.panel,
-          boxShadow: "0 18px 40px color-mix(in srgb, var(--lp-navy) 32%, transparent)",
-          padding: 8,
-        }}>
-          <label style={{ display: "flex", alignItems: "center", gap: 7, border: `1px solid ${T.border}`, borderRadius: 9, padding: "7px 9px", color: T.muted }}>
-            <Search size={14} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} autoFocus placeholder="Search" style={{ flex: 1, minWidth: 0, border: 0, outline: 0, background: "transparent", color: T.text, font: "inherit" }} />
-          </label>
+    <div style={{ minWidth: 230, maxWidth: "100%" }}>
+      <Popover
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (next) setQuery("");
+        }}
+      >
+        <PopoverTrigger asChild>
+          <Button
+            ref={trigger}
+            variant="secondary"
+            type="button"
+            disabled={disabled}
+            aria-label={ariaLabel}
+            aria-expanded={open}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-s8)",
+            }}
+          >
+            <span
+              style={{
+                flex: 1,
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                textAlign: "left",
+              }}
+            >
+              {selected ? optionLabel(selected) : placeholder}
+            </span>
+            <ChevronDown
+              aria-hidden="true"
+              focusable="false"
+              size={15}
+              color={T.faint}
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="end" aria-label={`${ariaLabel} options`}>
+          <SearchField
+            aria-label="Search options"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            autoFocus
+            placeholder="Search"
+          />
           <div style={{ maxHeight: 240, overflowY: "auto", marginTop: 7 }}>
             {filtered.map((option) => (
-              <button key={option.code} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { onChange(option.code); setOpen(false); }} style={{
-                width: "100%",
-                display: "flex",
-                gap: 8,
-                alignItems: "center",
-                border: 0,
-                borderRadius: 8,
-                background: option.code === value ? "color-mix(in srgb, var(--lp-action) 16%, transparent)" : "transparent",
-                color: option.code === value ? T.action : T.text,
-                padding: "8px 9px",
-                textAlign: "left",
-                fontWeight: 700,
-              }}>
+              <Choice
+                aria-pressed={option.code === value}
+                key={option.code}
+                type="button"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => {
+                  onChange(option.code);
+                  setOpen(false);
+                  trigger.current?.focus();
+                }}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  gap: "var(--space-s8)",
+                  alignItems: "center",
+                  textAlign: "left",
+                }}
+              >
                 <span style={{ flex: 1 }}>{optionLabel(option)}</span>
                 <small style={{ color: T.muted }}>{option.code}</small>
-              </button>
+              </Choice>
             ))}
-            {!filtered.length ? <div style={{ color: T.muted, fontSize: 12, padding: 10 }}>No matches</div> : null}
+            {!filtered.length ? (
+              <Text
+                as="div"
+                size="sm"
+                tone="muted"
+                style={{ color: T.muted, padding: "var(--space-s10)" }}
+              >
+                No matches
+              </Text>
+            ) : null}
           </div>
-        </div>
-      ) : null}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

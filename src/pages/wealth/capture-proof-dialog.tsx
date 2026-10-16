@@ -1,3 +1,5 @@
+import { Text, Heading, ModalPanel, ModalBackdrop, Input, Select, Textarea, Checkbox, Button } from "@/design-system";
+
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ChevronDown,
@@ -91,29 +93,11 @@ const css = {
 };
 
 function inputStyle(): CSSProperties {
-  return {
-    width: "100%",
-    background: css.raised,
-    border: `1px solid ${css.border}`,
-    borderRadius: 9,
-    padding: "9px 11px",
-    color: css.text,
-    fontSize: 14,
-    outline: "none",
-  };
+  return { width: "100%" };
 }
 
 function labelStyle(): CSSProperties {
-  return {
-    display: "block",
-    marginBottom: 5,
-    color: css.muted,
-    fontSize: 12,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    fontVariantNumeric: "tabular-nums",
-  };
+  return { display: "block", marginBottom: 5, color: css.muted, fontSize: "var(--text-sm)", fontWeight: "var(--weight-bold)", letterSpacing: 0.5, textTransform: "uppercase", fontVariantNumeric: "tabular-nums" };
 }
 
 function Modal({
@@ -128,37 +112,20 @@ function Modal({
   className?: string;
 }) {
   return (
-    <div
-      className="lp-modalwrap"
+    <ModalBackdrop
+
       onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 72,
-        background: "var(--lpv-scrim)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 18,
-      }}
+      style={{ position: "fixed", inset: 0, zIndex: "var(--layer-overlay)", display: "flex", alignItems: "center", justifyContent: "center" }}
     >
-      <div
-        className={`lp-modalbox lp-wealth-ref-modal ${className}`}
+      <ModalPanel onDismiss={onClose}
+        className={`lp-wealth-ref-modal ${className}`}
         onClick={(event) => event.stopPropagation()}
-        style={{
-          background: css.panel,
-          border: `1px solid ${danger ? "color-mix(in srgb, var(--lp-coral) 45%, transparent)" : css.border}`,
-          borderRadius: 16,
-          width: "min(500px,100%)",
-          maxHeight: "92vh",
-          overflowY: "auto",
-          padding: 22,
-        }}
+        style={{ width: "min(500px,100%)", maxHeight: "92vh", overflowY: "auto" }}
       >
         <div className="lp-sheet-grab lp-grabonly" />
         {children}
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -369,7 +336,7 @@ function TypeCombobox({
   };
   return (
     <div className="lp-type-combobox">
-      <input
+      <Input
         aria-label="Type"
         autoComplete="off"
         value={open ? query : value}
@@ -393,12 +360,12 @@ function TypeCombobox({
           setOpen((current) => !current);
         }}
       >
-        <ChevronDown size={16} />
+        <ChevronDown aria-hidden="true" focusable="false" size="var(--icon-small)" />
       </button>
       {open ? (
-        <div className="lp-type-menu">
+        <div   className="lp-type-menu">
           {matches.length ? null : (
-            <div className="lp-type-no-match">No matching types</div>
+            <Text as="div" size="md" weight="semibold" className="lp-type-no-match">No matching types</Text>
           )}
           {shown.map((option) => (
             <button
@@ -694,32 +661,32 @@ export function HoldingModal({
         onClose={onClose}
       />
       <div className="lp-holding-doc-banner">
-        <FileText size={16} color={css.muted} />
-        <span>
+        <FileText aria-hidden="true" focusable="false" size="var(--icon-small)" color={css.muted} />
+        <Text size="md">
           {linkedDocument
             ? fillNote ||
               `${documentTitle(linkedDocument)} is linked. Read it once to fill what it states.`
             : "Add a document now, or save this holding and attach one later."}
-        </span>
-        <div className="lp-holding-doc-actions">
+        </Text>
+        <div   className="lp-holding-doc-actions">
           {linkedDocument ? (
-            <button
+            <Button size="sm" variant="tertiary"
               type="button"
               onClick={fillFromDocument}
               disabled={!linkedDocument}
             >
               {fillNote ? "Read again" : "Fill from this document"}
-            </button>
+            </Button>
           ) : null}
           {!linkedDocument ? (
-            <button type="button" onClick={() => setUploading(true)}>
+            <Button size="sm" variant="tertiary" type="button" onClick={() => setUploading(true)}>
               Add document
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
-      <label style={labelStyle()}>Name</label>
-      <input
+      <Text as="label" size="sm" weight="semibold" style={labelStyle()}>Name</Text>
+      <Input
         style={inputStyle()}
         value={f.name}
         onChange={(e) => set("name", e.target.value)}
@@ -727,10 +694,10 @@ export function HoldingModal({
       />
       <div
         className="lp-wealth-form-row"
-        style={{ display: "flex", gap: 10, marginTop: 12 }}
+        style={{ display: "flex", gap: "var(--space-s10)", marginTop: "var(--space-s12)" }}
       >
         <Field label="Kind">
-          <select
+          <Select
             style={inputStyle()}
             value={f.kind}
             onChange={(e) => setKind(e.target.value)}
@@ -740,7 +707,7 @@ export function HoldingModal({
                 {item}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
         <Field label="Type">
           <TypeCombobox
@@ -753,8 +720,8 @@ export function HoldingModal({
       </div>
       {typeChoice === "Other" ? (
         <div className="lp-other-type-field">
-          <label style={labelStyle()}>Other type</label>
-          <input
+          <Text as="label" size="sm" weight="semibold" style={labelStyle()}>Other type</Text>
+          <Input
             style={inputStyle()}
             value={otherType}
             onChange={(e) => setOtherType(e.target.value)}
@@ -764,10 +731,10 @@ export function HoldingModal({
       ) : null}
       <div
         className="lp-wealth-form-row lp-holding-place-row"
-        style={{ display: "flex", gap: 10, marginTop: 12 }}
+        style={{ display: "flex", gap: "var(--space-s10)", marginTop: "var(--space-s12)" }}
       >
         <Field label="Institution">
-          <input
+          <Input
             style={inputStyle()}
             value={f.institution}
             onChange={(e) => set("institution", e.target.value)}
@@ -775,7 +742,7 @@ export function HoldingModal({
           />
         </Field>
         <Field label="Account">
-          <input
+          <Input
             style={inputStyle()}
             value={f.accountRef}
             onChange={(e) => set("accountRef", e.target.value)}
@@ -785,7 +752,7 @@ export function HoldingModal({
       </div>
       <div
         className="lp-wealth-form-row lp-holding-money-row"
-        style={{ display: "flex", gap: 10, marginTop: 12 }}
+        style={{ display: "flex", gap: "var(--space-s10)", marginTop: "var(--space-s12)" }}
       >
         <Field
           label={
@@ -796,7 +763,7 @@ export function HoldingModal({
                 : "Value"
           }
         >
-          <input
+          <Input
             type="number"
             min="0"
             style={inputStyle()}
@@ -806,7 +773,7 @@ export function HoldingModal({
           />
         </Field>
         <Field label="Currency">
-          <select
+          <Select
             style={inputStyle()}
             value={f.currency}
             onChange={(e) => set("currency", e.target.value)}
@@ -814,12 +781,12 @@ export function HoldingModal({
             {currencies.map((item) => (
               <option key={item}>{item}</option>
             ))}
-          </select>
+          </Select>
         </Field>
       </div>
       <div className="lp-holding-owner">
         <Field label="Owner">
-          <select
+          <Select
             style={inputStyle()}
             value={f.memberId}
             onChange={(e) => set("memberId", e.target.value)}
@@ -829,7 +796,7 @@ export function HoldingModal({
                 {owner.name}
               </option>
             ))}
-          </select>
+          </Select>
         </Field>
       </div>
       {f.kind === "cover" ? (
@@ -847,18 +814,13 @@ export function HoldingModal({
         />
       ) : null}
       <div className="lp-holding-access">
-        <label style={labelStyle()}>
+        <Text as="label" size="sm" weight="semibold" style={labelStyle()}>
           {f.kind === "liability"
             ? "Closure instructions for the family"
             : "Access instructions for the family"}
-        </label>
-        <textarea
-          style={{
-            ...inputStyle(),
-            minHeight: 58,
-            resize: "vertical",
-            fontFamily: "inherit",
-          }}
+        </Text>
+        <Textarea
+          style={{ ...inputStyle() }}
           value={f.accessNote}
           onChange={(e) => set("accessNote", e.target.value)}
           placeholder={
@@ -872,22 +834,22 @@ export function HoldingModal({
         <div
           className="lp-wealth-form-row lp-holding-nominee"
           style={{
-            marginTop: 14,
+            marginTop: "var(--space-s14)",
             display: "flex",
-            gap: 10,
+            gap: "var(--space-s10)",
             alignItems: "center",
           }}
         >
-          <label>
-            <input
+          <Text as="label" size="md" weight="semibold">
+            <Checkbox
               type="checkbox"
               checked={f.nominee}
               onChange={(e) => set("nominee", e.target.checked)}
             />{" "}
             Nominee named
-          </label>
+          </Text>
           {f.nominee ? (
-            <input
+            <Input
               style={{ ...inputStyle(), flex: 1 }}
               value={f.nomineeName}
               onChange={(e) => set("nomineeName", e.target.value)}
@@ -896,43 +858,26 @@ export function HoldingModal({
           ) : null}
         </div>
       ) : null}
-      {error ? <div className="lp-sos-error">{error}</div> : null}
+      {error ? <Text as="div" size="md" className="lp-sos-error">{error}</Text> : null}
       <div
         className="lp-wealth-form-actions"
-        style={{ display: "flex", gap: 10, marginTop: 20 }}
+        style={{ display: "flex", gap: "var(--space-s10)", marginTop: "var(--space-s20)" }}
       >
-        <button
+        <Button loading={Boolean(busy)} variant="primary" type="button"
           disabled={!valid || busy}
           onClick={save}
-          style={{
-            background: css.action,
-            color: "var(--lp-action-text)",
-            border: "none",
-            borderRadius: 10,
-            padding: "10px 15px",
-            fontWeight: 800,
-            flex: 1,
-            minHeight: 44,
-            opacity: valid && !busy ? 1 : 0.4,
-          }}
+
         >
           {busy ? "Saving..." : record ? "Save" : "Add holding"}
-        </button>
+        </Button>
         {record ? (
-          <button
+          <Button size="sm" tone="danger" iconOnly variant="tertiary" type="button"
             onClick={deleteHolding}
             title="Remove"
             aria-label="Remove"
-            style={{
-              background: css.raised,
-              color: css.coral,
-              border: `1px solid color-mix(in srgb, var(--lp-coral) 45%, transparent)`,
-              borderRadius: 10,
-              padding: "10px 14px",
-            }}
           >
-            <Trash2 size={15} />
-          </button>
+            <Trash2 aria-hidden="true" focusable="false" size={15} />
+          </Button>
         ) : null}
       </div>
     </Modal>
@@ -968,10 +913,10 @@ function ProofModal({
     return (
       <Modal onClose={onClose}>
         <div className="lp-vault-picker-head">
-          <h2>From a document in your vault</h2>
-          <button type="button" onClick={onClose}>
+          <Heading level={2} size="sm">From a document in your vault</Heading>
+          <Button size="sm" variant="tertiary" type="button" onClick={onClose}>
             Done
-          </button>
+          </Button>
         </div>
         <button
           type="button"
@@ -979,7 +924,7 @@ function ProofModal({
           onClick={() => setUploading(true)}
         >
           <span className="lp-vault-icon upload">
-            <UploadCloud size={18} />
+            <UploadCloud aria-hidden="true" focusable="false" size="var(--icon-regular)" />
           </span>
           <span>
             <b>Scan or upload a new document</b>
@@ -989,7 +934,7 @@ function ProofModal({
             </small>
           </span>
         </button>
-        <div className="lp-vault-doc-list">
+        <div   className="lp-vault-doc-list">
           {relevantDocs.map((doc) => (
             <DocumentRow
               key={doc.id}
@@ -999,9 +944,9 @@ function ProofModal({
             />
           ))}
           {!relevantDocs.length ? (
-            <div className="lp-vault-empty">
+            <Text as="div" size="md" weight="medium" className="lp-vault-empty">
               No matching vault documents yet.
-            </div>
+            </Text>
           ) : null}
         </div>
       </Modal>
@@ -1128,42 +1073,37 @@ function MoneyLentBorrowedModal({
   return (
     <Modal onClose={onClose} className="lp-money-modal">
       <Head title="Record money lent or borrowed" onClose={onClose} />
-      <p
-        style={{
-          margin: "-6px 0 14px",
-          color: css.muted,
-          fontSize: 13,
-          lineHeight: 1.45,
-        }}
+      <Text as="p" size="md" tone="muted"
+        style={{ margin: "-6px 0 14px", color: css.muted }}
       >
         Attach the UPI screenshot, chat, or statement line, confirm who and how
         much, done. Cash with no record is fine too; say so.
-      </p>
+      </Text>
       <button
         type="button"
         className="lp-money-proof"
         onClick={() => setShowDocs((value) => !value)}
       >
-        <Paperclip size={22} color="var(--lp-action)" />
+        <Paperclip aria-hidden="true" focusable="false" size={22} color="var(--lp-action)" />
         <b>Photo · screenshot · receipt · PDF</b>
         <small style={{ color: css.muted }}>
           The proof is the record; it files into Documents too
         </small>
         {selectedDoc ? (
-          <small style={{ color: css.action, fontWeight: 800 }}>
+          <small style={{ color: css.action, fontWeight: "var(--weight-bold)" }}>
             Attached: {documentTitle(selectedDoc)}
           </small>
         ) : null}
       </button>
       {showDocs ? (
-        <div style={{ marginTop: 10 }}>
+        <div style={{ marginTop: "var(--space-s10)" }}>
           <button
             type="button"
             className="lp-vault-doc-row upload"
             onClick={() => setUploading(true)}
           >
             <span className="lp-vault-icon upload">
-              <UploadCloud size={18} />
+              <UploadCloud aria-hidden="true" focusable="false" size="var(--icon-regular)" />
             </span>
             <span>
               <b>Scan or upload a new document</b>
@@ -1194,23 +1134,23 @@ function MoneyLentBorrowedModal({
               />
             ))}
             {!relevantDocs.length ? (
-              <div className="lp-vault-empty">
+              <Text as="div" size="md" weight="medium" className="lp-vault-empty">
                 No matching vault documents yet.
-              </div>
+              </Text>
             ) : null}
           </div>
         </div>
       ) : null}
-      <label style={{ ...labelStyle(), marginTop: 14 }}>What for</label>
-      <input
+      <Text as="label" size="md" style={{ ...labelStyle(), marginTop: "var(--space-s14)" }}>What for</Text>
+      <Input
         style={inputStyle()}
         value={f.whatFor}
         onChange={(e) => set("whatFor", e.target.value)}
         placeholder="e.g. car down payment, hospital bill, wedding advance"
       />
-      <div className="lp-wealth-form-row" style={{ display: "flex", gap: 10 }}>
+      <div className="lp-wealth-form-row" style={{ display: "flex", gap: "var(--space-s10)" }}>
         <Field label="Amount">
-          <input
+          <Input
             style={inputStyle()}
             type="number"
             min="0"
@@ -1221,7 +1161,7 @@ function MoneyLentBorrowedModal({
           />
         </Field>
         <Field label="Currency">
-          <select
+          <Select
             style={inputStyle()}
             value={f.currency}
             onChange={(e) => set("currency", e.target.value)}
@@ -1229,22 +1169,22 @@ function MoneyLentBorrowedModal({
             {currencies.map((item) => (
               <option key={item}>{item}</option>
             ))}
-          </select>
+          </Select>
         </Field>
       </div>
-      <div className="lp-wealth-form-row" style={{ display: "flex", gap: 10 }}>
+      <div className="lp-wealth-form-row" style={{ display: "flex", gap: "var(--space-s10)" }}>
         <Field label="Which way">
-          <select
+          <Select
             style={inputStyle()}
             value={f.direction}
             onChange={(e) => set("direction", e.target.value)}
           >
             <option value="LENT">I lent</option>
             <option value="BORROWED">I borrowed</option>
-          </select>
+          </Select>
         </Field>
         <Field label="Date">
-          <input
+          <Input
             style={inputStyle()}
             type="date"
             value={f.date}
@@ -1252,33 +1192,21 @@ function MoneyLentBorrowedModal({
           />
         </Field>
       </div>
-      <button
+      <Button variant="tertiary"
         type="button"
         onClick={() => setMore((value) => !value)}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: css.muted,
-          fontSize: 12.5,
-          fontWeight: 700,
-          padding: 0,
-          marginTop: 12,
-          display: "inline-flex",
-          gap: 5,
-          alignItems: "center",
-        }}
+        style={{ marginTop: "var(--space-s12)" }}
       >
-        <ChevronUp
+        <ChevronUp aria-hidden="true" focusable="false"
           size={12}
           style={{ transform: more ? "none" : "rotate(180deg)" }}
         />{" "}
         Fewer details
-      </button>
+      </Button>
       {more ? (
         <>
-          <label style={{ ...labelStyle(), marginTop: 12 }}>Who</label>
-          <input
+          <Text as="label" size="md" style={{ ...labelStyle(), marginTop: "var(--space-s12)" }}>Who</Text>
+          <Input
             style={inputStyle()}
             value={f.who}
             onChange={(e) => set("who", e.target.value)}
@@ -1286,10 +1214,10 @@ function MoneyLentBorrowedModal({
           />
           <div
             className="lp-wealth-form-row"
-            style={{ display: "flex", gap: 10 }}
+            style={{ display: "flex", gap: "var(--space-s10)" }}
           >
             <Field label="Follow up on">
-              <input
+              <Input
                 style={inputStyle()}
                 type="date"
                 value={f.followUpOn}
@@ -1297,7 +1225,7 @@ function MoneyLentBorrowedModal({
               />
             </Field>
             <Field label="Follow-up note">
-              <input
+              <Input
                 style={inputStyle()}
                 value={f.followUpNote}
                 onChange={(e) => set("followUpNote", e.target.value)}
@@ -1307,15 +1235,14 @@ function MoneyLentBorrowedModal({
           </div>
         </>
       ) : null}
-      {error ? <div className="lp-sos-error">{error}</div> : null}
-      <button
+      {error ? <Text as="div" size="md" className="lp-sos-error">{error}</Text> : null}
+      <Button loading={Boolean(busy)} variant="primary"
         type="button"
-        className="lp-money-confirm"
         disabled={!valid || busy}
         onClick={save}
       >
         {busy ? "Saving..." : "Confirm"}
-      </button>
+      </Button>
     </Modal>
   );
 }
@@ -1346,7 +1273,7 @@ function DocumentRow({
           color: meta.accent,
         }}
       >
-        <Icon size={18} />
+        <Icon aria-hidden="true" focusable="false" size="var(--icon-regular)" />
       </span>
       <span>
         <b>{documentTitle(doc)}</b>
@@ -1421,30 +1348,23 @@ function Head({ title, onClose }: { title: string; onClose: () => void }) {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 16,
+        marginBottom: "var(--space-s16)",
       }}
     >
-      <b style={{ color: css.heading, fontSize: 18 }}>{title}</b>
-      <button
+      <Text as="b" size="lg" weight="semibold" style={{ color: css.heading }}>{title}</Text>
+      <Button size="sm" iconOnly variant="tertiary" type="button" aria-label="Close"
         onClick={onClose}
-        style={{
-          background: css.raised,
-          border: `1px solid ${css.border}`,
-          borderRadius: 10,
-          color: css.text,
-          padding: 8,
-        }}
       >
-        <X size={16} />
-      </button>
+        <X aria-hidden="true" focusable="false" size="var(--icon-small)" />
+      </Button>
     </div>
   );
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div style={{ flex: 1, marginTop: 12 }}>
-      <label style={labelStyle()}>{label}</label>
+    <div style={{ flex: 1, marginTop: "var(--space-s12)" }}>
+      <Text as="label" size="md" style={labelStyle()}>{label}</Text>
       {children}
     </div>
   );
@@ -1460,9 +1380,9 @@ function DateField({
   onChange: (value: string) => void;
 }) {
   return (
-    <div style={{ marginTop: 12 }}>
-      <label style={labelStyle()}>{label}</label>
-      <input
+    <div style={{ marginTop: "var(--space-s12)" }}>
+      <Text as="label" size="md" style={labelStyle()}>{label}</Text>
+      <Input
         type="date"
         style={inputStyle()}
         value={value}

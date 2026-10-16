@@ -1,3 +1,5 @@
+import { Text, Button } from "@/design-system";
+
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, FileText, Settings } from "lucide-react";
@@ -37,16 +39,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <div
-      style={{
-        display: "flex",
-        height: "100dvh",
-        minHeight: 0,
-        overflow: "hidden",
-        background: T.navy,
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-        color: T.text,
-      }}
+      style={{ display: "flex", height: "100dvh", minHeight: 0, overflow: "hidden", background: T.navy, color: T.text }}
     >
       <aside
         className="lp-sidebar"
@@ -72,108 +65,63 @@ export default function AppShell({ children }: AppShellProps) {
             justifyContent: navOpen ? "flex-start" : "center",
           }}
         >
-          <div className="lp-shell-brand">
-            <span><FileText size={21} strokeWidth={2.3} /></span>
+          <div   className="lp-shell-brand">
+            <span><FileText aria-hidden="true" focusable="false" size={21} strokeWidth={2.3} /></span>
             {navOpen && (
               <div>
                 <BrandWordmark size={16} color="var(--lp-heading)" gold="var(--lp-readiness)" />
-                <small>READY FOR LIFE</small>
+                <Text as="small" size="sm">READY FOR LIFE</Text>
               </div>
             )}
           </div>
         </div>
 
-        <nav style={{ display: "grid", gap: 3 }}>
+        <nav aria-label="Sidebar" style={{ display: "grid", gap: 3 }}>
           {SHELL_NAV.map((n) => {
             const Icon = n.icon;
             const active = currentRoute === n.key;
-            const navStyle = {
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: navOpen ? "flex-start" : "center",
-              gap: navOpen ? 12 : 0,
-              background: active ? T.raised : "transparent",
-              color: active ? T.white : T.muted,
-              border: `1px solid ${active ? T.border : "transparent"}`,
-              borderRadius: 10,
-              padding: navOpen ? "10px 12px" : "10px 0",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-              textAlign: "left" as const,
-              textDecoration: "none",
-              whiteSpace: "nowrap" as const,
-            };
+            const navStyle = { width: "100%", display: "flex", alignItems: "center", justifyContent: navOpen ? "flex-start" : "center", gap: navOpen ? 12 : 0, background: active ? T.raised : "transparent", color: active ? T.white : T.muted, border: `1px solid ${active ? T.border : "transparent"}`, borderRadius: "var(--radius-s10)", padding: navOpen ? "10px 12px" : "10px 0", cursor: "pointer", textAlign: "left" as const, textDecoration: "none", whiteSpace: "nowrap" as const };
             return (
-              <NavLink
+              <Text as={NavLink} size="md"
                 key={n.key}
                 to={ROUTE_PATHS[n.key]}
+                aria-label={n.label}
                 title={n.label}
                 style={navStyle}
               >
-                <Icon size={18} color={active ? T.action : T.muted} style={{ flexShrink: 0 }} />
+                <Icon aria-hidden="true" focusable="false" size="var(--icon-regular)" color={active ? T.action : T.muted} style={{ flexShrink: 0 }} />
                 {navOpen ? n.label : ""}
-              </NavLink>
+              </Text>
             );
           })}
           {isPackagesAdmin && ADMIN_NAV.map((n) => {
             const Icon = n.icon;
             const active = location.pathname === n.path;
             return (
-              <NavLink
+              <Text as={NavLink} size="md" weight="semibold" tone="muted"
                 key={n.key}
                 to={n.path}
+                aria-label={n.label}
                 title={n.label}
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: navOpen ? "flex-start" : "center",
-                  gap: navOpen ? 12 : 0,
-                  background: active ? T.raised : "transparent",
-                  color: active ? T.white : T.muted,
-                  border: `1px solid ${active ? T.border : "transparent"}`,
-                  borderRadius: 10,
-                  padding: navOpen ? "10px 12px" : "10px 0",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  textAlign: "left" as const,
-                  textDecoration: "none",
-                  whiteSpace: "nowrap" as const,
-                }}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: navOpen ? "flex-start" : "center", gap: navOpen ? 12 : 0, background: active ? T.raised : "transparent", color: active ? T.white : T.muted, border: `1px solid ${active ? T.border : "transparent"}`, borderRadius: "var(--radius-s10)", padding: navOpen ? "10px 12px" : "10px 0", cursor: "pointer", textAlign: "left" as const, textDecoration: "none", whiteSpace: "nowrap" as const }}
               >
-                <Icon size={18} color={active ? T.action : T.muted} style={{ flexShrink: 0 }} />
+                <Icon aria-hidden="true" focusable="false" size="var(--icon-regular)" color={active ? T.action : T.muted} style={{ flexShrink: 0 }} />
                 {navOpen ? n.label : ""}
-              </NavLink>
+              </Text>
             );
           })}
-          <NavLink to="/settings" className="lp-shell-settings"><Settings size={18} />{navOpen && "Settings"}</NavLink>
+          <Text as={NavLink} size="md" weight="semibold" to="/settings" aria-label="Settings" title="Settings" className="lp-shell-settings"><Settings aria-hidden="true" focusable="false" size="var(--icon-regular)" />{navOpen && "Settings"}</Text>
         </nav>
 
-        <button
+        <Button variant="tertiary" size="sm" iconOnly
           type="button"
           onClick={() => setNavOpen((value) => !value)}
+          aria-label={navOpen ? "Collapse menu" : "Expand menu"}
           title={navOpen ? "Collapse menu" : "Expand menu"}
-          style={{
-            marginTop: "auto",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            padding: "9px 0",
-            borderRadius: 10,
-            border: `1px solid ${T.border}`,
-            background: T.panel,
-            color: T.muted,
-            cursor: "pointer",
-            fontSize: 12.5,
-            fontWeight: 600,
-          }}
+          style={{ marginTop: "auto" }}
         >
-          {navOpen ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
-        </button>
+          {navOpen ? <ChevronsLeft aria-hidden="true" focusable="false" size="var(--icon-small)" /> : <ChevronsRight aria-hidden="true" focusable="false" size="var(--icon-small)" />}
+        </Button>
       </aside>
       <main
         className="lp-main"
@@ -194,9 +142,9 @@ export default function AppShell({ children }: AppShellProps) {
           </div>
         </div>
         <div className="lp-page-scroll">
-          <div className="lp-shell-inner">
+          <Text as="div" size="md" className="lp-shell-inner">
             {children ?? <Outlet />}
-          </div>
+          </Text>
         </div>
         {uploadOpen ? (
           <Suspense fallback={null}>
@@ -212,18 +160,15 @@ export default function AppShell({ children }: AppShellProps) {
           const Icon = n.icon;
           const active = currentRoute === n.key;
           return (
-            <NavLink
+            <Text as={NavLink} size="sm" weight="semibold"
               key={n.key}
               to={ROUTE_PATHS[n.key]}
               className="lp-tab"
-              style={{
-                color: active ? "var(--lpv-baractive)" : "var(--lpv-bartext)",
-                background: active ? "var(--lpv-barpill)" : "none",
-              }}
+              style={{ color: active ? "var(--lpv-baractive)" : "var(--lpv-bartext)", background: active ? "var(--lpv-barpill)" : "none" }}
             >
-              <Icon size={20} color={active ? "var(--lpv-baractive)" : "var(--lpv-bartext)"} />
+              <Icon aria-hidden="true" focusable="false" size="var(--icon-medium)" color={active ? "var(--lpv-baractive)" : "var(--lpv-bartext)"} />
               {n.label}
-            </NavLink>
+            </Text>
           );
         })}
       </nav>

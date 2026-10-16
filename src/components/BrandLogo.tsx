@@ -62,23 +62,13 @@ export function BrandMark({
 
 export function BrandWordmark({
   size = 17,
-  color = BRAND_CHARCOAL,
+  color = "var(--lp-heading)",
   gold,
   accent = BRAND_ACCENT,
   tick = false,
 }: BrandWordmarkProps) {
   const highlight = gold ?? accent;
-  const base: CSSProperties = {
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-    fontWeight: 800,
-    fontSize: size,
-    letterSpacing: 0,
-    color,
-    display: "inline-flex",
-    alignItems: "baseline",
-    lineHeight: 1,
-  };
+  const base: CSSProperties = { fontWeight: "var(--weight-bold)", fontSize: size, letterSpacing: 0, color, display: "inline-flex", alignItems: "baseline", lineHeight: "var(--line-body)" };
 
   if (!tick) {
     return (

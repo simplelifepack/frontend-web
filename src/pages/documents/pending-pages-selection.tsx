@@ -1,4 +1,6 @@
-import { T, btnGhost, btnPrimary } from "@/constants/theme";
+import { Text, Button } from "@/design-system";
+
+import { T } from "@/constants/theme";
 
 type PendingPreview = {
   file: File;
@@ -24,46 +26,46 @@ export default function PendingPagesSelection({
 }: PendingPagesSelectionProps) {
   const totalSize = previews.reduce((sum, item) => sum + item.file.size, 0);
   return (
-    <div style={{ display: "grid", gap: 8 }}>
+    <div   style={{ display: "grid", gap: "var(--space-s8)" }}>
       {previews.length ? (
         <>
-          <div style={{ color: T.text, fontSize: 13 }}>
+          <Text as="div" size="md" style={{ color: T.text }}>
             New pages: {previews.length} selected ({(totalSize / (1024 * 1024)).toFixed(2)} MB)
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(128px,1fr))", gap: 10 }}>
+          </Text>
+          <div   style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(128px,1fr))", gap: "var(--space-s10)" }}>
             {previews.map(({ file, url }, index) => (
               <div key={`${file.name}-${file.size}-${file.lastModified}`} style={{ display: "grid", gap: 7 }}>
-                <div style={{ color: T.muted, fontSize: 12, fontWeight: 800 }}>
+                <Text as="div" size="sm" weight="semibold" tone="muted" style={{ color: T.muted }}>
                   New page {index + 1}
-                </div>
+                </Text>
                 {url ? (
                   <img
                     src={url}
                     alt={`New page ${index + 1}`}
-                    style={{ width: "100%", aspectRatio: "4 / 3", objectFit: "contain", background: T.raised, border: `1px solid ${T.border}`, borderRadius: 8 }}
+                    style={{ width: "100%", aspectRatio: "4 / 3", objectFit: "contain", background: T.raised, border: `1px solid ${T.border}`, borderRadius: "var(--radius-compact)" }}
                   />
                 ) : (
-                  <div style={{ aspectRatio: "4 / 3", display: "grid", placeItems: "center", padding: 8, background: T.raised, border: `1px solid ${T.border}`, borderRadius: 8, color: T.white, fontSize: 12, fontWeight: 800, textAlign: "center", wordBreak: "break-word" }}>
-                    PDF<br /><span style={{ color: T.muted, fontWeight: 600 }}>{file.name}</span>
-                  </div>
+                  <Text as="div" size="sm" weight="semibold" style={{ aspectRatio: "4 / 3", display: "grid", placeItems: "center", padding: "var(--space-s8)", background: T.raised, border: `1px solid ${T.border}`, borderRadius: "var(--radius-compact)", color: T.white, textAlign: "center", wordBreak: "break-word" }}>
+                    PDF<br /><span style={{ color: T.muted, fontWeight: "var(--weight-semibold)" }}>{file.name}</span>
+                  </Text>
                 )}
-                <button type="button" style={btnGhost} disabled={Boolean(busy)} onClick={() => onRemove(index)}>
+                <Button tone="danger" variant="secondary" type="button" disabled={Boolean(busy)} onClick={() => onRemove(index)}>
                   Remove
-                </button>
+                </Button>
               </div>
             ))}
           </div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button type="button" style={btnPrimary} disabled={busy === "add"} onClick={onAdd}>
+          <div style={{ display: "flex", gap: "var(--space-s8)", flexWrap: "wrap" }}>
+            <Button loading={Boolean(busy)} variant="primary" type="button" disabled={busy === "add"} onClick={onAdd}>
               {busy === "add" ? "Adding..." : "Add pages"}
-            </button>
-            <button type="button" style={btnGhost} disabled={Boolean(busy)} onClick={onClear}>
+            </Button>
+            <Button variant="secondary" type="button" disabled={Boolean(busy)} onClick={onClear}>
               Clear
-            </button>
+            </Button>
           </div>
         </>
       ) : null}
-      {pendingError ? <div role="alert" style={{ color: T.coral, fontSize: 13 }}>{pendingError}</div> : null}
+      {pendingError ? <Text as="div" size="md" tone="danger" role="alert" style={{ color: T.coral }}>{pendingError}</Text> : null}
     </div>
   );
 }

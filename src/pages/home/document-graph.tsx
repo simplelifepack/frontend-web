@@ -1,5 +1,5 @@
-import Card from "@/components/Card";
-import Ring from "@/components/Ring";
+import { Card, Ring } from "@/design-system";
+
 import { T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 import { categories } from "@/pages/documents/document-utils";
@@ -12,13 +12,7 @@ export default function DocumentGraph({
   return (
     <>
       <div
-        style={{
-          color: T.faint,
-          fontSize: 12,
-          fontWeight: 800,
-          letterSpacing: 1.5,
-          marginBottom: 12,
-        }}
+        style={{ color: T.faint, fontSize: "var(--text-sm)", fontWeight: "var(--weight-bold)", letterSpacing: 1.5, marginBottom: "var(--space-s12)" }}
       >
         YOUR DOCUMENT GRAPH
       </div>
@@ -27,7 +21,7 @@ export default function DocumentGraph({
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3,minmax(0,1fr))",
-          gap: 14,
+          gap: "var(--space-s14)",
           marginBottom: 28,
         }}
       >
@@ -49,13 +43,13 @@ export default function DocumentGraph({
                   style={{
                     width: 38,
                     height: 38,
-                    borderRadius: 12,
+                    borderRadius: "var(--radius-surface)",
                     display: "grid",
                     placeItems: "center",
-                    background: `${category.accent}18`,
+                    background: `color-mix(in srgb, ${category.accent} 12%, transparent)`,
                   }}
                 >
-                  <Icon size={18} color={category.accent} />
+                  <Icon aria-hidden="true" focusable="false" size="var(--icon-regular)" color={category.accent} />
                 </span>
                 <Ring
                   score={items.length ? 100 : 0}
@@ -64,16 +58,11 @@ export default function DocumentGraph({
                 />
               </div>
               <div
-                style={{
-                  color: T.white,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  marginTop: 14,
-                }}
+                style={{ color: T.white, fontSize: "var(--text-md)", fontWeight: "var(--weight-bold)", marginTop: "var(--space-s14)" }}
               >
                 {category.name}
               </div>
-              <div style={{ color: T.muted, fontSize: 12.5, marginTop: 5 }}>
+              <div style={{ color: T.muted, fontSize: "var(--text-md)", marginTop: 5 }}>
                 {items.length} documents
               </div>
             </Card>

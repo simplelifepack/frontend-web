@@ -1,3 +1,5 @@
+import { Heading, Text, Input, Button } from "@/design-system";
+
 import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
@@ -49,14 +51,14 @@ export default function PinSetupGate() {
     <div className="min-h-dvh bg-[var(--lp-bg)] px-5 py-10 text-[var(--lp-text)]">
       <div className="mx-auto max-w-sm">
         <BrandLogo height={64} />
-        <h1 className="mt-8 text-2xl font-semibold text-[var(--lp-heading)]">Create your R-pin</h1>
-        <p className="mt-2 text-sm leading-6 text-[var(--lp-muted)]">
+        <Heading level={1} size="lg" className="mt-8 text-[var(--lp-heading)]">Create your R-pin</Heading>
+        <Text as="p" size="md" className="mt-2 text-[var(--lp-muted)]">
           Add a 6-digit R-pin for {user?.email ?? "your account"} before continuing.
-        </p>
+        </Text>
         <form className="mt-8 space-y-4" onSubmit={submit}>
-          <label className="block">
+          <Text as="label" size="md" className="block">
             <span className="mb-2 block text-sm text-[var(--lp-text)]">R-pin</span>
-            <input
+            <Input
               type="text"
               inputMode="numeric"
               autoComplete="new-password"
@@ -66,10 +68,10 @@ export default function PinSetupGate() {
               placeholder="000000"
               required
             />
-          </label>
-          <label className="block">
+          </Text>
+          <Text as="label" size="md" className="block">
             <span className="mb-2 block text-sm text-[var(--lp-text)]">Confirm R-pin</span>
-            <input
+            <Input
               type="text"
               inputMode="numeric"
               autoComplete="new-password"
@@ -79,23 +81,21 @@ export default function PinSetupGate() {
               placeholder="000000"
               required
             />
-          </label>
-          {error ? <p className="text-sm text-[var(--lp-coral)]">{error}</p> : null}
-          <button
+          </Text>
+          {error ? <Text as="p" size="md" className="text-[var(--lp-coral)]">{error}</Text> : null}
+          <Button size="lg" loading={Boolean(busy)} variant="primary"
             type="submit"
             disabled={busy}
-            className="w-full rounded-2xl bg-[var(--lp-action)] px-4 py-3 text-sm font-semibold text-[var(--lp-action-text)] transition hover:bg-[var(--lp-action-hover)] disabled:cursor-not-allowed disabled:opacity-70"
           >
             {busy ? "Saving..." : "Continue"}
-          </button>
+          </Button>
         </form>
-        <button
+        <Button size="sm" variant="tertiary"
           type="button"
           onClick={() => void signOut()}
-          className="mt-5 text-sm text-[var(--lp-muted)] transition hover:text-[var(--lp-heading)]"
-        >
+         style={{ marginTop: "var(--space-s20)" }}>
           Sign out
-        </button>
+        </Button>
       </div>
     </div>
   );

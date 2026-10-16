@@ -1,7 +1,9 @@
+import { Text, Button } from "@/design-system";
+
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Plus, RefreshCcw, Trash2 } from "lucide-react";
 import type { RefObject } from "react";
 
-import { T, btnGhost, btnPrimary } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import PendingPagesSelection from "./pending-pages-selection";
 
 type PendingPreview = {
@@ -61,20 +63,20 @@ export default function FilePreviewHeader({
   onReplaceSelected,
 }: FilePreviewHeaderProps) {
   return (
-    <div style={{ padding: "12px 16px", borderBottom: `1px solid ${T.border}`, display: "grid", gap: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ color: T.white, fontWeight: 800 }}>{pageTitle}</div>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-          <button type="button" style={btnGhost} disabled={!canPrevious || Boolean(busy)} onClick={onPrevious}><ChevronLeft size={15} /> Previous</button>
-          <button type="button" style={btnGhost} disabled={!canNext || Boolean(busy)} onClick={onNext}>Next <ChevronRight size={15} /></button>
-          <button type="button" style={btnGhost} disabled={!canMoveUp || Boolean(busy)} onClick={onMoveUp}><ArrowUp size={15} /> Move</button>
-          <button type="button" style={btnGhost} disabled={!canMoveDown || Boolean(busy)} onClick={onMoveDown}><ArrowDown size={15} /> Move</button>
-          <button type="button" style={btnGhost} disabled={Boolean(busy)} onClick={() => replaceInputRef.current?.click()}><RefreshCcw size={15} /> Replace</button>
-          <button type="button" style={btnGhost} disabled={!canDelete || Boolean(busy)} onClick={onDelete}><Trash2 size={15} /> Delete page</button>
-          <button type="button" style={btnPrimary} disabled={Boolean(busy)} onClick={() => addInputRef.current?.click()}><Plus size={15} /> Add pages</button>
+    <div style={{ padding: "var(--space-s12) var(--space-s16)", borderBottom: `1px solid ${T.border}`, display: "grid", gap: "var(--space-s10)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--space-s10)", flexWrap: "wrap", alignItems: "center" }}>
+        <Text as="div" size="md" weight="semibold" style={{ color: T.white }}>{pageTitle}</Text>
+        <div style={{ display: "flex", gap: "var(--space-s6)", flexWrap: "wrap" }}>
+          <Button variant="secondary" type="button" disabled={!canPrevious || Boolean(busy)} onClick={onPrevious}><ChevronLeft aria-hidden="true" focusable="false" size={15} /> Previous</Button>
+          <Button variant="secondary" type="button" disabled={!canNext || Boolean(busy)} onClick={onNext}>Next <ChevronRight aria-hidden="true" focusable="false" size={15} /></Button>
+          <Button variant="secondary" type="button" disabled={!canMoveUp || Boolean(busy)} onClick={onMoveUp}><ArrowUp aria-hidden="true" focusable="false" size={15} /> Move</Button>
+          <Button variant="secondary" type="button" disabled={!canMoveDown || Boolean(busy)} onClick={onMoveDown}><ArrowDown aria-hidden="true" focusable="false" size={15} /> Move</Button>
+          <Button variant="secondary" type="button" disabled={Boolean(busy)} onClick={() => replaceInputRef.current?.click()}><RefreshCcw aria-hidden="true" focusable="false" size={15} /> Replace</Button>
+          <Button tone="danger" variant="secondary" type="button" disabled={!canDelete || Boolean(busy)} onClick={onDelete}><Trash2 aria-hidden="true" focusable="false" size={15} /> Delete page</Button>
+          <Button variant="primary" type="button" disabled={Boolean(busy)} onClick={() => addInputRef.current?.click()}><Plus aria-hidden="true" focusable="false" size={15} /> Add pages</Button>
         </div>
       </div>
-      <div style={{ color: T.muted, fontSize: 12 }}>{originalName}</div>
+      <Text as="div" size="sm" tone="muted" style={{ color: T.muted }}>{originalName}</Text>
       <input ref={addInputRef} type="file" multiple accept={acceptedDocumentTypes} onChange={(event) => onAddSelected(event.target.files)} style={{ display: "none" }} />
       <input ref={replaceInputRef} type="file" accept={acceptedDocumentTypes} onChange={(event) => onReplaceSelected(event.target.files?.[0])} style={{ display: "none" }} />
       <PendingPagesSelection busy={busy} pendingError={pendingError} previews={pendingPreviews} onAdd={onAddPages} onClear={onClearPending} onRemove={onRemovePending} />

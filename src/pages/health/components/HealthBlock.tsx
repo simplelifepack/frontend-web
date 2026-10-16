@@ -1,3 +1,4 @@
+import { Text } from "@/design-system";
 import type { ReactNode } from "react";
 import { Microscope } from "lucide-react";
 
@@ -12,9 +13,9 @@ function HealthBlock({
 }) {
   return (
     <section className="lp-health-block">
-      <div className="lp-health-card-title">
-        <Microscope size={17} /> {title} {action}
-      </div>
+      <Text as="div" size="md" weight="semibold" className="lp-health-card-title">
+        <Microscope aria-hidden="true" focusable="false" size={17} /> {title} {action}
+      </Text>
       {children}
     </section>
   );

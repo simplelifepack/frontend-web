@@ -1,5 +1,10 @@
+import { Text, DrawerContainer, DrawerPanel, Button } from "@/design-system";
+
 import type { DocumentRecord, PackSummary } from "@/lib/api";
-import type { DerivedRequirement, PackReadiness } from "@/readiness/calculatePackageReadiness";
+import type {
+  DerivedRequirement,
+  PackReadiness,
+} from "@/readiness/calculatePackageReadiness";
 import { X } from "lucide-react";
 import PackDetail from "./pack-detail";
 
@@ -13,7 +18,11 @@ type PackageDetailDrawerProps = {
   readyCount: number;
   selectedTitle: string;
   totalCount: number;
-  onAssignRequirement: (requirement: DerivedRequirement, document: DocumentRecord, assignmentSource: "USER_SELECTED" | "USER_OVERRIDE") => Promise<void>;
+  onAssignRequirement: (
+    requirement: DerivedRequirement,
+    document: DocumentRecord,
+    assignmentSource: "USER_SELECTED" | "USER_OVERRIDE",
+  ) => Promise<void>;
   onClearAssignment: (requirement: DerivedRequirement) => Promise<void>;
   onClose: () => void;
 };
@@ -34,10 +43,17 @@ export default function PackageDetailDrawer({
 }: PackageDetailDrawerProps) {
   if (!open) return null;
   return (
-    <div className="lp-pack-drawer-backdrop" onMouseDown={(event) => {
-      if (event.target === event.currentTarget) onClose();
-    }}>
-      <aside className="lp-pack-drawer" role="dialog" aria-modal="true" aria-label={`${selectedTitle} package details`}>
+    <DrawerContainer
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <DrawerPanel onDismiss={onClose}
+        className="lp-pack-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${selectedTitle} package details`}
+      >
         {pack ? (
           <PackDetail
             completion={completion}
@@ -51,21 +67,50 @@ export default function PackageDetailDrawer({
             onClearAssignment={onClearAssignment}
             onClose={onClose}
           />
-        ) : <PackageDetailSkeleton selectedTitle={selectedTitle} onClose={onClose} />}
-      </aside>
-    </div>
+        ) : (
+          <PackageDetailSkeleton
+            selectedTitle={selectedTitle}
+            onClose={onClose}
+          />
+        )}
+      </DrawerPanel>
+    </DrawerContainer>
   );
 }
 
 function SkeletonBlock({ className = "" }: { className?: string }) {
-  return <span className={`lp-pack-detail-skeleton-block ${className}`} aria-hidden="true" />;
+  return (
+    <span
+      className={`lp-pack-detail-skeleton-block ${className}`}
+      aria-hidden="true"
+    />
+  );
 }
 
-function PackageDetailSkeleton({ selectedTitle, onClose }: { selectedTitle: string; onClose: () => void }) {
+function PackageDetailSkeleton({
+  selectedTitle,
+  onClose,
+}: {
+  selectedTitle: string;
+  onClose: () => void;
+}) {
   return (
-    <div className="lp-pack-drawer-inner lp-pack-detail-skeleton" aria-busy="true" aria-label={`${selectedTitle} package details loading`}>
+    <div
+      className="lp-pack-drawer-inner lp-pack-detail-skeleton"
+      aria-busy="true"
+      aria-label={`${selectedTitle} package details loading`}
+    >
       <header className="lp-pack-drawer-head">
-        <button type="button" className="lp-pack-drawer-close" onClick={onClose} aria-label="Close package details"><X size={18} /></button>
+        <Button
+          size="sm"
+          iconOnly
+          variant="tertiary"
+          type="button"
+          onClick={onClose}
+          aria-label="Close package details"
+        >
+          <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+        </Button>
         <div className="lp-pack-drawer-title">
           <SkeletonBlock className="icon" />
           <div className="copy">
@@ -94,7 +139,9 @@ function PackageDetailSkeleton({ selectedTitle, onClose }: { selectedTitle: stri
             <SkeletonBlock className="section-icon" />
             <SkeletonBlock className="section-title" />
           </div>
-          {Array.from({ length: 3 }, (_, index) => <SkeletonRequirementRow key={index} />)}
+          {Array.from({ length: 3 }, (_, index) => (
+            <SkeletonRequirementRow key={index} />
+          ))}
         </section>
 
         <section className="lp-pack-check-card needed skeleton-card">
@@ -102,7 +149,9 @@ function PackageDetailSkeleton({ selectedTitle, onClose }: { selectedTitle: stri
             <SkeletonBlock className="section-icon" />
             <SkeletonBlock className="section-title wide" />
           </div>
-          {Array.from({ length: 4 }, (_, index) => <SkeletonRequirementRow key={index} action />)}
+          {Array.from({ length: 4 }, (_, index) => (
+            <SkeletonRequirementRow key={index} action />
+          ))}
         </section>
 
         <div className="lp-pack-disclaimer skeleton-disclaimer">
@@ -127,14 +176,18 @@ function PackageDetailSkeleton({ selectedTitle, onClose }: { selectedTitle: stri
 function SkeletonRequirementRow({ action = false }: { action?: boolean }) {
   return (
     <div className="lp-pack-check-row-wrap">
-      <div className="lp-pack-check-row skeleton-requirement-row">
+      <Text as="div" size="md" className="lp-pack-check-row skeleton-requirement-row">
         <SkeletonBlock className="status-dot" />
         <span>
           <SkeletonBlock className="requirement-title" />
           <SkeletonBlock className="requirement-note" />
         </span>
-        {action ? <SkeletonBlock className="row-action" /> : <SkeletonBlock className="chevron" />}
-      </div>
+        {action ? (
+          <SkeletonBlock className="row-action" />
+        ) : (
+          <SkeletonBlock className="chevron" />
+        )}
+      </Text>
     </div>
   );
 }

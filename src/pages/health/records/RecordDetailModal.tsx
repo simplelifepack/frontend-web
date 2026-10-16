@@ -1,3 +1,5 @@
+import { Text, Heading, ModalBackdrop, ModalPanel, Button } from "@/design-system";
+
 import { useEffect, useState } from "react";
 import { ExternalLink, FileText, ShieldCheck, X } from "lucide-react";
 import { api, type DocumentRecord } from "@/lib/api";
@@ -35,15 +37,15 @@ function RecordDetailModal({
   }, [onClose]);
 
   return (
-    <div
-      className="lp-modal-backdrop"
-      style={{ zIndex: 95 }}
+    <ModalBackdrop
+
+      style={{ zIndex: "var(--layer-detailDialog)" }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div
-        className="lp-modal-panel lp-health-record-modal"
+      <ModalPanel onDismiss={onClose}
+        className="lp-health-record-modal"
         role="dialog"
         aria-modal="true"
         aria-label="Health record document"
@@ -57,12 +59,12 @@ function RecordDetailModal({
             onViewOriginal={() => onViewOriginal(record.documentId)}
           />
         ) : (
-          <div className="lp-health-document-loading">
+          <Text as="div" size="md" weight="semibold" className="lp-health-document-loading">
             Loading health record...
-          </div>
+          </Text>
         )}
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -117,23 +119,22 @@ function HealthRecordDocumentViewer({
       <header className="lp-health-document-head">
         <div className="lp-health-document-title">
           <span className="lp-health-document-icon" aria-hidden="true">
-            <FileText size={17} />
+            <FileText aria-hidden="true" focusable="false" size={17} />
           </span>
           <span>
-            <b>{title}</b>
-            <small>
+            <Text as="b" size="md" weight="semibold">{title}</Text>
+            <Text as="small" size="sm" weight="semibold">
               {sourceLabel} · {categoryLabel}
-            </small>
+            </Text>
           </span>
         </div>
-        <button
+        <Button size="sm" iconOnly variant="tertiary"
           type="button"
-          className="lp-health-document-close"
           onClick={onClose}
           aria-label="Close document viewer"
         >
-          <X size={17} />
-        </button>
+          <X aria-hidden="true" focusable="false" size={17} />
+        </Button>
       </header>
       <main className="lp-health-document-stage">
         <article className="lp-health-document-paper">
@@ -145,18 +146,18 @@ function HealthRecordDocumentViewer({
         </article>
       </main>
       <footer className="lp-health-document-footer">
-        <span>
+        <Text size="sm" weight="semibold">
           <ShieldCheck size={14} aria-hidden="true" />
           {statusLabel}
-        </span>
+        </Text>
         <div className="lp-health-document-actions">
-          <button type="button" onClick={onViewOriginal}>
-            <ExternalLink size={14} />
+          <Button size="sm" variant="secondary" type="button" onClick={onViewOriginal}>
+            <ExternalLink aria-hidden="true" focusable="false" size={14} />
             View original
-          </button>
-          <button type="button" className="primary" onClick={onCorrectDetails}>
+          </Button>
+          <Button size="sm" variant="primary" type="button" onClick={onCorrectDetails}>
             Correct details
-          </button>
+          </Button>
         </div>
       </footer>
     </>
@@ -223,29 +224,29 @@ function LabReportDocument({
       <table className="lp-health-report-table">
         <thead>
           <tr>
-            <th>Test</th>
-            <th>Result</th>
-            <th>Reference</th>
-            <th>Date</th>
+            <Text as="th" size="sm" weight="semibold">Test</Text>
+            <Text as="th" size="sm" weight="semibold">Result</Text>
+            <Text as="th" size="sm" weight="semibold">Reference</Text>
+            <Text as="th" size="sm" weight="semibold">Date</Text>
           </tr>
         </thead>
         <tbody>
           {record.measurements.length ? (
             record.measurements.map((measurement) => (
               <tr key={measurement.id}>
-                <td>{measurement.displayName || measurement.originalName}</td>
-                <td>
+                <Text as="td" size="md">{measurement.displayName || measurement.originalName}</Text>
+                <Text as="td" size="md">
                   <strong>{valueWithUnit(measurement)}</strong>
-                </td>
-                <td>{referenceText(measurement)}</td>
-                <td>{documentDate(measurement.measuredAt ?? record.documentDate)}</td>
+                </Text>
+                <Text as="td" size="md">{referenceText(measurement)}</Text>
+                <Text as="td" size="md">{documentDate(measurement.measuredAt ?? record.documentDate)}</Text>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={4} className="empty">
+              <Text as="td" size="md" colSpan={4} className="empty">
                 No measurements were extracted from this report.
-              </td>
+              </Text>
             </tr>
           )}
         </tbody>
@@ -280,34 +281,34 @@ function PrescriptionDocument({
       <table className="lp-health-report-table prescription">
         <thead>
           <tr>
-            <th>Medicine</th>
-            <th>Dose</th>
-            <th>Frequency</th>
-            <th>Duration / Instructions</th>
+            <Text as="th" size="sm" weight="semibold">Medicine</Text>
+            <Text as="th" size="sm" weight="semibold">Dose</Text>
+            <Text as="th" size="sm" weight="semibold">Frequency</Text>
+            <Text as="th" size="sm" weight="semibold">Duration / Instructions</Text>
           </tr>
         </thead>
         <tbody>
           {record.medications.length ? (
             record.medications.map((medication) => (
               <tr key={medication.id}>
-                <td>
+                <Text as="td" size="md">
                   <strong>{medication.name}</strong>
-                </td>
-                <td>{cleanValue(medication.dose)}</td>
-                <td>{cleanValue(medication.frequency)}</td>
-                <td>
+                </Text>
+                <Text as="td" size="md">{cleanValue(medication.dose)}</Text>
+                <Text as="td" size="md">{cleanValue(medication.frequency)}</Text>
+                <Text as="td" size="md">
                   {[medication.duration, medication.quantity]
                     .map(cleanValue)
                     .filter((value) => value !== "—")
                     .join(" · ") || "—"}
-                </td>
+                </Text>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan={4} className="empty">
+              <Text as="td" size="md" colSpan={4} className="empty">
                 No medications were extracted from this prescription.
-              </td>
+              </Text>
             </tr>
           )}
         </tbody>
@@ -343,38 +344,38 @@ function MedicalReportDocument({
         <table className="lp-health-report-table">
           <thead>
             <tr>
-              <th>Finding</th>
-              <th>Result</th>
-              <th>Reference</th>
-              <th>Date</th>
+              <Text as="th" size="sm" weight="semibold">Finding</Text>
+              <Text as="th" size="sm" weight="semibold">Result</Text>
+              <Text as="th" size="sm" weight="semibold">Reference</Text>
+              <Text as="th" size="sm" weight="semibold">Date</Text>
             </tr>
           </thead>
           <tbody>
             {record.measurements.map((measurement) => (
               <tr key={measurement.id}>
-                <td>{measurement.displayName || measurement.originalName}</td>
-                <td>
+                <Text as="td" size="md">{measurement.displayName || measurement.originalName}</Text>
+                <Text as="td" size="md">
                   <strong>{valueWithUnit(measurement)}</strong>
-                </td>
-                <td>{referenceText(measurement)}</td>
-                <td>{documentDate(measurement.measuredAt ?? record.documentDate)}</td>
+                </Text>
+                <Text as="td" size="md">{referenceText(measurement)}</Text>
+                <Text as="td" size="md">{documentDate(measurement.measuredAt ?? record.documentDate)}</Text>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <div className="lp-health-document-note">
+        <Text as="div" size="md" weight="semibold" className="lp-health-document-note">
           No structured findings were extracted from this report.
-        </div>
+        </Text>
       )}
       {record.followUps.length ? (
         <section className="lp-health-document-section">
-          <h4>Follow-ups</h4>
+          <Heading level={4} size="sm">Follow-ups</Heading>
           {record.followUps.map((followUp) => (
-            <p key={followUp.id}>
+            <Text as="p" size="sm" key={followUp.id}>
               <b>{followUp.title}</b>
               <span>{documentDate(followUp.dueDate ?? followUp.explicitDate)}</span>
-            </p>
+            </Text>
           ))}
         </section>
       ) : null}
@@ -394,8 +395,8 @@ function DocumentTopline({
   return (
     <>
       <div className="lp-health-document-topline">
-        <h3>{title}</h3>
-        <span>{provider || doctor || "—"}</span>
+        <Heading level={3} size="sm">{title}</Heading>
+        <Text size="sm" weight="medium">{provider || doctor || "—"}</Text>
       </div>
       <div className="lp-health-document-accent" />
     </>
@@ -407,8 +408,8 @@ function DocumentMeta({ rows }: { rows: Array<[string, string]> }) {
     <dl className="lp-health-document-meta">
       {rows.map(([label, value]) => (
         <div key={label}>
-          <dt>{label}</dt>
-          <dd>{cleanValue(value)}</dd>
+          <Text as="dt" size="sm" weight="medium">{label}</Text>
+          <Text as="dd" size="md" weight="semibold">{cleanValue(value)}</Text>
         </div>
       ))}
     </dl>

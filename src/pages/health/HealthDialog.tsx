@@ -1,3 +1,6 @@
+import { Heading, Text, ChoiceGroup, Choice, ModalPanel, ModalBackdrop, Input, Select, Textarea, Button } from "@/design-system";
+import { typography, poppinsFontFaces, typographyVariables } from "@/design-system/variables/typography";
+
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import JSZip from "jszip";
 import {
@@ -20,7 +23,6 @@ import type {
   HealthMember,
   HealthRecord,
 } from "@/lib/api.types";
-import { btnPrimary, btnGhost } from "@/constants/theme";
 
 export type HealthDialogKind =
   | "reminder"
@@ -169,18 +171,18 @@ export default function HealthDialog({
       />
     );
   return (
-    <div className="lp-modal-backdrop">
-      <div
-        className={`lp-modal-panel lp-health-add-dialog${kind === "profile" ? " lp-health-profile-dialog" : ""}`}
+    <ModalBackdrop >
+      <ModalPanel onDismiss={onClose}
+        className={`lp-health-add-dialog${kind === "profile" ? " lp-health-profile-dialog" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="health-action-title"
       >
         <header className="lp-health-dialog-head">
-          <h2 id="health-action-title">{titles[kind]}</h2>
-          <button onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
+          <Heading level={2} size="md" id="health-action-title">{titles[kind]}</Heading>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
         {kind === "reminder" ? (
           <form
@@ -190,49 +192,49 @@ export default function HealthDialog({
             }}
             className="lp-health-form lp-health-reminder-form"
           >
-            <label className="lp-health-reminder-title">
+            <Text as="label" size="sm" weight="semibold" className="lp-health-reminder-title">
               Title
-              <input
+              <Input
                 required
                 maxLength={180}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Cardiology follow-up"
               />
-            </label>
+            </Text>
             <fieldset className="lp-health-reminder-choice">
-              <span>What for</span>
-              <div className="lp-health-segmented" aria-label="What for">
+              <Text size="md">What for</Text>
+              <ChoiceGroup  aria-label="What for">
                 {reminderTypeOptions.map((option) => (
-                  <button key={option.value} type="button" className={reminderType === option.value ? "selected" : ""} onClick={() => setReminderType(option.value)}>
+                  <Choice key={option.value} type="button" aria-pressed={reminderType === option.value} onClick={() => setReminderType(option.value)}>
                     {option.label}
-                  </button>
+                  </Choice>
                 ))}
-              </div>
+              </ChoiceGroup>
             </fieldset>
-            <label className="lp-health-reminder-due">
+            <Text as="label" size="sm" weight="semibold" className="lp-health-reminder-due">
               Due
-              <input
+              <Input
                 required
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 placeholder="dd/mm/yyyy"
               />
-            </label>
+            </Text>
             <fieldset className="lp-health-reminder-choice">
-              <span>How often</span>
-              <div className="lp-health-segmented" aria-label="How often">
+              <Text size="md">How often</Text>
+              <ChoiceGroup  aria-label="How often">
                 {reminderFrequencyOptions.map((option) => (
-                  <button key={option.value} type="button" className={reminderFrequency === option.value ? "selected" : ""} onClick={() => setReminderFrequency(option.value)}>
+                  <Choice key={option.value} type="button" aria-pressed={reminderFrequency === option.value} onClick={() => setReminderFrequency(option.value)}>
                     {option.label}
-                  </button>
+                  </Choice>
                 ))}
-              </div>
+              </ChoiceGroup>
             </fieldset>
-            <button style={btnPrimary} disabled={saving || !title.trim() || !reminderType || !date || !reminderFrequency}>
+            <Button variant="primary" type="submit" disabled={saving || !title.trim() || !reminderType || !date || !reminderFrequency}>
               Add reminder
-            </button>
+            </Button>
           </form>
         ) : null}
         {kind === "profile" ? (
@@ -244,9 +246,9 @@ export default function HealthDialog({
             }}
             className="lp-health-form lp-health-profile-form"
           >
-            <label>
+            <Text as="label" size="sm" weight="semibold">
               Blood group
-              <select
+              <Select
                 value={bloodGroup}
                 onChange={(e) => setBloodGroup(e.target.value)}
               >
@@ -263,87 +265,86 @@ export default function HealthDialog({
                 ].map((v) => (
                   <option key={v}>{v}</option>
                 ))}
-              </select>
-            </label>
-            <label>
+              </Select>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Conditions
-              <textarea
+              <Textarea
                 value={conditions}
                 onChange={(e) => setConditions(e.target.value)}
                 maxLength={2000}
                 placeholder="e.g. asthma, diabetes"
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Allergies
-              <textarea
+              <Textarea
                 value={allergies}
                 onChange={(e) => setAllergies(e.target.value)}
                 maxLength={2000}
                 placeholder="e.g. penicillin, peanuts"
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Emergency contact name
-              <input
+              <Input
                 value={emergencyContactName}
                 onChange={(e) => setEmergencyContactName(e.target.value)}
                 maxLength={120}
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Emergency contact phone
-              <input
+              <Input
                 value={emergencyContactPhone}
                 onChange={(e) => setEmergencyContactPhone(e.target.value)}
                 maxLength={40}
                 inputMode="tel"
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Primary doctor
-              <input
+              <Input
                 value={primaryDoctor}
                 onChange={(e) => setPrimaryDoctor(e.target.value)}
                 maxLength={160}
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Insurance provider
-              <input
+              <Input
                 value={insuranceProvider}
                 onChange={(e) => setInsuranceProvider(e.target.value)}
                 maxLength={160}
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Policy number
-              <input
+              <Input
                 value={insurancePolicyNumber}
                 onChange={(e) => setInsurancePolicyNumber(e.target.value)}
                 maxLength={120}
               />
-            </label>
+            </Text>
           </form>
         ) : null}
-        {error && <p role="alert">{error}</p>}
+        {error && <Text as="p" size="md" role="alert">{error}</Text>}
         <footer>
-          <button style={btnGhost} onClick={onClose}>
+          <Button variant="secondary" type="button" onClick={onClose}>
             Close
-          </button>
+          </Button>
           {kind === "profile" ? (
-            <button
+            <Button loading={saving} variant="primary"
               type="submit"
               form="health-profile-form"
-              style={btnPrimary}
               disabled={saving}
             >
               {saving ? "Saving..." : "Save profile"}
-            </button>
+            </Button>
           ) : null}
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -481,24 +482,24 @@ function ReadingDialog({
     }
   };
   return (
-    <div className="lp-modal-backdrop lp-reading-backdrop">
-      <div
-        className="lp-modal-panel lp-reading-dialog"
+    <ModalBackdrop className="lp-reading-backdrop">
+      <ModalPanel onDismiss={onClose}
+        className="lp-reading-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="reading-dialog-title"
       >
         <header className="lp-health-dialog-head">
-          <h2 id="reading-dialog-title">Log a reading for {firstName}</h2>
-          <button onClick={onClose} aria-label="Close" type="button">
-            <X size={18} />
-          </button>
+          <Heading level={2} size="sm" id="reading-dialog-title">Log a reading for {firstName}</Heading>
+          <Button size="sm" iconOnly variant="tertiary" onClick={onClose} aria-label="Close" type="button">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
         <form className="lp-reading-form" onSubmit={saveReading}>
           <section>
-            <b>Test</b>
+            <Text as="b" size="sm" weight="semibold">Test</Text>
             {readingTests.length ? (
-              <div className="lp-reading-test-grid">
+              <div   className="lp-reading-test-grid">
                 {readingTests.map((test) => (
                   <button
                     key={test.key}
@@ -514,90 +515,89 @@ function ReadingDialog({
                 ))}
               </div>
             ) : (
-              <p className="lp-reading-empty-tests">
+              <Text as="p" size="md" weight="medium" className="lp-reading-empty-tests">
                 No previous tests found for this profile yet.
-              </p>
+              </Text>
             )}
-            <button
+            <Button size="sm" variant="tertiary"
               type="button"
-              className="lp-reading-link"
               onClick={() => setCustom(true)}
             >
               Add a test not listed
-            </button>
+            </Button>
             {custom ? (
               <div className="lp-reading-custom">
-                <label>
+                <Text as="label" size="sm" weight="semibold">
                   Test name
-                  <input
+                  <Input
                     value={customName}
                     onChange={(event) => setCustomName(event.target.value)}
                     maxLength={160}
                     placeholder="as printed"
                   />
-                </label>
-                <label>
+                </Text>
+                <Text as="label" size="sm" weight="semibold">
                   Unit
-                  <input
+                  <Input
                     value={unit}
                     onChange={(event) => setUnit(event.target.value)}
                     maxLength={40}
                     placeholder="as printed"
                   />
-                </label>
+                </Text>
               </div>
             ) : null}
           </section>
           <div className="lp-reading-field-grid">
-            <label>
+            <Text as="label" size="sm" weight="semibold">
               Value ({testUnit})
-              <input
+              <Input
                 required
                 inputMode="decimal"
                 value={value}
                 onChange={(event) => setValue(event.target.value)}
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Date
-              <input
+              <Input
                 required
                 type="date"
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Range low (optional)
-              <input
+              <Input
                 inputMode="decimal"
                 value={rangeLow}
                 onChange={(event) => setRangeLow(event.target.value)}
                 placeholder="as printed"
               />
-            </label>
-            <label>
+            </Text>
+            <Text as="label" size="sm" weight="semibold">
               Range high (optional)
-              <input
+              <Input
                 inputMode="decimal"
                 value={rangeHigh}
                 onChange={(event) => setRangeHigh(event.target.value)}
                 placeholder="as printed"
               />
-            </label>
+            </Text>
           </div>
-          <p>
+          <Text as="p" size="md" weight="medium">
             Copy the test name, value, unit, and reference range from your report.
             ReadiNes supplies none of them, so a reading with no range is recorded
             without a status.
-          </p>
-          {error ? <div className="lp-health-form-error">{error}</div> : null}
-          <button className="lp-reading-save" disabled={saving}>
+          </Text>
+          {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}
+          <Button loading={saving} variant="primary" type="submit" disabled={saving}>
             {saving ? "Saving..." : "Save reading"}
-          </button>
+          </Button>
         </form>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -644,8 +644,8 @@ function EmergencyCardDialog({
     ["Medical documents", `${records.length} on file in ReadiNes`],
   ];
   return (
-    <div className="lp-modal-backdrop lp-card-preview-backdrop">
-      <div
+    <ModalBackdrop className="lp-card-preview-backdrop">
+      <ModalPanel onDismiss={onClose}
         className="lp-card-preview-dialog lp-emergency-card-dialog"
         role="dialog"
         aria-modal="true"
@@ -653,50 +653,50 @@ function EmergencyCardDialog({
       >
         <header className="lp-card-preview-head">
           <div>
-            <p>One tap · assembled from your archive</p>
-            <h2 id="emergency-card-title">Emergency card</h2>
+            <Text as="p" size="sm" weight="semibold">One tap · assembled from your archive</Text>
+            <Heading level={2} size="md" id="emergency-card-title">Emergency card</Heading>
           </div>
-          <button onClick={onClose} aria-label="Close">
-            <X size={20} />
-          </button>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-medium)" />
+          </Button>
         </header>
         <section className="lp-emergency-card-paper">
           <div className="lp-emergency-card-band">
-            <b>Emergency info</b>
-            <span>ReadiNes</span>
+            <Text as="b" size="md" weight="semibold">Emergency info</Text>
+            <Text size="sm" weight="semibold">ReadiNes</Text>
           </div>
           <dl>
             {rows.map(([label, value]) => (
               <div key={label}>
-                <dt>{label}</dt>
-                <dd>{value}</dd>
+                <Text as="dt" size="sm">{label}</Text>
+                <Text as="dd" size="md" weight="semibold">{value}</Text>
               </div>
             ))}
           </dl>
           <footer>
-            <span>Assembled facts only · no diagnosis.</span>
-            <span>
+            <Text size="md">Assembled facts only · no diagnosis.</Text>
+            <Text size="md">
               Generated{" "}
               {new Date().toLocaleDateString(undefined, {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
               })}
-            </span>
+            </Text>
           </footer>
         </section>
         <div className="lp-card-preview-actions">
-          <button
+          <Button variant="secondary"
             type="button"
             onClick={() =>
               exportEmergencyCardPdf(buildEmergencyCardHtml(rows, generatedDate))
             }
           >
-            <Download size={16} /> Export as PDF
-          </button>
+            <Download aria-hidden="true" focusable="false" size="var(--icon-small)" /> Export as PDF
+          </Button>
         </div>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -720,8 +720,8 @@ function InsuranceCardDialog({
   }, []);
   const insuranceDoc = findInsuranceDocument(records, documents);
   return (
-    <div className="lp-modal-backdrop lp-card-preview-backdrop">
-      <div
+    <ModalBackdrop className="lp-card-preview-backdrop">
+      <ModalPanel onDismiss={onClose}
         className="lp-card-preview-dialog lp-insurance-card-dialog"
         role="dialog"
         aria-modal="true"
@@ -729,27 +729,27 @@ function InsuranceCardDialog({
       >
         <header className="lp-insurance-card-head">
           <span>
-            <FileText size={22} />
+            <FileText aria-hidden="true" focusable="false" size={22} />
           </span>
           <div>
-            <h2 id="insurance-card-title">Insurance Card</h2>
-            <p>{insuranceDoc ? insuranceDoc.title || insuranceDoc.originalName : "No insurance document added"}</p>
+            <Heading level={2} size="sm" id="insurance-card-title">Insurance Card</Heading>
+            <Text as="p" size="md">{insuranceDoc ? insuranceDoc.title || insuranceDoc.originalName : "No insurance document added"}</Text>
           </div>
-          <button onClick={onClose} aria-label="Close">
-            <X size={22} />
-          </button>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size={22} />
+          </Button>
         </header>
         {insuranceDoc ? (
           <InsuranceDocumentPreview document={insuranceDoc} />
         ) : (
           <section className="lp-insurance-empty">
             <div>
-              <b>No insurance document added</b>
-              <p>Add your insurance document so it is available in an emergency.</p>
+              <Text as="b" size="lg" weight="semibold">No insurance document added</Text>
+              <Text as="p" size="md">Add your insurance document so it is available in an emergency.</Text>
             </div>
-            <button type="button" onClick={() => setUploading(true)}>
+            <Button variant="primary" type="button" onClick={() => setUploading(true)}>
               Add insurance document
-            </button>
+            </Button>
           </section>
         )}
         {uploading ? (
@@ -764,8 +764,8 @@ function InsuranceCardDialog({
             }}
           />
         ) : null}
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -820,28 +820,28 @@ function InsuranceDocumentPreview({ document }: { document: DocumentRecord }) {
   const canPreview = mimeType.startsWith("image/") || mimeType === "application/pdf";
   return (
     <section className="lp-insurance-document-stage">
-      <div className="lp-insurance-document-toolbar">
-        <span>{pages.length > 1 ? `${page.label} of ${pages.length}` : "Document preview"}</span>
+      <div    className="lp-insurance-document-toolbar">
+        <Text size="md">{pages.length > 1 ? `${page.label} of ${pages.length}` : "Document preview"}</Text>
         {pages.length > 1 ? (
           <div>
-            <button type="button" disabled={pageIndex === 0} onClick={() => setPageIndex((index) => Math.max(0, index - 1))}>
+            <Button size="sm" variant="tertiary" type="button" disabled={pageIndex === 0} onClick={() => setPageIndex((index) => Math.max(0, index - 1))}>
               Previous
-            </button>
-            <button type="button" disabled={pageIndex >= pages.length - 1} onClick={() => setPageIndex((index) => Math.min(pages.length - 1, index + 1))}>
+            </Button>
+            <Button size="sm" variant="tertiary" type="button" disabled={pageIndex >= pages.length - 1} onClick={() => setPageIndex((index) => Math.min(pages.length - 1, index + 1))}>
               Next
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
-      <div className="lp-insurance-document-preview">
+      <div   className="lp-insurance-document-preview">
         {document.source === "GOOGLE_DRIVE" ? (
-          <p>This document remains in Google Drive. Open it from Documents to preview the original file.</p>
+          <Text as="p" size="md">This document remains in Google Drive. Open it from Documents to preview the original file.</Text>
         ) : previewError ? (
-          <p>{previewError}</p>
+          <Text as="p" size="md">{previewError}</Text>
         ) : !canPreview ? (
-          <p>Inline preview is not available for this file type. Open it from Documents to view the original file.</p>
+          <Text as="p" size="md">Inline preview is not available for this file type. Open it from Documents to view the original file.</Text>
         ) : !previewUrl ? (
-          <p>Loading preview...</p>
+          <Text as="p" size="md">Loading preview...</Text>
         ) : mimeType.startsWith("image/") ? (
           <img src={previewUrl} alt={page.originalName} />
         ) : (
@@ -980,40 +980,40 @@ function VisitPackDialog({
   };
 
   return (
-    <div className="lp-modal-backdrop lp-visit-pack-backdrop">
-      <div
-        className="lp-modal-panel lp-visit-pack-dialog"
+    <ModalBackdrop className="lp-visit-pack-backdrop">
+      <ModalPanel onDismiss={onClose}
+        className="lp-visit-pack-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="visit-pack-title"
       >
         <header className="lp-health-dialog-head">
           <div>
-            <p className="lp-visit-pack-eyebrow">
+            <Text as="p" size="sm" weight="semibold" className="lp-visit-pack-eyebrow">
               Your own records, filtered for this visit
-            </p>
-            <h2 id="visit-pack-title">Prepare for a visit</h2>
+            </Text>
+            <Heading level={2} size="md" id="visit-pack-title">Prepare for a visit</Heading>
           </div>
-          <button onClick={onClose} aria-label="Close">
-            <X size={20} />
-          </button>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-medium)" />
+          </Button>
         </header>
         {loading ? (
-          <p className="lp-health-muted">
+          <Text as="p" size="sm" className="lp-health-muted">
             Loading this profile’s visit history…
-          </p>
+          </Text>
         ) : contexts.length ? (
           choosingVisit ? (
             <div className="lp-visit-pack-chooser">
               <div className="lp-visit-pack-search-row">
-                <button
+                <Button size="sm" iconOnly variant="tertiary"
                   type="button"
                   aria-label="Back"
                   onClick={() => setChoosingVisit(false)}
                 >
                   ‹
-                </button>
-                <input
+                </Button>
+                <Input
                   aria-label="Search doctors, specialisations, hospitals"
                   placeholder="Search doctors, specialisations, hospitals"
                   value={chooserQuery}
@@ -1025,7 +1025,7 @@ function VisitPackDialog({
                   className="lp-visit-pack-choice-group"
                   key={group.title}
                 >
-                  <h3>{group.title}</h3>
+                  <Heading level={3} size="sm">{group.title}</Heading>
                   {group.items.map((context) => (
                     <button
                       key={context.id}
@@ -1041,7 +1041,7 @@ function VisitPackDialog({
                         {context.recordIds.length === 1 ? "doc" : "docs"}
                       </em>
                       {context.id === selectedContext?.id ? (
-                        <Check size={14} />
+                        <Check aria-hidden="true" focusable="false" size={14} />
                       ) : null}
                     </button>
                   ))}
@@ -1050,37 +1050,37 @@ function VisitPackDialog({
             </div>
           ) : (
             <>
-              <p className="lp-visit-pack-next">
+              <Text as="p" size="md" weight="medium" className="lp-visit-pack-next">
                 Next appointment: {selectedContext?.label}
                 {appointmentDate
                   ? ` on ${formatVisitDate(appointmentDate)}`
                   : ""}
                 .
-              </p>
+              </Text>
               <section className="lp-visit-pack-context">
                 <span>
-                  <small>Doctors</small>
-                  <b>{selectedContext?.label}</b>
-                  <em>
+                  <Text as="small" size="sm">Doctors</Text>
+                  <Text as="b" size="md" weight="semibold">{selectedContext?.label}</Text>
+                  <Text as="em" size="md">
                     {matching.length}{" "}
                     {matching.length === 1 ? "document" : "documents"} · tap to
                     choose another doctor, hospital, or specialisation
-                  </em>
+                  </Text>
                 </span>
-                <button type="button" onClick={() => setChoosingVisit(true)}>
+                <Button size="sm" variant="tertiary" type="button" onClick={() => setChoosingVisit(true)}>
                   Change
-                </button>
+                </Button>
               </section>
               {matching.length ? (
-                <p className="lp-visit-pack-summary">
+                <Text as="p" size="sm" weight="medium" className="lp-visit-pack-summary">
                   {visitSummary(matching)}
-                </p>
+                </Text>
               ) : (
-                <p className="lp-health-muted">
+                <Text as="p" size="sm" className="lp-health-muted">
                   No documents are available for this selection.
-                </p>
+                </Text>
               )}
-              <div className="lp-visit-pack-documents">
+              <div   className="lp-visit-pack-documents">
                 {matching.map((item) => (
                   <article
                     className="lp-visit-pack-document"
@@ -1096,62 +1096,60 @@ function VisitPackDialog({
                       onClick={() => toggle(item.record.id)}
                     >
                       {selectedIds.has(item.record.id) ? (
-                        <Check size={13} />
+                        <Check aria-hidden="true" focusable="false" size={13} />
                       ) : null}
                     </button>
                     <DocumentIcon item={item} />
                     <span>
-                      <b>{documentLabel(item)}</b>
-                      <small>{documentDetail(item)}</small>
+                      <Text as="b" size="md" weight="semibold">{documentLabel(item)}</Text>
+                      <Text as="small" size="sm">{documentDetail(item)}</Text>
                     </span>
-                    <button
-                      className="lp-visit-pack-view"
+                    <Button size="sm" variant="tertiary"
                       type="button"
                       onClick={() => onViewDocument(item.record.documentId)}
                     >
                       View
-                    </button>
+                    </Button>
                   </article>
                 ))}
               </div>
               <div className="lp-visit-pack-note">
-                <FileText size={18} />
-                <span>
+                <FileText aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+                <Text size="md">
                   Cover sheet included: allergies, conditions, medicines, and
                   latest readings.
-                </span>
-                <button type="button">Preview</button>
+                </Text>
+                <Button size="sm" variant="tertiary" type="button">Preview</Button>
               </div>
-              <button
-                className="lp-visit-pack-download"
+              <Button loading={downloading} variant="primary"
                 type="button"
                 disabled={!selected.length || downloading}
                 onClick={() => void download()}
               >
-                <Download size={18} />{" "}
+                <Download aria-hidden="true" focusable="false" size="var(--icon-regular)" />{" "}
                 {downloading
                   ? "Preparing visit pack…"
                   : `Download visit pack (cover + ${selected.length})`}
-              </button>
+              </Button>
             </>
           )
         ) : (
           <div className="lp-visit-pack-empty">
-            <CalendarClock size={22} />
-            <b>No visit history for {member.name} yet.</b>
-            <p>
+            <CalendarClock aria-hidden="true" focusable="false" size={22} />
+            <Text as="b" size="md" weight="semibold">No visit history for {member.name} yet.</Text>
+            <Text as="p" size="md">
               Add a medical record with a doctor or documented follow-up to
               prepare a visit pack.
-            </p>
+            </Text>
           </div>
         )}
         {error ? (
-          <p className="lp-health-form-error" role="alert">
+          <Text as="p" size="sm" weight="semibold" className="lp-health-form-error" role="alert">
             {error}
-          </p>
+          </Text>
         ) : null}
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -1238,7 +1236,9 @@ function exportEmergencyCardPdf(html: string) {
   popup.document.write(html);
   popup.document.close();
   popup.focus();
-  window.setTimeout(() => popup.print(), 250);
+  void Promise.all(Object.values(typography.weights).map((weight) =>
+    popup.document.fonts.load(`${weight} ${typography.text.md} Poppins`),
+  )).catch(() => undefined).then(() => popup.print());
 }
 function escapeHtml(value: string) {
   return value.replace(
@@ -1269,17 +1269,19 @@ function buildEmergencyCardHtml(rows: string[][], generatedDate: string) {
   <meta charset="utf-8" />
   <title>Emergency card</title>
   <style>
+    ${poppinsFontFaces}
+    ${typographyVariables}
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 24px; background: #eef0f3; color: #1B2431; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; padding: 24px; background: #eef0f3; color: #1B2431; font-family: ${typography.family}; font-size: ${typography.text.md}; line-height: ${typography.lineHeights.body}; }
     .paper { max-width: 560px; margin: 0 auto; overflow: hidden; border: 1px solid #E3E6EA; border-radius: 10px; background: #fff; }
     .band { display: flex; justify-content: space-between; align-items: center; padding: 18px 16px; background: #c9181f; color: #fff; }
-    .band b { font-size: 15px; font-weight: 850; letter-spacing: 1px; text-transform: uppercase; }
-    .band span { font-size: 12px; font-weight: 850; }
+    .band b { font-size: var(--text-md); font-weight: var(--weight-bold); letter-spacing: 1px; text-transform: uppercase; }
+    .band span { font-size: var(--text-sm); font-weight: var(--weight-bold); }
     dl { display: grid; margin: 0; padding: 8px 16px 12px; }
     dl div { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 12px; padding: 9px 0; }
-    dt { color: #5E6674; font-size: 12px; line-height: 1.35; }
-    dd { margin: 0; color: #1B2431; font-size: 13.5px; font-weight: 850; line-height: 1.35; }
-    footer { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid #E3E6EA; color: #5E6674; font-size: 12px; }
+    dt { color: #5E6674; font-size: var(--text-sm); line-height: var(--line-body); }
+    dd { margin: 0; color: #1B2431; font-size: var(--text-md); font-weight: var(--weight-bold); line-height: var(--line-body); }
+    footer { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid #E3E6EA; color: #5E6674; font-size: var(--text-sm); }
   </style>
 </head>
 <body>
@@ -1379,7 +1381,7 @@ function DocumentIcon({ item }: { item: VisitDocument }) {
         background: meta.background,
       }}
     >
-      <Icon size={17} />
+      <Icon aria-hidden="true" focusable="false" size={17} />
     </span>
   );
 }

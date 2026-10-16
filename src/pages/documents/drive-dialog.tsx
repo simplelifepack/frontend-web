@@ -1,7 +1,8 @@
+import { Button } from "@/design-system";
 import { useCallback, useEffect, useState } from "react";
 import { Check, Cloud, X } from "lucide-react";
 
-import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import { api, type DriveStatus } from "@/lib/api";
 import { useGoogleOAuthPopup, type OAuthPopupMessage } from "@/lib/oauth-popup";
 
@@ -141,28 +142,28 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
     <div className="lp-modal-backdrop" style={{ zIndex: 100, padding: 14 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="lp-modal-panel" role="dialog" aria-modal="true" aria-labelledby="drive-title" style={{ width: "min(650px,calc(100vw - 28px))" }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-          <div><h2 id="drive-title" style={{ margin: 0, color: T.white }}>Google Drive</h2><p style={{ color: T.muted, fontSize: 13 }}>Read-only PDF discovery and indexing</p></div>
-          <button aria-label="Close Google Drive" style={btnGhost} onClick={onClose}><X size={15} /></button>
+          <div><h2 id="drive-title" style={{ margin: 0, color: T.white }}>Google Drive</h2><p style={{ color: T.muted, fontSize: "var(--text-md)" }}>Read-only PDF discovery and indexing</p></div>
+          <Button size="sm" iconOnly variant="tertiary" type="button" aria-label="Close Google Drive" onClick={onClose}><X aria-hidden="true" focusable="false" size={15} /></Button>
         </div>
         {!status.connected ? (
           <div style={{ padding: 16, background: T.raised, borderRadius: 12 }}>
-            <div style={{ display: "flex", gap: 12 }}><Cloud color={T.action} /><div><b style={{ color: T.white }}>Google Drive is not connected</b><p style={{ color: T.text, fontSize: 13, lineHeight: 1.6 }}>Readiness requests only Drive read-only access, searches only for PDFs, and stores metadata—not PDF copies.</p></div></div>
-            <button style={{ ...btnPrimary, marginTop: 14 }} disabled={Boolean(busy)} onClick={() => void connect()}>{busy === "connect" ? "Opening Google…" : "Connect Google Drive"}</button>
+            <div style={{ display: "flex", gap: 12 }}><Cloud aria-hidden="true" focusable="false" color={T.action} /><div><b style={{ color: T.white }}>Google Drive is not connected</b><p style={{ color: T.text, fontSize: "var(--text-md)", lineHeight: "var(--line-body)" }}>Readiness requests only Drive read-only access, searches only for PDFs, and stores metadata—not PDF copies.</p></div></div>
+            <Button loading={Boolean(busy)} variant="primary" type="button" style={{ marginTop: 14 }} disabled={Boolean(busy)} onClick={() => void connect()}>{busy === "connect" ? "Opening Google…" : "Connect Google Drive"}</Button>
           </div>
         ) : (
           <div style={{ padding: 16, background: T.raised, borderRadius: 12 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}><Check color={T.mint} /><div><b style={{ color: T.white }}>Connected</b><div style={{ color: T.muted, fontSize: 12 }}>{status.account}</div></div></div>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}><Check aria-hidden="true" focusable="false" color={T.mint} /><div><b style={{ color: T.white }}>Connected</b><div style={{ color: T.muted, fontSize: "var(--text-sm)" }}>{status.account}</div></div></div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16 }}>
-              <div style={{ color: T.muted, fontSize: 12 }}>Last Scan<br /><b style={{ color: T.white }}>{status.lastScannedAt ? new Date(status.lastScannedAt).toLocaleString() : "Never"}</b></div>
-              <div style={{ color: T.muted, fontSize: 12 }}>PDFs Indexed<br /><b style={{ color: T.white }}>{status.indexedCount}</b></div>
+              <div style={{ color: T.muted, fontSize: "var(--text-sm)" }}>Last Scan<br /><b style={{ color: T.white }}>{status.lastScannedAt ? new Date(status.lastScannedAt).toLocaleString() : "Never"}</b></div>
+              <div style={{ color: T.muted, fontSize: "var(--text-sm)" }}>PDFs Indexed<br /><b style={{ color: T.white }}>{status.indexedCount}</b></div>
             </div>
-            {status.scanning ? <div style={{ marginTop: 18 }}><div style={{ color: T.action, fontWeight: 700 }}>{status.phase || "Loading..."}</div><div style={{ color: T.white, marginTop: 6 }}>{status.processed} / {status.total} PDFs</div><progress max={Math.max(status.total, 1)} value={status.processed} style={{ width: "100%", marginTop: 8 }} /></div> : null}
+            {status.scanning ? <div style={{ marginTop: 18 }}><div style={{ color: T.action, fontWeight: "var(--weight-bold)" }}>{status.phase || "Loading..."}</div><div style={{ color: T.white, marginTop: 6 }}>{status.processed} / {status.total} PDFs</div><progress max={Math.max(status.total, 1)} value={status.processed} style={{ width: "100%", marginTop: 8 }} /></div> : null}
             <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 18 }}>
-              <button style={btnPrimary} disabled={Boolean(busy) || status.scanning} onClick={() => void scan(false)}>Scan Now</button>
-              <button style={btnGhost} disabled={Boolean(busy) || status.scanning} onClick={() => void scan(true)}>Full Rescan</button>
-              <button style={btnGhost} disabled={Boolean(busy) || status.scanning} onClick={() => void disconnect()}>Disconnect</button>
+              <Button variant="primary" type="button" disabled={Boolean(busy) || status.scanning} onClick={() => void scan(false)}>Scan Now</Button>
+              <Button variant="secondary" type="button" disabled={Boolean(busy) || status.scanning} onClick={() => void scan(true)}>Full Rescan</Button>
+              <Button tone="danger" variant="secondary" type="button" disabled={Boolean(busy) || status.scanning} onClick={() => void disconnect()}>Disconnect</Button>
             </div>
-            <label style={{ display: "grid", gap: 5, marginTop: 14, color: T.muted, fontSize: 12 }}>
+            <label style={{ display: "grid", gap: 5, marginTop: 14, color: T.muted, fontSize: "var(--text-sm)" }}>
               When unique number or checksum matches
               <select value={duplicateAction} disabled={status.scanning} onChange={(event) => setDuplicateAction(event.target.value as typeof duplicateAction)} style={{ padding: "9px 10px", borderRadius: 9, border: `1px solid ${T.border}`, background: T.panel, color: T.white }}>
                 <option value="ignore">Ignore</option>
@@ -172,7 +173,7 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
             </label>
           </div>
         )}
-        {message || status.error ? <div style={{ color: status.error ? T.coral : T.muted, fontSize: 12, marginTop: 12 }}>{message || status.error}</div> : null}
+        {message || status.error ? <div style={{ color: status.error ? T.coral : T.muted, fontSize: "var(--text-sm)", marginTop: 12 }}>{message || status.error}</div> : null}
       </div>
     </div>
   );

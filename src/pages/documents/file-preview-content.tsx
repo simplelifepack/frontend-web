@@ -1,6 +1,7 @@
+import { Text, Card } from "@/design-system";
+
 import type { ReactNode } from "react";
 
-import Card from "@/components/Card";
 import { T } from "@/constants/theme";
 
 type FilePreviewContentProps = {
@@ -22,18 +23,18 @@ export default function FilePreviewContent({
 }: FilePreviewContentProps) {
   if (mimeType.startsWith("image/")) {
     return (
-      <Card style={{ padding: 0, overflow: "hidden" }}>
+      <Card flush style={{ overflow: "hidden" }}>
         {header}
-        <div style={{ background: T.navy, display: "grid", placeItems: "center", maxHeight: 620, overflow: "auto" }}>
+        <Text as="div" size="md" style={{ background: T.navy, display: "grid", placeItems: "center", maxHeight: 620, overflow: "auto" }}>
           {previewStatus ?? <img src={previewUrl!} alt={alt} decoding="async" style={{ maxWidth: "100%", height: "auto", display: "block" }} />}
-        </div>
+        </Text>
       </Card>
     );
   }
 
   if (mimeType === "application/pdf") {
     return (
-      <Card style={{ padding: 0, overflow: "hidden" }}>
+      <Card flush style={{ overflow: "hidden" }}>
         {header}
         {previewStatus ?? <iframe src={previewUrl!} title={alt} style={{ width: "100%", height: 640, border: "none", background: T.raised }} />}
       </Card>
@@ -43,20 +44,20 @@ export default function FilePreviewContent({
   if (mimeType.startsWith("text/") || mimeType.includes("rtf")) {
     return (
       <Card>
-        <div style={{ color: T.white, fontWeight: 800, marginBottom: 12 }}>File preview</div>
-        <pre style={{ margin: 0, maxHeight: 460, overflow: "auto", whiteSpace: "pre-wrap", color: T.text, background: T.raised, border: `1px solid ${T.border}`, borderRadius: 10, padding: 12, fontSize: 12 }}>
+        <Text as="div" size="md" weight="semibold" style={{ color: T.white, marginBottom: "var(--space-s12)" }}>File preview</Text>
+        <Text as="pre" size="sm" style={{ margin: 0, maxHeight: 460, overflow: "auto", whiteSpace: "pre-wrap", color: T.text, background: T.raised, border: `1px solid ${T.border}`, borderRadius: "var(--radius-s10)", padding: "var(--space-s12)" }}>
           {rawExtractedText || "No text preview available."}
-        </pre>
+        </Text>
       </Card>
     );
   }
 
   return (
     <Card>
-      <div style={{ color: T.white, fontWeight: 800, marginBottom: 8 }}>File preview</div>
-      <div style={{ color: T.muted, fontSize: 13, lineHeight: 1.6 }}>
+      <Text as="div" size="md" weight="semibold" style={{ color: T.white, marginBottom: "var(--space-s8)" }}>File preview</Text>
+      <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
         Inline preview is not available for this file type. Use Download to open the original file.
-      </div>
+      </Text>
     </Card>
   );
 }

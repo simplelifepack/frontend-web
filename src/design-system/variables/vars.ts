@@ -1,0 +1,37 @@
+// Shared values outside the color, spacing, typography, and radius scales.
+export const vars = {
+  layers: {
+    sticky: 30,
+    navigation: 40,
+    dropdown: 50,
+    popover: 55,
+    backdrop: 60,
+    sheet: 65,
+    overlay: 72,
+    dialog: 75,
+    drawer: 80,
+    nestedDialog: 90,
+    detailDialog: 95,
+    confirmation: 100,
+    tooltip: 110,
+    notification: 120,
+  },
+  effects: { backdropBlur: "4px" },
+  icons: {
+    small: "16px",
+    regular: "18px",
+    medium: "20px",
+    large: "24px",
+    stroke: 2,
+  },
+  shadows: {
+    popup: "0 10px 28px var(--lp-shadow)",
+    panel: "0 24px 70px var(--lp-shadow)",
+  },
+  sizes: { dialog: "500px", tooltip: "280px" },
+  motion: { ring: "700ms cubic-bezier(.22,.9,.3,1)" },
+  borderWidths: { s1: "1px", s2: "2px" },
+  duration: { ms150: "150ms" },
+  opacity: { p50: 0.5 },
+  mix: { p86: "86%" },
+};

@@ -1,7 +1,8 @@
+import { Text, Card } from "@/design-system";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import Card from "@/components/Card";
-import { T, btnGhost, btnPrimary } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import { api, type DocumentPage, type DocumentRecord } from "@/lib/api";
 import { validateImageUploadBatch } from "@/lib/document-file-validation";
 import { useAppDispatch } from "@/store/hooks";
@@ -162,10 +163,10 @@ export default function FilePreview({
   if (doc.source === "GOOGLE_DRIVE") {
     return (
       <Card>
-        <div style={{ color: T.white, fontWeight: 800, marginBottom: 8 }}>Original file</div>
-        <div style={{ color: T.muted, fontSize: 13, lineHeight: 1.6 }}>
+        <Text as="div" size="md" weight="semibold" style={{ color: T.white, marginBottom: "var(--space-s8)" }}>Original file</Text>
+        <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
           This PDF remains in Google Drive. Open the original file to preview it.
-        </div>
+        </Text>
       </Card>
     );
   }
@@ -198,9 +199,9 @@ export default function FilePreview({
   );
 
   const previewStatus = previewError ? (
-    <div style={{ color: T.coral, padding: 20 }}>{previewError}</div>
+    <Text as="div" size="md" tone="danger" style={{ color: T.coral, padding: "var(--space-s20)" }}>{previewError}</Text>
   ) : !previewUrl ? (
-    <div style={{ color: T.muted, padding: 20 }}>Loading preview...</div>
+    <Text as="div" size="md" tone="muted" style={{ color: T.muted, padding: "var(--space-s20)" }}>Loading preview...</Text>
   ) : null;
 
   return (

@@ -1,5 +1,7 @@
+import { Heading, Text, SearchField, Input, Select, Textarea, Checkbox, Button } from "@/design-system";
+
 import { useEffect, useMemo, useState } from "react";
-import { Download, FilePlus2, Loader2, Plus, Save, Search, Trash2, Upload, X } from "lucide-react";
+import { Download, FilePlus2, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
 
 import { api, type AdminCsvImportResult, type AdminCsvPreview, type AdminPackage, type AdminPackagePayload, type AdminPackageRequirement, type AdminPackageSource } from "@/lib/api";
 import { clearPackageCatalogueCache } from "@/packages/packageCatalogueCache";
@@ -64,7 +66,7 @@ function editableSource(source: AdminPackageSource): AdminPackageSource {
 }
 
 function draftFromPackage(pack: AdminPackage): AdminPackagePayload {
-  const metadata = pack.searchMetadata && typeof pack.searchMetadata === "object" ? pack.searchMetadata : {};
+  const metadata: Record<string, unknown> = pack.searchMetadata && typeof pack.searchMetadata === "object" && !Array.isArray(pack.searchMetadata) ? pack.searchMetadata : {};
   return {
     aliases: pack.aliases ?? [],
     applicability: typeof metadata.applicability === "string" ? metadata.applicability : "",
@@ -165,8 +167,8 @@ export default function AdminPackagesPage() {
     return (
       <section className="lp-admin-packages">
         <div className="lp-admin-empty" role="alert">
-          <h1>403</h1>
-          <p>This packages admin panel is only available to the configured admin account.</p>
+          <Heading level={1} size="lg">403</Heading>
+          <Text as="p" size="md">This packages admin panel is only available to the configured admin account.</Text>
         </div>
       </section>
     );
@@ -263,26 +265,26 @@ export default function AdminPackagesPage() {
     <section className="lp-admin-packages">
       <header className="lp-admin-head">
         <div>
-          <h1>Package Admin</h1>
-          <p>Manage shared packages only. Custom user packages are excluded.</p>
+          <Heading level={1} size="lg">Package Admin</Heading>
+          <Text as="p" size="md">Manage shared packages only. Custom user packages are excluded.</Text>
         </div>
-        <button type="button" onClick={() => { setSelected(null); setDraft(blankDraft()); setFormOpen(true); setError(""); setMessage(""); }}><FilePlus2 size={16} />New package</button>
+        <Button variant="primary" type="button" onClick={() => { setSelected(null); setDraft(blankDraft()); setFormOpen(true); setError(""); setMessage(""); }}><FilePlus2 aria-hidden="true" focusable="false" size="var(--icon-small)" />New package</Button>
       </header>
 
-      {(error || message) && <div className={error ? "lp-admin-alert error" : "lp-admin-alert"}>{error || message}</div>}
+      {(error || message) && <Text as="div" size="md" className={error ? "lp-admin-alert error" : "lp-admin-alert"}>{error || message}</Text>}
 
       <div className="lp-admin-grid">
         <aside className="lp-admin-list">
           <div className="lp-admin-tools">
-            <label><Search size={15} /><input value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void load(1); }} placeholder="Search packages" /></label>
-            <select value={category} onChange={(event) => setCategory(event.target.value)}>
+            <SearchField value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void load(1); }} placeholder="Search packages" />
+            <Select value={category} onChange={(event) => setCategory(event.target.value)}>
               <option value="">All categories</option>
               {categories.map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-            <button type="button" onClick={() => void load(1)}>Apply</button>
+            </Select>
+            <Button variant="primary" type="button" onClick={() => void load(1)}>Apply</Button>
           </div>
-          {loading ? <div className="lp-admin-state"><Loader2 className="lp-spin" size={16} />Loading packages</div> : null}
-          {!loading && !items.length ? <div className="lp-admin-state">No shared packages found.</div> : null}
+          {loading ? <Text as="div" size="md" className="lp-admin-state"><Loader2 aria-hidden="true" focusable="false" className="lp-spin" size="var(--icon-small)" />Loading packages</Text> : null}
+          {!loading && !items.length ? <Text as="div" size="md" className="lp-admin-state">No shared packages found.</Text> : null}
           {items.map((pack) => (
             <button key={pack.id} type="button" className={`lp-admin-row ${selected?.slug === pack.slug ? "active" : ""}`} onClick={() => { setSelected(pack); setError(""); setMessage(""); }}>
               <span><b>{pack.title}</b><small>{pack.category} · {pack.requirements.length} requirements</small></span>
@@ -290,89 +292,89 @@ export default function AdminPackagesPage() {
             </button>
           ))}
           <div className="lp-admin-pages">
-            <button type="button" disabled={pagination.page <= 1} onClick={() => void load(pagination.page - 1)}>Previous</button>
-            <span>Page {pagination.page} of {totalPages} · {pagination.total}</span>
-            <button type="button" disabled={!pagination.hasNextPage} onClick={() => void load(pagination.page + 1)}>Next</button>
+            <Button size="sm" variant="default" type="button" disabled={pagination.page <= 1} onClick={() => void load(pagination.page - 1)}>Previous</Button>
+            <Text size="md">Page {pagination.page} of {totalPages} · {pagination.total}</Text>
+            <Button size="sm" variant="default" type="button" disabled={!pagination.hasNextPage} onClick={() => void load(pagination.page + 1)}>Next</Button>
           </div>
         </aside>
 
         {formOpen ? <main className="lp-admin-editor">
           <div className="lp-admin-section">
-            <h2>{selected ? "Edit package" : "Add package"}</h2>
+            <Heading level={2} size="md">{selected ? "Edit package" : "Add package"}</Heading>
             <div className="lp-admin-form two">
-              <label>Package name<input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></label>
-              <label>Slug<input value={draft.slug ?? ""} onChange={(event) => setDraft({ ...draft, slug: event.target.value })} /></label>
-              <label>Category<input value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })} /></label>
-              <label>Subtitle<input value={draft.subtitle ?? ""} onChange={(event) => setDraft({ ...draft, subtitle: event.target.value })} /></label>
-              <label>Country<input value={draft.country ?? ""} onChange={(event) => setDraft({ ...draft, country: event.target.value })} /></label>
-              <label>Applicability<input value={draft.applicability ?? ""} onChange={(event) => setDraft({ ...draft, applicability: event.target.value })} /></label>
-              <label className="wide">Description<textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></label>
-              <label>Aliases<textarea value={listText(draft.aliases)} onChange={(event) => setDraft({ ...draft, aliases: textList(event.target.value) })} /></label>
-              <label>Keywords<textarea value={listText(draft.keywords)} onChange={(event) => setDraft({ ...draft, keywords: textList(event.target.value) })} /></label>
+              <Text as="label" size="sm" weight="semibold">Package name<Input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Slug<Input value={draft.slug ?? ""} onChange={(event) => setDraft({ ...draft, slug: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Category<Input value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Subtitle<Input value={draft.subtitle ?? ""} onChange={(event) => setDraft({ ...draft, subtitle: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Country<Input value={draft.country ?? ""} onChange={(event) => setDraft({ ...draft, country: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Applicability<Input value={draft.applicability ?? ""} onChange={(event) => setDraft({ ...draft, applicability: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold" className="wide">Description<Textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Aliases<Textarea value={listText(draft.aliases)} onChange={(event) => setDraft({ ...draft, aliases: textList(event.target.value) })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Keywords<Textarea value={listText(draft.keywords)} onChange={(event) => setDraft({ ...draft, keywords: textList(event.target.value) })} /></Text>
             </div>
           </div>
 
           <div className="lp-admin-section">
-            <div className="lp-admin-section-head"><h2>Sources</h2><button type="button" onClick={() => setDraft({ ...draft, sources: [...draft.sources, blankSource()] })}><Plus size={15} />Source</button></div>
+            <div className="lp-admin-section-head"><Heading level={2} size="md">Sources</Heading><Button size="sm" variant="secondary" type="button" onClick={() => setDraft({ ...draft, sources: [...draft.sources, blankSource()] })}><Plus aria-hidden="true" focusable="false" size={15} />Source</Button></div>
             <div className="lp-admin-form two">
-              <label>Primary source name<input value={draft.sourceName ?? ""} onChange={(event) => setDraft({ ...draft, sourceName: event.target.value })} /></label>
-              <label>Primary URL<input value={draft.sourceUrl ?? ""} onChange={(event) => setDraft({ ...draft, sourceUrl: event.target.value })} /></label>
-              <label>Primary source title<input value={draft.sourceTitle ?? ""} onChange={(event) => setDraft({ ...draft, sourceTitle: event.target.value })} /></label>
-              <label>Source type<input value={draft.sourceType ?? ""} onChange={(event) => setDraft({ ...draft, sourceType: event.target.value })} /></label>
+              <Text as="label" size="sm" weight="semibold">Primary source name<Input value={draft.sourceName ?? ""} onChange={(event) => setDraft({ ...draft, sourceName: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Primary URL<Input value={draft.sourceUrl ?? ""} onChange={(event) => setDraft({ ...draft, sourceUrl: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Primary source title<Input value={draft.sourceTitle ?? ""} onChange={(event) => setDraft({ ...draft, sourceTitle: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="semibold">Source type<Input value={draft.sourceType ?? ""} onChange={(event) => setDraft({ ...draft, sourceType: event.target.value })} /></Text>
             </div>
             {draft.sources.map((source, index) => (
               <div className="lp-admin-repeat" key={`${source.url}-${index}`}>
-                <label>Display name<input value={source.title} onChange={(event) => updateSource(index, { title: event.target.value })} /></label>
-                <label>URL<input value={source.url} onChange={(event) => updateSource(index, { url: event.target.value })} /></label>
-                <label>Organization<input value={source.name ?? source.organization ?? ""} onChange={(event) => updateSource(index, { name: event.target.value })} /></label>
-                <button type="button" aria-label="Remove source" onClick={() => setDraft({ ...draft, sources: draft.sources.filter((_, itemIndex) => itemIndex !== index) })}><X size={16} /></button>
+                <Text as="label" size="sm" weight="semibold">Display name<Input value={source.title} onChange={(event) => updateSource(index, { title: event.target.value })} /></Text>
+                <Text as="label" size="sm" weight="semibold">URL<Input value={source.url} onChange={(event) => updateSource(index, { url: event.target.value })} /></Text>
+                <Text as="label" size="sm" weight="semibold">Organization<Input value={source.name ?? source.organization ?? ""} onChange={(event) => updateSource(index, { name: event.target.value })} /></Text>
+                <Button size="sm" tone="danger" iconOnly variant="tertiary" type="button" aria-label="Remove source" onClick={() => setDraft({ ...draft, sources: draft.sources.filter((_, itemIndex) => itemIndex !== index) })}><X aria-hidden="true" focusable="false" size="var(--icon-small)" /></Button>
               </div>
             ))}
           </div>
 
           <div className="lp-admin-section">
-            <div className="lp-admin-section-head"><h2>Requirements</h2><button type="button" onClick={() => setDraft({ ...draft, requirements: [...draft.requirements, blankRequirement()] })}><Plus size={15} />Requirement</button></div>
+            <div className="lp-admin-section-head"><Heading level={2} size="md">Requirements</Heading><Button size="sm" variant="secondary" type="button" onClick={() => setDraft({ ...draft, requirements: [...draft.requirements, blankRequirement()] })}><Plus aria-hidden="true" focusable="false" size={15} />Requirement</Button></div>
             {draft.requirements.map((requirement, index) => (
               <div className="lp-admin-requirement" key={requirement.id ?? index}>
                 <div className="lp-admin-form two">
-                  <label>Title<input value={requirement.title} onChange={(event) => updateRequirement(index, { title: event.target.value })} /></label>
-                  <label>Group<input value={requirement.group} onChange={(event) => updateRequirement(index, { group: event.target.value })} /></label>
-                  <label>Document type<input value={requirement.documentType ?? ""} onChange={(event) => updateRequirement(index, { documentType: event.target.value })} /></label>
-                  <label>Owner<input value={requirement.owner} onChange={(event) => updateRequirement(index, { owner: event.target.value })} /></label>
-                  <label className="wide">Description<textarea value={requirement.description ?? ""} onChange={(event) => updateRequirement(index, { description: event.target.value })} /></label>
-                  <label>Accepted document types<textarea value={listText(requirement.acceptedDocumentTypes)} onChange={(event) => updateRequirement(index, { acceptedDocumentTypes: textList(event.target.value) })} /></label>
-                  <label>Alternative labels<textarea value={listText(requirement.alternativeLabels)} onChange={(event) => updateRequirement(index, { alternativeLabels: textList(event.target.value) })} /></label>
+                  <Text as="label" size="sm" weight="semibold">Title<Input value={requirement.title} onChange={(event) => updateRequirement(index, { title: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="semibold">Group<Input value={requirement.group} onChange={(event) => updateRequirement(index, { group: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="semibold">Document type<Input value={requirement.documentType ?? ""} onChange={(event) => updateRequirement(index, { documentType: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="semibold">Owner<Input value={requirement.owner} onChange={(event) => updateRequirement(index, { owner: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="semibold" className="wide">Description<Textarea value={requirement.description ?? ""} onChange={(event) => updateRequirement(index, { description: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="semibold">Accepted document types<Textarea value={listText(requirement.acceptedDocumentTypes)} onChange={(event) => updateRequirement(index, { acceptedDocumentTypes: textList(event.target.value) })} /></Text>
+                  <Text as="label" size="sm" weight="semibold">Alternative labels<Textarea value={listText(requirement.alternativeLabels)} onChange={(event) => updateRequirement(index, { alternativeLabels: textList(event.target.value) })} /></Text>
                 </div>
                 <div className="lp-admin-requirement-actions">
-                  <label><input type="checkbox" checked={requirement.required} onChange={(event) => updateRequirement(index, { required: event.target.checked })} /> Required</label>
-                  <button type="button" disabled={draft.requirements.length === 1} onClick={() => setDraft({ ...draft, requirements: draft.requirements.filter((_, itemIndex) => itemIndex !== index) })}><Trash2 size={15} />Remove</button>
+                  <Text as="label" size="md"><Checkbox type="checkbox" checked={requirement.required} onChange={(event) => updateRequirement(index, { required: event.target.checked })} /> Required</Text>
+                  <Button tone="danger" variant="default" type="button" disabled={draft.requirements.length === 1} onClick={() => setDraft({ ...draft, requirements: draft.requirements.filter((_, itemIndex) => itemIndex !== index) })}><Trash2 aria-hidden="true" focusable="false" size={15} />Remove</Button>
                 </div>
               </div>
             ))}
           </div>
 
           <div className="lp-admin-actions">
-            <button type="button" disabled={saving} onClick={() => void save()}>{saving ? <Loader2 className="lp-spin" size={16} /> : <Save size={16} />}{selected ? "Save changes" : "Create package"}</button>
-            <button type="button" disabled={saving} onClick={() => { setSelected(null); setDraft(blankDraft()); setFormOpen(false); }}>Cancel</button>
+            <Button loading={saving} variant="primary" type="button" disabled={saving} onClick={() => void save()}>{saving ? <Loader2 aria-hidden="true" focusable="false" className="lp-spin" size="var(--icon-small)" /> : <Save aria-hidden="true" focusable="false" size="var(--icon-small)" />}{selected ? "Save changes" : "Create package"}</Button>
+            <Button variant="secondary" type="button" disabled={saving} onClick={() => { setSelected(null); setDraft(blankDraft()); setFormOpen(false); }}>Cancel</Button>
           </div>
 
           <div className="lp-admin-section">
-            <div className="lp-admin-section-head"><h2>CSV import</h2><button type="button" onClick={() => void downloadTemplate()}><Download size={15} />Template</button></div>
-            <label className="lp-admin-upload"><Upload size={16} />Upload CSV<input type="file" accept=".csv,text/csv" onChange={(event) => void previewCsv(event.target.files?.[0])} /></label>
+            <div className="lp-admin-section-head"><Heading level={2} size="md">CSV import</Heading><Button size="sm" variant="secondary" type="button" onClick={() => void downloadTemplate()}><Download aria-hidden="true" focusable="false" size={15} />Template</Button></div>
+            <Text as="label" size="sm" weight="semibold" className="lp-admin-upload"><Upload aria-hidden="true" focusable="false" size="var(--icon-small)" />Upload CSV<input type="file" accept=".csv,text/csv" onChange={(event) => void previewCsv(event.target.files?.[0])} /></Text>
             {csvPreview && (
               <div className="lp-admin-preview">
-                <b>{csvPreview.summary.valid} valid · {csvPreview.summary.invalid} invalid</b>
-                {csvPreview.rows.slice(0, 12).map((row) => <p key={row.rowNumber}>Row {row.rowNumber}: {row.title || row.slug || "Untitled"} {row.errors.length ? `- ${row.errors.join("; ")}` : "- ready"}</p>)}
-                <button type="button" disabled={!canImport} onClick={() => void importCsv()}>Import valid CSV</button>
+                <Text as="b" size="md" weight="semibold">{csvPreview.summary.valid} valid · {csvPreview.summary.invalid} invalid</Text>
+                {csvPreview.rows.slice(0, 12).map((row) => <Text as="p" size="md" key={row.rowNumber}>Row {row.rowNumber}: {row.title || row.slug || "Untitled"} {row.errors.length ? `- ${row.errors.join("; ")}` : "- ready"}</Text>)}
+                <Button variant="primary" type="button" disabled={!canImport} onClick={() => void importCsv()}>Import valid CSV</Button>
               </div>
             )}
-            {importResult && <div className="lp-admin-preview"><b>{importResult.successCount} created · {importResult.failedCount} failed</b>{importResult.results.filter((row) => row.errors.length).map((row) => <p key={row.rowNumber}>Row {row.rowNumber}: {row.errors.join("; ")}</p>)}</div>}
+            {importResult && <div   className="lp-admin-preview"><Text as="b" size="md" weight="semibold">{importResult.successCount} created · {importResult.failedCount} failed</Text>{importResult.results.filter((row) => row.errors.length).map((row) => <Text as="p" size="md" key={row.rowNumber}>Row {row.rowNumber}: {row.errors.join("; ")}</Text>)}</div>}
           </div>
         </main> : (
           <main className="lp-admin-editor">
             <div className="lp-admin-empty">
-              <h1>Packages</h1>
-              <p>Select a package to edit, or add a new package.</p>
+              <Heading level={1} size="lg">Packages</Heading>
+              <Text as="p" size="md">Select a package to edit, or add a new package.</Text>
             </div>
           </main>
         )}

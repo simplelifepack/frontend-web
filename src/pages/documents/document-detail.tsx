@@ -1,10 +1,10 @@
+import { Text, Button, Card, Pill } from "@/design-system";
+
 import { Download, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import Card from "@/components/Card";
-import Pill from "@/components/Pill";
-import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 import { useAppDispatch } from "@/store/hooks";
 import { deleteDocument } from "@/store/slices/documentsSlice";
@@ -49,124 +49,110 @@ export default function DocumentDetail({ doc }: { doc: DocumentRecord }) {
   };
 
   return (
-    <div className="lp-route lp-document-detail-route" style={{ display: "grid", gap: 14 }}>
+    <div className="lp-route lp-document-detail-route" style={{ display: "grid", gap: "var(--space-s14)" }}>
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          gap: 12,
+          gap: "var(--space-s12)",
           alignItems: "center",
         }}
       >
-        <button
+        <Button variant="secondary" size="sm"
           type="button"
           onClick={() => navigate("/documents")}
-          style={{ ...btnGhost, padding: "8px 12px" }}
         >
           Documents
-        </button>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <button type="button" disabled={Boolean(busy)} onClick={() => void downloadDocument()} style={{ ...btnPrimary, textDecoration: "none" }}>
-            <Download size={15} /> {busy === "download" ? "Downloading..." : "Download"}
-          </button>
-          <button type="button" disabled={Boolean(busy)} onClick={() => void removeDocument()} style={btnGhost}>
-            <Trash2 size={15} /> {busy === "delete" ? "Deleting..." : "Delete"}
-          </button>
+        </Button>
+        <div style={{ display: "flex", gap: "var(--space-s8)", flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <Button loading={Boolean(busy)} variant="primary" type="button" disabled={Boolean(busy)} onClick={() => void downloadDocument()} >
+            <Download aria-hidden="true" focusable="false" size={15} /> {busy === "download" ? "Downloading..." : "Download"}
+          </Button>
+          <Button tone="danger" loading={Boolean(busy)} variant="secondary" type="button" disabled={Boolean(busy)} onClick={() => void removeDocument()} >
+            <Trash2 aria-hidden="true" focusable="false" size={15} /> {busy === "delete" ? "Deleting..." : "Delete"}
+          </Button>
         </div>
       </div>
 
       <Card>
-        <div style={{ color: T.white, fontSize: 24, fontWeight: 800 }}>
+        <Text as="div" size="lg" weight="semibold" style={{ color: T.white }}>
           {documentTitle(doc)}
-        </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+        </Text>
+        <div style={{ display: "flex", gap: "var(--space-s10)", flexWrap: "wrap", marginTop: "var(--space-s12)" }}>
           <Pill tone="flat">{labelize(category)}</Pill>
           <Pill tone="flat">{labelize(doc.documentType)}</Pill>
           <Pill tone="flat">{sourceLabel(doc)}</Pill>
           <Pill tone="flat">{doc.pages?.length ? `${doc.pages.length} page${doc.pages.length === 1 ? "" : "s"}` : "1 page"}</Pill>
         </div>
-        <div style={{ color: T.muted, fontSize: 13, marginTop: 12 }}>
+        <Text as="div" size="md" tone="muted" style={{ color: T.muted, marginTop: "var(--space-s12)" }}>
           {doc.source === "MANUAL_UPLOAD" ? "Uploaded" : "Indexed"} {new Date(doc.createdAt).toLocaleString()} . {doc.originalName}
-        </div>
+        </Text>
       </Card>
 
       <FilePreview doc={doc} rawExtractedText={rawExtractedText} />
 
       <Card>
-        <div style={{ color: T.white, fontWeight: 800, marginBottom: 12 }}>
+        <Text as="div" size="md" weight="semibold" style={{ color: T.white, marginBottom: "var(--space-s12)" }}>
           Review fields
-        </div>
+        </Text>
         {approvedFields.length ? (
-          <div style={{ display: "grid", gap: 9 }}>
+          <div   style={{ display: "grid", gap: 9 }}>
             {approvedFields.map((field, index) => (
               <div
                 key={field.id ?? `${field.key}-${index}`}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "180px 1fr",
-                  gap: 12,
-                  fontSize: 13,
-                }}
+                style={{ display: "grid", gridTemplateColumns: "180px 1fr", gap: "var(--space-s12)", fontSize: "var(--text-md)" }}
               >
-                <div style={{ color: T.muted }}>{field.label}</div>
-                <div style={{ color: T.white, fontWeight: field.important ? 700 : 500 }}>
+                <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>{field.label}</Text>
+                <Text as="div" size="md" style={{ color: T.white }}>
                   {field.value}
-                </div>
+                </Text>
               </div>
             ))}
           </div>
         ) : (
-          <div style={{ color: T.muted, fontSize: 13 }}>
+          <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
             No reviewed fields saved for this document.
-          </div>
+          </Text>
         )}
       </Card>
 
       <details style={{ color: T.text }}>
-        <summary style={{ cursor: "pointer", color: T.muted, fontWeight: 700 }}>
+        <summary style={{ cursor: "pointer", color: T.muted, fontWeight: "var(--weight-bold)" }}>
           Raw extracted text
         </summary>
-        <pre
-          style={{
-            whiteSpace: "pre-wrap",
-            color: T.text,
-            background: T.raised,
-            border: `1px solid ${T.border}`,
-            borderRadius: 10,
-            padding: 12,
-            fontSize: 12,
-          }}
+        <Text as="pre" size="sm"
+          style={{ whiteSpace: "pre-wrap", color: T.text, background: T.raised, border: `1px solid ${T.border}`, borderRadius: "var(--radius-s10)", padding: "var(--space-s12)" }}
         >
           {rawExtractedText || "No raw text saved."}
-        </pre>
+        </Text>
       </details>
 
       <details style={{ color: T.text }}>
-        <summary style={{ cursor: "pointer", color: T.muted, fontWeight: 700 }}>
+        <summary style={{ cursor: "pointer", color: T.muted, fontWeight: "var(--weight-bold)" }}>
           Evidence and warnings
         </summary>
-        <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+        <div   style={{ display: "grid", gap: "var(--space-s8)", marginTop: "var(--space-s10)" }}>
           {warnings.map((warning, index) => (
-            <div key={`${warning.code}-${index}`} style={{ color: T.coral, fontSize: 13 }}>
+            <Text as="div" size="md" tone="danger" key={`${warning.code}-${index}`} style={{ color: T.coral }}>
               <b>{warning.code}</b> - {warning.message}
-            </div>
+            </Text>
           ))}
           {evidence.map((item, index) => (
-            <div key={`${item.label}-${index}`} style={{ color: T.text, fontSize: 13 }}>
+            <Text as="div" size="md" key={`${item.label}-${index}`} style={{ color: T.text }}>
               <b>{item.label}</b> ({item.points}) - {item.text}
-            </div>
+            </Text>
           ))}
           {!warnings.length && !evidence.length ? (
-            <div style={{ color: T.muted, fontSize: 13 }}>
+            <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
               No evidence or warnings saved.
-            </div>
+            </Text>
           ) : null}
         </div>
       </details>
 
-      <button type="button" style={{ ...btnGhost, justifySelf: "start" }}>
+      <Button variant="secondary" type="button" style={{ justifySelf: "start" }}>
         Edit metadata
-      </button>
+      </Button>
     </div>
   );
 }

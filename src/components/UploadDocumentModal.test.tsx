@@ -88,9 +88,27 @@ afterEach(() => {
 });
 
 describe("manual document upload review", () => {
+  it("retains original-file AI text and structured fields when confirming a successful analysis", async () => {
+    const view = renderModal("/documents");
+    view.showReview({ ...analysis, document: { ...analysis.document, extractedText: "Synthetic extracted page content", fields: { issuer: "Synthetic issuer" } } });
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Save" }));
+    await waitFor(() => expect(view.onClose).toHaveBeenCalledOnce());
+    expect(vi.mocked(saveDocument).mock.calls[0]![0]).toMatchObject({ analysisSource: "ai", rawExtractedText: "Synthetic extracted page content", fields: { issuer: "Synthetic issuer" } });
+  });
+  it("failed AI supports manual entry without retaining untrusted extracted content", async () => {
+    const view = renderModal("/documents");
+    view.showReview({ ...analysis, document: { ...analysis.document, extractedText: "discard failed content", fields: { issuer: "discard" } }, warnings: [{ code: "AI_ANALYSIS_UNAVAILABLE", message: "Unavailable" }] });
+    expect(screen.getByText(/AI could not read this document/)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Category"), { target: { value: "Identity" } });
+    fireEvent.click(screen.getByRole("button", { name: "Confirm & Save" }));
+    await waitFor(() => expect(view.onClose).toHaveBeenCalledOnce());
+    const payload = vi.mocked(saveDocument).mock.calls[0]![0];
+    expect(payload.analysisSource).toBe("manual"); expect(payload.rawExtractedText).toBe(""); expect(payload.fields.issuer).toBeUndefined();
+  });
+
   it("allows selecting and dropping PDF files alongside images", () => {
     const view = renderModal("/documents");
-    const input = view.container.querySelector('input[type="file"]') as HTMLInputElement;
+    const input = view.baseElement.querySelector('input[type="file"]') as HTMLInputElement;
     expect(input.accept).toContain("application/pdf");
     expect(input.accept).toContain(".pdf");
     const pdf = new File(["%PDF-1.4\n%%EOF"], "statement.pdf", { type: "application/pdf" });

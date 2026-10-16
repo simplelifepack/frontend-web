@@ -1,3 +1,5 @@
+import { Text, Input } from "@/design-system";
+
 import { useEffect, useState } from "react";
 import {
   HardDrive,
@@ -72,23 +74,13 @@ export default function SettingsPage() {
       <div className="lp-cols2">
         <div>
           <Section label="Account">
-            <div style={{ display: "flex", alignItems: "center", gap: 13, padding: 16 }}>
-              <span style={{
-                display: "grid",
-                placeItems: "center",
-                width: 44,
-                height: 44,
-                borderRadius: 13,
-                background: "color-mix(in srgb, var(--lp-action) 14%, transparent)",
-                color: T.action,
-                fontWeight: 800,
-                fontSize: 18,
-              }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "var(--space-s16)" }}>
+              <Text size="lg" weight="semibold" style={{ display: "grid", placeItems: "center", width: 44, height: 44, borderRadius: 13, background: "color-mix(in srgb, var(--lp-action) 14%, transparent)", color: T.action }}>
                 {initial}
-              </span>
+              </Text>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <input style={settingsInputStyle} value={account?.name || "Account"} readOnly aria-label="Account name" />
-                <div style={{ fontSize: 12, color: T.muted, marginTop: 5 }}>{account?.email || "Not signed in"}</div>
+                <Input style={settingsInputStyle} value={account?.name || "Account"} readOnly aria-label="Account name" />
+                <Text as="div" size="sm" tone="muted" style={{ color: T.muted, marginTop: 5 }}>{account?.email || "Not signed in"}</Text>
               </div>
             </div>
             <Row icon={Users} label="Family and Access" sub="Members, access levels, emergency contacts and SOS handoff" onClick={() => navigate("/family")} />
@@ -127,17 +119,17 @@ export default function SettingsPage() {
       ) : null}
       {modal === "feedback" ? (
         <Overlay title="Send feedback" onClose={() => setModal(null)}>
-          <p style={{ color: T.text, fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>
+          <Text as="p" size="md" style={{ color: T.text, margin: 0 }}>
             Feedback collection is not connected yet. For now, send issues to support@readiness.com.
-          </p>
+          </Text>
         </Overlay>
       ) : null}
       {modal === "about" ? (
         <Overlay title="About Readiness" onClose={() => setModal(null)}>
-          <p style={{ color: T.text, fontSize: 13.5, lineHeight: 1.7, margin: 0 }}>
+          <Text as="p" size="md" style={{ color: T.text, margin: 0 }}>
             Readiness keeps your family ready for important moments by organizing documents, readiness packs, health
             context, wealth records, and trusted access in one private account.
-          </p>
+          </Text>
         </Overlay>
       ) : null}
       {accountModal && account?.email ? (

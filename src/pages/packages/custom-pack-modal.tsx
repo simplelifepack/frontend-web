@@ -1,8 +1,10 @@
+import { vars, Text, ModalBackdrop, ModalPanel, Textarea, Input, Button } from "@/design-system";
+
 import { Loader2, Plus, Search, Trash2, X, Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import UploadDocumentModal from "@/components/UploadDocumentModal";
-import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import { api, type CustomPackPayload, type DocumentRecord, type PackSummary, type VerificationSource } from "@/lib/api";
 import { sourceProviderName } from "./package-source-display";
 
@@ -128,86 +130,86 @@ export default function CustomPackModal({
   };
 
   return (
-    <div className="lp-modalwrap" style={backdrop} onClick={onClose}>
-      <section className="lp-modalbox lp-custom-pack-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Create custom pack">
+    <ModalBackdrop  style={backdrop} onClick={onClose}>
+      <ModalPanel onDismiss={onClose} as="section" className="lp-custom-pack-modal" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Create custom pack">
         <div className="lp-sheet-grab lp-grabonly" />
         <header className="lp-custom-pack-head">
-          <b>Create a custom pack</b>
-          <button type="button" onClick={onClose} style={{ ...btnGhost, padding: 8 }} aria-label="Close custom pack">
-            <X size={16} />
-          </button>
+          <Text as="b" size="lg" weight="semibold">Create a custom pack</Text>
+          <Button iconOnly variant="tertiary" size="sm" type="button" onClick={onClose} aria-label="Close custom pack">
+            <X aria-hidden="true" focusable="false" size="var(--icon-small)" />
+          </Button>
         </header>
         {!drafted ? (
           <>
-            <p className="lp-custom-pack-copy">For situations the catalog does not cover.</p>
-            <label className="lp-custom-pack-label">What do you need documents for?</label>
-            <textarea
-              className="lp-custom-pack-input"
+            <Text as="p" size="md" className="lp-custom-pack-copy">For situations the catalog does not cover.</Text>
+            <Text as="label" size="sm" weight="semibold" className="lp-custom-pack-label">What do you need documents for?</Text>
+            <Textarea
+
               value={desc}
               onChange={(event) => setDesc(event.target.value)}
               placeholder="My son's school admission"
             />
-            <button type="button" className="lp-custom-pack-primary" disabled={!desc.trim() || loading} onClick={() => void lookup()}>
-              {loading ? <Loader2 size={15} className="lp-spin" /> : <Search size={15} />}
+            <Button loading={loading} variant="primary" type="button" disabled={!desc.trim() || loading} onClick={() => void lookup()}>
+              {loading ? <Loader2 aria-hidden="true" focusable="false" size={15} className="lp-spin" /> : <Search aria-hidden="true" focusable="false" size={15} />}
               {loading ? "Looking it up..." : "Look it up for me"}
-            </button>
-            <div className="lp-custom-pack-or"><span /><em>or</em><span /></div>
-            <button type="button" className="lp-custom-pack-manual" onClick={startManual}>
-              <Pencil size={15} /> Add documents myself
-            </button>
+            </Button>
+            <div className="lp-custom-pack-or"><span /><Text as="em" size="sm">or</Text><span /></div>
+            <Button variant="secondary" type="button" onClick={startManual}>
+              <Pencil aria-hidden="true" focusable="false" size={15} /> Add documents myself
+            </Button>
           </>
         ) : (
           <>
-            {loading ? <div className="lp-pack-generation-state"><Loader2 size={14} className="lp-spin" />{generationMessage || "Looking up requirements..."}</div> : null}
-            <label className="lp-custom-pack-label">Pack name</label>
-            <input className="lp-custom-pack-input" value={name} onChange={(event) => setName(event.target.value)} placeholder="Name this pack" />
-            <label className="lp-custom-pack-label">Description</label>
-            <textarea className="lp-custom-pack-input" value={desc} onChange={(event) => setDesc(event.target.value)} placeholder="What is this pack for?" />
-            <label className="lp-custom-pack-label">Documents needed</label>
-            <p className="lp-custom-pack-copy">List what you were asked for, or add the actual document now.</p>
+            {loading ? <Text as="div" size="md" className="lp-pack-generation-state"><Loader2 aria-hidden="true" focusable="false" size={14} className="lp-spin" />{generationMessage || "Looking up requirements..."}</Text> : null}
+            <Text as="label" size="sm" weight="semibold" className="lp-custom-pack-label">Pack name</Text>
+            <Input  value={name} onChange={(event) => setName(event.target.value)} placeholder="Name this pack" />
+            <Text as="label" size="sm" weight="semibold" className="lp-custom-pack-label">Description</Text>
+            <Textarea  value={desc} onChange={(event) => setDesc(event.target.value)} placeholder="What is this pack for?" />
+            <Text as="label" size="sm" weight="semibold" className="lp-custom-pack-label">Documents needed</Text>
+            <Text as="p" size="md" className="lp-custom-pack-copy">List what you were asked for, or add the actual document now.</Text>
             <datalist id="lp-custom-pack-doc-types">{vocab.map((item) => <option key={item} value={item} />)}</datalist>
             {reqs.map((req, index) => (
               <div className="lp-custom-pack-req" key={`${index}-${req}`}>
-                <input
-                  className="lp-custom-pack-input"
+                <Input
+
                   list="lp-custom-pack-doc-types"
                   value={req}
                   onChange={(event) => setReqs((items) => items.map((item, itemIndex) => itemIndex === index ? event.target.value : item))}
                   placeholder="Document name"
                 />
-                <button type="button" onClick={() => setReqs((items) => items.filter((_, itemIndex) => itemIndex !== index))} aria-label="Remove">
-                  <Trash2 size={14} />
-                </button>
+                <Button size="sm" tone="danger" iconOnly variant="tertiary" type="button" onClick={() => setReqs((items) => items.filter((_, itemIndex) => itemIndex !== index))} aria-label="Remove">
+                  <Trash2 aria-hidden="true" focusable="false" size={14} />
+                </Button>
               </div>
             ))}
-            <button type="button" className="lp-custom-pack-add" onClick={() => setUploadOpen(true)}>
-              <Plus size={13} /> Add document
-            </button>
-            <button type="button" className="lp-custom-pack-text-add" onClick={() => setReqs((items) => [...items, ""])}>
+            <Button size="sm" variant="tertiary" type="button" onClick={() => setUploadOpen(true)}>
+              <Plus aria-hidden="true" focusable="false" size={13} /> Add document
+            </Button>
+            <Button size="sm" variant="tertiary" type="button" onClick={() => setReqs((items) => [...items, ""])}>
               Add requirement by name
-            </button>
+            </Button>
             {verificationSources.length ? (
-              <div className="lp-custom-pack-source">
+              <Text as="div" size="sm" className="lp-custom-pack-source">
                 <strong>Live sourced draft</strong>
-                {verificationSources.slice(0, 4).map((item) => <a key={item.url} href={item.url} target="_blank" rel="noreferrer" title={item.title}>{sourceProviderName(item)}</a>)}
-              </div>
+                {verificationSources.slice(0, 4).map((item) => <Text as="a" size="md" key={item.url} href={item.url} target="_blank" rel="noreferrer" title={item.title}>{sourceProviderName(item)}</Text>)}
+              </Text>
             ) : null}
-            {disclaimer ? <div className="lp-pack-assignment-error">{disclaimer}</div> : null}
+            {disclaimer ? <Text as="div" size="sm" className="lp-pack-assignment-error">{disclaimer}</Text> : null}
             <footer className="lp-custom-pack-actions">
-              <button type="button" style={btnGhost} onClick={onClose}>Cancel</button>
-              <button type="button" style={btnPrimary} disabled={!name.trim() || !reqs.some((item) => item.trim()) || saving} onClick={() => void save()}>
-                {saving ? <Loader2 size={15} className="lp-spin" /> : null}
+              <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
+              <Button loading={saving} variant="primary" type="button" disabled={!name.trim() || !reqs.some((item) => item.trim()) || saving} onClick={() => void save()}>
+                {saving ? <Loader2 aria-hidden="true" focusable="false" size={15} className="lp-spin" /> : null}
                 Save pack
-              </button>
+              </Button>
             </footer>
           </>
         )}
-        {error ? <div className="lp-pack-assignment-error">{error}</div> : null}
-      </section>
+        {error ? <Text as="div" size="sm" className="lp-pack-assignment-error">{error}</Text> : null}
+      </ModalPanel>
       {uploadOpen ? (
         <UploadDocumentModal
           open={uploadOpen}
-          zIndex={90}
+          zIndex={vars.layers.confirmation}
           onClose={() => setUploadOpen(false)}
           onSaved={(document) => {
             addUploadedDocument(document);
@@ -215,17 +217,17 @@ export default function CustomPackModal({
           }}
         />
       ) : null}
-    </div>
+    </ModalBackdrop>
   );
 }
 
 const backdrop = {
   position: "fixed",
   inset: 0,
-  zIndex: 72,
+  zIndex: "var(--layer-overlay)",
   background: "var(--lpv-scrim, rgba(18,22,30,.38))",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  padding: 18,
+  padding: "var(--space-s18)",
 } as const;

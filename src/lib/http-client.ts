@@ -95,7 +95,7 @@ async function performRequest<T>(path: string, options: RequestOptions = {}) {
     return performRequest<T>(path, { ...options, retryOnUnauthorized: false });
   }
   if (!response.ok) {
-    throw apiError(data);
+    throw Object.assign(apiError(data), { status: response.status });
   }
   return data as T;
 }

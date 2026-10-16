@@ -1,3 +1,5 @@
+import { Text, Button, Stack } from "@/design-system";
+
 import AccountUsage from "@/components/AccountUsage";
 import { refreshUsage } from "@/store/slices/usageSlice";
 import { useEffect, useMemo, useState } from "react";
@@ -156,11 +158,12 @@ export default function PackagesPage() {
 
       {usage && <AccountUsage usage={usage} only="ai" />}
       {error ? (
-        <div style={{ color: T.coral, fontSize: 13, marginBottom: 12 }}>
+        <Text as="div" size="md" tone="danger" style={{ color: T.coral, marginBottom: "var(--space-s12)" }}>
           {error}
-        </div>
+        </Text>
       ) : null}
 
+      <Stack>
       <PackageSearchPanel
         generationStatus={generationStatus}
         query={query}
@@ -182,9 +185,9 @@ export default function PackagesPage() {
       <PackageCategoryPills active={category} categories={categoryPills} packs={cataloguePacks.length ? cataloguePacks : packs} onSelect={(item) => { setCategory(item); setCurrentPage(1); }} />
 
       {!hasEmptySearch ? (
-        <div className="lp-pack-section-label">
+        <Text as="div" size="md" weight="semibold" className="lp-pack-section-label">
           {hasSearchQuery ? "Search results" : "All packages"}
-        </div>
+        </Text>
       ) : null}
       <PackageGrid
         activeQuerySettled={activeQuerySettled}
@@ -202,12 +205,13 @@ export default function PackagesPage() {
 
       {shouldShowPagination ? (
         <nav className="lp-pack-pages" aria-label="Package pagination" aria-busy={isPageLoading}>
-          <button type="button" disabled={isPageLoading || currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Previous</button>
-          <span aria-live="polite">{pagination ? `Page ${currentPage} of ${totalPages} · ${pagination.total} packages` : `Loading page ${currentPage}…`}</span>
-          <button type="button" disabled={isPageLoading || !pagination?.hasNextPage} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Next</button>
+          <Button size="sm" variant="tertiary" type="button" disabled={isPageLoading || currentPage === 1} onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}>Previous</Button>
+          <Text size="md" aria-live="polite">{pagination ? `Page ${currentPage} of ${totalPages} · ${pagination.total} packages` : `Loading page ${currentPage}…`}</Text>
+          <Button size="sm" variant="tertiary" type="button" disabled={isPageLoading || !pagination?.hasNextPage} onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}>Next</Button>
         </nav>
       ) : null}
 
+      </Stack>
       <PackageDetailDrawer
         completion={completion}
         documents={documents}

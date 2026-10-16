@@ -1,8 +1,9 @@
+import { Text, Button, Card } from "@/design-system";
+
 import { useNavigate } from "react-router-dom";
 
-import Card from "@/components/Card";
 import SectionHead from "@/components/SectionHead";
-import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 import DocumentRows from "./document-rows";
 import { labelize, openUpload } from "./document-utils";
@@ -24,45 +25,45 @@ export default function CategoryDocuments({
         style={{
           display: "flex",
           justifyContent: "space-between",
-          gap: 14,
-          marginBottom: 18,
+          gap: "var(--space-s14)",
+          marginBottom: "var(--space-s18)",
         }}
       >
         <div>
-          <button
+          <Button variant="secondary" size="sm"
             type="button"
             onClick={() => navigate("/documents")}
-            style={{ ...btnGhost, padding: "7px 11px", marginBottom: 14 }}
+            style={{ marginBottom: "var(--space-s14)" }}
           >
             Documents / {name}
-          </button>
+          </Button>
           <SectionHead
             title={name}
             sub={`${documents.length} ${documents.length === 1 ? "document" : "documents"}`}
           />
         </div>
-        <button
+        <Button variant="primary"
           type="button"
           onClick={openUpload}
-          style={{ ...btnPrimary, alignSelf: "start" }}
+          style={{ alignSelf: "start" }}
         >
           Upload
-        </button>
+        </Button>
       </div>
 
       {documents.length ? (
         <DocumentRows documents={documents} showCategory={false} />
       ) : (
-        <Card style={{ textAlign: "center", padding: 34 }}>
-          <div style={{ color: T.white, fontWeight: 800, fontSize: 18 }}>
+        <Card style={{ textAlign: "center" }}>
+          <Text as="div" size="lg" weight="semibold" style={{ color: T.white }}>
             No {labelize(name)} documents yet.
-          </div>
-          <div style={{ color: T.muted, fontSize: 13, marginTop: 8 }}>
+          </Text>
+          <Text as="div" size="md" tone="muted" style={{ color: T.muted, marginTop: "var(--space-s8)" }}>
             Upload a document and Readiness will place it here automatically.
-          </div>
-          <button type="button" onClick={openUpload} style={{ ...btnPrimary, marginTop: 18 }}>
+          </Text>
+          <Button variant="primary" type="button" onClick={openUpload} style={{ marginTop: "var(--space-s18)" }}>
             Upload
-          </button>
+          </Button>
         </Card>
       )}
     </div>

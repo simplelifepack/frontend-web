@@ -1,6 +1,7 @@
+import { Heading, Text, ChoiceGroup, Choice, ModalBackdrop, ModalPanel, Input, Button } from "@/design-system";
+
 import { useState } from "react";
 import { X } from "lucide-react";
-import { btnGhost, btnPrimary } from "@/constants/theme";
 
 type MedicationForm = {
   name: string;
@@ -75,61 +76,61 @@ function AddMedicationDialog({
     }
   };
   return (
-    <div className="lp-modal-backdrop" style={{ zIndex: 90 }}>
-      <div className="lp-modal-panel lp-health-add-dialog lp-health-medication-dialog" role="dialog" aria-modal="true" aria-label={editing ? "Edit medication" : "Add medication"}>
+    <ModalBackdrop  style={{ zIndex: "var(--layer-nestedDialog)" }}>
+      <ModalPanel onDismiss={onClose} className="lp-health-add-dialog lp-health-medication-dialog" role="dialog" aria-modal="true" aria-label={editing ? "Edit medication" : "Add medication"}>
         <header className="lp-health-dialog-head lp-health-medication-head">
           <div>
-            <h2>{editing ? "Edit medication" : "Add medication"}</h2>
-            <p>{editing ? "Correct the saved medication details." : "Save this medication to the selected Health profile."}</p>
+            <Heading level={2} size="md">{editing ? "Edit medication" : "Add medication"}</Heading>
+            <Text as="p" size="md">{editing ? "Correct the saved medication details." : "Save this medication to the selected Health profile."}</Text>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
         <div className="lp-health-form-grid lp-health-medication-form">
-          <label className="lp-health-med-name">
+          <Text as="label" size="sm" weight="semibold" className="lp-health-med-name">
             <span>Name</span>
-            <input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="e.g. Metformin" />
-          </label>
-          <label className="lp-health-med-dose">
+            <Input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="e.g. Metformin" />
+          </Text>
+          <Text as="label" size="sm" weight="semibold" className="lp-health-med-dose">
             <span>Dose</span>
-            <input value={form.dose} onChange={(event) => update("dose", event.target.value)} placeholder="500 mg" />
-          </label>
+            <Input value={form.dose} onChange={(event) => update("dose", event.target.value)} placeholder="500 mg" />
+          </Text>
           <fieldset className="lp-health-med-when">
-            <span>When to take it</span>
-            <div className="lp-health-segmented" aria-label="When to take it">
+            <Text size="md">When to take it</Text>
+            <ChoiceGroup  aria-label="When to take it">
               {timeOptions.map((option) => (
-                <button key={option.value} type="button" className={form.whenToTake.includes(option.value) ? "selected" : ""} onClick={() => toggleTime(option.value)}>
+                <Choice key={option.value} type="button" aria-pressed={form.whenToTake.includes(option.value)} onClick={() => toggleTime(option.value)}>
                   {option.label}
-                </button>
+                </Choice>
               ))}
-            </div>
+            </ChoiceGroup>
           </fieldset>
-          <label className="lp-health-med-repeat">
+          <Text as="label" size="sm" weight="semibold" className="lp-health-med-repeat">
             <span>Repeat runs out</span>
-            <input type="date" value={form.repeatRunsOut} onChange={(event) => update("repeatRunsOut", event.target.value)} placeholder="dd/mm/yyyy" />
-          </label>
+            <Input type="date" value={form.repeatRunsOut} onChange={(event) => update("repeatRunsOut", event.target.value)} placeholder="dd/mm/yyyy" />
+          </Text>
           <fieldset className="lp-health-med-meals">
-            <span>With meals</span>
-            <div className="lp-health-segmented" aria-label="With meals">
+            <Text size="md">With meals</Text>
+            <ChoiceGroup  aria-label="With meals">
               {mealOptions.map((option) => (
-                <button key={option.value} type="button" className={form.mealTiming === option.value ? "selected" : ""} onClick={() => update("mealTiming", option.value)}>
+                <Choice key={option.value} type="button" aria-pressed={form.mealTiming === option.value} onClick={() => update("mealTiming", option.value)}>
                   {option.label}
-                </button>
+                </Choice>
               ))}
-            </div>
+            </ChoiceGroup>
           </fieldset>
-          <p className="lp-health-med-note">Repeat date is optional.</p>
+          <Text as="p" size="md" className="lp-health-med-note">Repeat date is optional.</Text>
         </div>
-        {error ? <div className="lp-health-form-error">{error}</div> : null}
+        {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}
         <footer>
-          <button type="button" style={btnGhost} disabled={saving} onClick={onClose}>Cancel</button>
-          <button type="button" style={btnPrimary} disabled={saving || !isValid} onClick={submit}>
+          <Button variant="secondary" type="button" disabled={saving} onClick={onClose}>Cancel</Button>
+          <Button loading={saving} variant="primary" type="button" disabled={saving || !isValid} onClick={submit}>
             {saving ? (editing ? "Saving..." : "Adding...") : editing ? "Save changes" : "Add medication"}
-          </button>
+          </Button>
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 

@@ -1,3 +1,4 @@
+import { ChoiceGroup, Choice } from "@/design-system";
 import { wealthCategories, type WealthCategory } from "./wealth-categories";
 
 export function CategoryFilters({
@@ -9,18 +10,18 @@ export function CategoryFilters({
 }) {
   return (
     <div className="lp-wealth-filter-wrap" aria-label="Wealth categories">
-      <div className="lp-wealth-filters">
+      <ChoiceGroup >
         {wealthCategories.map((item) => (
-          <button
+          <Choice
             key={item.key}
             type="button"
-            className={value === item.key ? "active" : ""}
+            aria-pressed={value === item.key}
             onClick={() => onChange(item.key)}
           >
             {item.label}
-          </button>
+          </Choice>
         ))}
-      </div>
+      </ChoiceGroup>
     </div>
   );
 }

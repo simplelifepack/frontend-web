@@ -5,8 +5,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 import AppShell from "@/components/AppShell";
 import AuthLayout from "@/components/AuthLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import BootstrapSkeleton from "@/components/BootstrapSkeleton";
-import PinSetupGate from "@/components/PinSetupGate";
+import SessionGate from "@/components/SessionGate";
 import { preferencesApi } from "@/lib/preferences-api";
 import { persistHomeCurrency } from "@/lib/preferences-storage";
 import { persistTheme } from "@/lib/theme";
@@ -30,16 +29,6 @@ const ResetPasswordPage = lazy(() => import("@/pages/reset-password"));
 const TrustPage = lazy(() => import("@/pages/trust"));
 const WealthPage = lazy(() => import("@/pages/wealth"));
 
-const publicEntryPaths = new Set([
-  "/",
-  "/landing",
-  "/login",
-  "/signin",
-  "/signup",
-  "/forgot-password",
-  "/reset-password",
-]);
-
 type LandingLocationState = {
   authMode?: "signin" | "signup";
   from?: { pathname?: string };
@@ -48,19 +37,13 @@ type LandingLocationState = {
 function LandingRoute() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { token, user, initialized } = useAppSelector((state) => state.auth);
+  const { token, user } = useAppSelector((state) => state.auth);
   const state = location.state as LandingLocationState | null;
   const authMode = state?.authMode === "signup" ? "signup" : state?.authMode === "signin" ? "signin" : null;
   const destination = state?.from?.pathname ?? "/home";
 
   if (token && user) {
-    if (!user.pinConfigured) return <PinSetupGate />;
-    if (!initialized) return <BootstrapSkeleton />;
-    return (
-      <AppShell>
-        <HomePage />
-      </AppShell>
-    );
+    return <Navigate to={destination} replace />;
   }
 
   return <LandingPage initialAuthMode={authMode} onAuthed={() => navigate(destination, { replace: true })} />;
@@ -68,15 +51,13 @@ function LandingRoute() {
 
 export default function App() {
   const dispatch = useAppDispatch();
-  const location = useLocation();
   const { token, user, initialized, initializationStatus, sessionStatus } = useAppSelector((state) => state.auth);
   const documentStatus = useAppSelector((state) => state.documents.status);
   const preferencesTokenRef = useRef<string | null>(null);
-  const isPublicEntryPath = publicEntryPaths.has(location.pathname) || location.pathname.startsWith("/invite/");
 
   useEffect(() => {
-    if (!isPublicEntryPath && sessionStatus === "idle") void dispatch(restoreSession());
-  }, [dispatch, isPublicEntryPath, sessionStatus]);
+    if (sessionStatus === "idle") void dispatch(restoreSession());
+  }, [dispatch, sessionStatus]);
 
   useEffect(() => {
     if (token && user?.pinConfigured && !initialized && initializationStatus === "idle") {
@@ -110,8 +91,8 @@ export default function App() {
   return (
     <Suspense fallback={null}>
       <Routes>
-        <Route path="/" element={<LandingRoute />} />
-        <Route path="/landing" element={<LandingRoute />} />
+        <Route path="/" element={<SessionGate><LandingRoute /></SessionGate>} />
+        <Route path="/landing" element={<SessionGate><LandingRoute /></SessionGate>} />
         <Route path="/login" element={<Navigate to="/" replace state={{ authMode: "signin" }} />} />
         <Route path="/signin" element={<Navigate to="/" replace state={{ authMode: "signin" }} />} />
         <Route path="/signup" element={<Navigate to="/" replace state={{ authMode: "signup" }} />} />
@@ -140,7 +121,7 @@ export default function App() {
           }
         />
 
-        <Route element={<ProtectedRoute />}>
+        <Route element={<SessionGate><ProtectedRoute /></SessionGate>}>
           <Route element={<AppShell />}>
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/home" element={<HomePage />} />

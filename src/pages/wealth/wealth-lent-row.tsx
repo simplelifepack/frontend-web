@@ -1,3 +1,5 @@
+import { Text, Button } from "@/design-system";
+
 import { Check, Coins } from "lucide-react";
 
 import type { WealthRecord } from "@/lib/api";
@@ -62,23 +64,23 @@ export function LentBorrowedRow({
       <span
         className={`lp-lent-icon ${settled ? "settled" : youOwe ? "borrowed" : "lent"}`}
       >
-        <Coins size={15} />
+        <Coins aria-hidden="true" focusable="false" size={15} />
       </span>
       <span className="lp-wname" style={{ opacity: settled ? 0.6 : 1 }}>
-        <b>
+        <Text as="b" size="md" weight="semibold">
           {party === "Unspecified" ? (youOwe ? "Borrowed" : "Lent") : party}
-        </b>
-        <small>
+        </Text>
+        <Text as="small" size="sm">
           {record.title}
           {date ? ` · ${formatShortDate(date)}` : ""}
           {followUp ? ` · ${followUp}` : settled ? " · settled" : ""}
-        </small>
+        </Text>
       </span>
-      <strong
+      <Text as="strong" size="md" weight="semibold"
         className={`${youOwe ? "negative" : ""} ${settled ? "settled" : ""}`}
       >
         {recordMoney(record, amount)} <span>{settled ? "" : label}</span>
-      </strong>
+      </Text>
       {!settled ? (
         <span className="lp-wchips">
           <StatusBadge
@@ -88,9 +90,8 @@ export function LentBorrowedRow({
           <StatusBadge ok={party !== "Unspecified"} label="Contact" />
         </span>
       ) : null}
-      <button
+      <Button size="sm" variant="tertiary"
         type="button"
-        className="lp-lent-settle"
         onClick={(event) => {
           event.stopPropagation();
           onSettle(!settled);
@@ -100,10 +101,10 @@ export function LentBorrowedRow({
           "Reopen"
         ) : (
           <>
-            <Check size={12} /> Settled
+            <Check aria-hidden="true" focusable="false" size={12} /> Settled
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import Ring from "@/components/Ring";
+import { Heading, Text, Button, Ring } from "@/design-system";
+
 import Stamp from "@/components/Stamp";
 import { T } from "@/constants/theme";
 import type { PackSummary } from "@/lib/api";
@@ -38,32 +39,32 @@ export default function PackDetailHeader({ completion, isComplete, pack, readyCo
   const { Icon, color } = packageMeta(pack);
   return (
     <header className="lp-pack-drawer-head">
-      <button type="button" className="lp-pack-drawer-close" onClick={onClose} aria-label="Close package details"><X size={18} /></button>
+      <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close package details"><X aria-hidden="true" focusable="false" size="var(--icon-regular)" /></Button>
       <div className="lp-pack-drawer-title">
-        <span style={{ background: `${color}22`, color }}><Icon size={21} /></span>
-        <div><h2>{pack.title}</h2><p>{pack.subtitle || pack.description || pack.category}</p></div>
+        <span style={{ background: `color-mix(in srgb, ${color} 13.33%, transparent)`, color }}><Icon aria-hidden="true" focusable="false" size={21} /></span>
+        <div><Heading level={2} size="sm">{pack.title}</Heading><Text as="p" size="md">{pack.subtitle || pack.description || pack.category}</Text></div>
       </div>
-      {pack.createdBy && pack.createdBy !== "seed" ? <div className="lp-pack-custom-badge">Custom / generated pack</div> : null}
+      {pack.createdBy && pack.createdBy !== "seed" ? <Text as="div" size="md" className="lp-pack-custom-badge">Custom / generated pack</Text> : null}
       <div className="lp-pack-drawer-source">
-        <span>{pack.verificationSources?.length ? "Sources" : `Curated list · ${source.provider}${source.checked ? ` · last checked ${source.checked}` : ""}`}</span>
+        <Text size="md">{pack.verificationSources?.length ? "Sources" : `Curated list · ${source.provider}${source.checked ? ` · last checked ${source.checked}` : ""}`}</Text>
         {pack.verificationSources?.slice(0, 3).map((item) => (
           item.url ? (
-            <a href={item.url} target="_blank" rel="noreferrer" title={item.title || item.url} key={`${item.title}-${item.url}`}>
-              {item.type === "government" || item.type === "official" || item.type === "authority" ? <ShieldCheck size={12} /> : <ExternalLink size={12} />}
+            <Text as="a" size="sm" weight="semibold" href={item.url} target="_blank" rel="noreferrer" title={item.title || item.url} key={`${item.title}-${item.url}`}>
+              {item.type === "government" || item.type === "official" || item.type === "authority" ? <ShieldCheck aria-hidden="true" focusable="false" size={12} /> : <ExternalLink aria-hidden="true" focusable="false" size={12} />}
               {sourceProviderName(item)}
-            </a>
+            </Text>
           ) : (
-            <span className="lp-pack-source-pill" key={item.title}>{sourceProviderName(item)}</span>
+            <Text size="md" className="lp-pack-source-pill" key={item.title}>{sourceProviderName(item)}</Text>
           )
         ))}
-        {source.checked ? <span className="lp-pack-source-date">Checked {source.checked}</span> : null}
-        <button type="button" title={refreshing ? "Checking latest requirements" : "Check again now"} aria-label="Check again now" aria-busy={refreshing} disabled={refreshing} onClick={() => void refresh()}><RefreshCw size={14} className={refreshing ? "lp-pack-refresh-spinning" : undefined} /></button>
+        {source.checked ? <Text size="md" className="lp-pack-source-date">Checked {source.checked}</Text> : null}
+        <Button size="sm" iconOnly variant="tertiary" type="button" title={refreshing ? "Checking latest requirements" : "Check again now"} aria-label="Check again now" aria-busy={refreshing} disabled={refreshing} onClick={() => void refresh()}><RefreshCw aria-hidden="true" focusable="false" size={14} className={refreshing ? "lp-pack-refresh-spinning" : undefined} /></Button>
       </div>
-      {feedback ? <p className="lp-pack-refresh-feedback" role={feedback.error ? "alert" : "status"} style={{ color: feedback.error ? T.coral : T.muted }}>{feedback.message}</p> : null}
-      <div className="lp-pack-drawer-score">
+      {feedback ? <Text as="p" size="sm" tone="muted" className="lp-pack-refresh-feedback" role={feedback.error ? "alert" : "status"} style={{ color: feedback.error ? T.coral : T.muted }}>{feedback.message}</Text> : null}
+      <Text as="div" size="md" className="lp-pack-drawer-score">
         <Ring score={completion} size={64} />
         {isComplete ? <Stamp /> : <span>{readyCount} of {totalCount} ready</span>}
-      </div>
+      </Text>
     </header>
   );
 }

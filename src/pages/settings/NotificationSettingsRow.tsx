@@ -1,3 +1,4 @@
+import { SwitchIndicator } from "@/design-system";
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { toast } from "sonner";
@@ -139,43 +140,25 @@ export default function NotificationSettingsRow() {
   const enabled = state === "on";
 
   return (
-    <button type="button" onClick={() => void toggle()} disabled={busy || state === "checking"} style={{
+    <button type="button" role="switch" aria-checked={enabled} aria-label="Notifications" onClick={() => void toggle()} disabled={busy || state === "checking"} style={{
       width: "100%",
       display: "flex",
       alignItems: "center",
-      gap: 12,
-      padding: "13px 16px",
+      gap: "var(--space-s12)",
+      padding: "13px var(--space-s16)",
       border: 0,
       borderTop: `1px solid ${T.border}`,
       background: "none",
       cursor: busy || state === "checking" ? "wait" : "pointer",
       textAlign: "left",
     }}>
-      <Bell size={16} color={T.muted} />
+      <Bell aria-hidden="true" focusable="false" size="var(--icon-small)" color={T.muted} />
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.text }}>Notifications</span>
-        <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1 }}>{sub}</span>
+        <span style={{ display: "block", fontSize: "var(--text-md)", fontWeight: "var(--weight-semibold)", color: T.text }}>Notifications</span>
+        <span style={{ display: "block", fontSize: "var(--text-sm)", color: T.muted, marginTop: 1 }}>{sub}</span>
       </span>
-      <span style={{ fontSize: 12.5, color: T.muted, fontFamily: "ui-monospace, monospace" }}>{label}</span>
-      <span role="switch" aria-checked={enabled} aria-label="Notifications" style={{
-        width: 38,
-        height: 22,
-        borderRadius: 999,
-        padding: 2,
-        background: enabled ? T.action : T.raised,
-        border: `1px solid ${enabled ? T.action : T.border}`,
-        transition: "background 140ms ease",
-      }}>
-        <span style={{
-          display: "block",
-          width: 16,
-          height: 16,
-          borderRadius: "50%",
-          background: enabled ? T.actionText : T.muted,
-          transform: enabled ? "translateX(16px)" : "translateX(0)",
-          transition: "transform 140ms ease",
-        }} />
-      </span>
+      <span style={{ fontSize: "var(--text-md)", color: T.muted }}>{label}</span>
+      <SwitchIndicator checked={enabled} />
     </button>
   );
 }

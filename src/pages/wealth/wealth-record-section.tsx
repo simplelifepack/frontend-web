@@ -1,6 +1,7 @@
+import { Text, Card } from "@/design-system";
+
 import { ChevronRight, Coins, FileCheck, Landmark, ShieldCheck } from "lucide-react";
 
-import Card from "@/components/Card";
 import type { WealthRecord } from "@/lib/api";
 import { money, recordAmount, recordMoney, recordSubtitle, statusFor } from "./wealth-view";
 
@@ -21,8 +22,8 @@ export function RecordSection({
 }) {
   if (!records.length) return null;
   return (
-    <Card style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
-      <div className="lp-wealth-section-head">
+    <Card flush style={{ overflow: "hidden", marginBottom: "var(--space-s16)" }}>
+      <Text as="div" size="md" weight="semibold" className="lp-wealth-section-head">
         <span>{title}</span>
         {total !== undefined ? (
           <b>
@@ -30,7 +31,7 @@ export function RecordSection({
             {money(total)}
           </b>
         ) : null}
-      </div>
+      </Text>
       {records.map((record) => (
         <RecordRow
           key={record.id}
@@ -71,7 +72,7 @@ function RecordRow({
       onClick={onSelect}
     >
       <span className={`lp-wealth-link-icon ${tone}`}>
-        <Icon size={16} />
+        <Icon aria-hidden="true" focusable="false" size="var(--icon-small)" />
       </span>
       <span className="lp-wname">
         <b>{record.title}</b>
@@ -91,14 +92,14 @@ function RecordRow({
           label={tone === "liability" ? "Closure" : "Access"}
         />
       </span>
-      <ChevronRight size={14} className="lp-wealth-chevron" />
+      <ChevronRight aria-hidden="true" focusable="false" size={14} className="lp-wealth-chevron" />
     </button>
   );
 }
 export function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
   return (
-    <em className={`lp-wealth-status ${ok ? "ok" : "bad"}`}>
+    <Text as="em" size="md" className={`lp-wealth-status ${ok ? "ok" : "bad"}`}>
       {ok ? "✓" : "×"} {label}
-    </em>
+    </Text>
   );
 }

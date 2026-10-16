@@ -1,13 +1,13 @@
+import { Button, Card, Ring } from "@/design-system";
+
 import { Plane, Search } from "lucide-react";
 
-import Card from "@/components/Card";
-import Ring from "@/components/Ring";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
 } from "@/components/ui/pagination";
-import { btnGhost, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import type { DerivedPackSummary } from "@/readiness/selectors";
 
 type PackListProps = {
@@ -38,38 +38,30 @@ export default function PackList({
   onSelect,
 }: PackListProps) {
   return (
-    <div style={{ display: "grid", gap: 10, alignContent: "start" }}>
+    <div style={{ display: "grid", gap: "var(--space-s10)", alignContent: "start" }}>
       <div
         style={{
           display: "flex",
-          gap: 10,
+          gap: "var(--space-s10)",
           alignItems: "center",
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 10,
-          padding: "10px 12px",
+          borderRadius: "var(--radius-s10)",
+          padding: "var(--space-s10) var(--space-s12)",
         }}
       >
-        <Search size={16} color={T.action} />
+        <Search aria-hidden="true" focusable="false" size="var(--icon-small)" color={T.action} />
         <input
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           placeholder="Search packs"
-          style={{
-            minWidth: 0,
-            flex: 1,
-            background: "transparent",
-            border: "none",
-            outline: "none",
-            color: T.white,
-            fontSize: 13,
-          }}
+          style={{ minWidth: 0, flex: 1, background: "transparent", border: "none", outline: "none", color: T.white, fontSize: "var(--text-md)" }}
         />
       </div>
 
       {status === "loading" ? (
         <Card>
-          <div style={{ color: T.muted, fontSize: 13 }}>Loading packs...</div>
+          <div style={{ color: T.muted, fontSize: "var(--text-md)" }}>Loading packs...</div>
         </Card>
       ) : null}
 
@@ -85,8 +77,8 @@ export default function PackList({
               cursor: "pointer",
               background: active ? T.raised : T.panel,
               border: `1px solid ${active ? T.action : T.border}`,
-              borderRadius: 10,
-              padding: "12px 14px",
+              borderRadius: "var(--radius-s10)",
+              padding: "var(--space-s12) var(--space-s14)",
               display: "grid",
               gridTemplateColumns: "44px minmax(0, 1fr)",
               gap: 11,
@@ -96,22 +88,12 @@ export default function PackList({
             <Ring score={Math.round(pack.completion)} size={40} />
             <span style={{ minWidth: 0 }}>
               <span
-                style={{
-                  display: "block",
-                  color: T.white,
-                  fontWeight: 700,
-                  fontSize: 13,
-                }}
+                style={{ display: "block", color: T.white, fontWeight: "var(--weight-bold)", fontSize: "var(--text-md)" }}
               >
                 {pack.title}
               </span>
               <span
-                style={{
-                  display: "block",
-                  color: T.faint,
-                  fontSize: 11.5,
-                  marginTop: 2,
-                }}
+                style={{ display: "block", color: T.faint, fontSize: "var(--text-sm)", marginTop: 2 }}
               >
                 {pack.category} . {pack.uploadedDocumentTypes.length}/
                 {pack.requiredDocumentTypes.length} ready
@@ -126,8 +108,8 @@ export default function PackList({
           style={{
             background: T.panel,
             border: `1px solid ${T.border}`,
-            borderRadius: 10,
-            padding: "10px 12px",
+            borderRadius: "var(--radius-s10)",
+            padding: "var(--space-s10) var(--space-s12)",
           }}
         >
           <PaginationContent
@@ -136,60 +118,49 @@ export default function PackList({
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              gap: 10,
+              gap: "var(--space-s10)",
             }}
           >
             <PaginationItem>
-              <button
+              <Button variant="secondary" size="sm"
                 type="button"
                 onClick={() => onPageChange((page) => Math.max(1, page - 1))}
                 disabled={currentPage === 1}
-                style={{
-                  ...btnGhost,
-                  padding: "8px 11px",
-                  opacity: currentPage === 1 ? 0.55 : 1,
-                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                }}
+
               >
                 Previous
-              </button>
+              </Button>
             </PaginationItem>
             <PaginationItem>
-              <div style={{ color: T.text, fontSize: 12.5, fontWeight: 700 }}>
+              <div style={{ color: T.text, fontSize: "var(--text-md)", fontWeight: "var(--weight-bold)" }}>
                 Page {currentPage} of {totalPages}
               </div>
             </PaginationItem>
             <PaginationItem>
-              <button
+              <Button variant="secondary" size="sm"
                 type="button"
                 onClick={() =>
                   onPageChange((page) => Math.min(totalPages, page + 1))
                 }
                 disabled={currentPage === totalPages}
-                style={{
-                  ...btnGhost,
-                  padding: "8px 11px",
-                  opacity: currentPage === totalPages ? 0.55 : 1,
-                  cursor:
-                    currentPage === totalPages ? "not-allowed" : "pointer",
-                }}
+
               >
                 Next
-              </button>
+              </Button>
             </PaginationItem>
           </PaginationContent>
         </Pagination>
       ) : null}
 
       {!filteredCount && status !== "loading" ? (
-        <Card style={{ textAlign: "center", padding: 32 }}>
-          <span style={{ width: 46, height: 46, borderRadius: 14, display: "grid", placeItems: "center", background: "color-mix(in srgb, var(--lp-purple) 14%, transparent)", margin: "0 auto 12px" }}>
-            <Plane size={21} color={T.purple} />
+        <Card style={{ textAlign: "center", padding: "var(--space-s32)" }}>
+          <span style={{ width: 46, height: 46, borderRadius: "var(--radius-panel)", display: "grid", placeItems: "center", background: "color-mix(in srgb, var(--lp-purple) 14%, transparent)", margin: "0 auto var(--space-s12)" }}>
+            <Plane aria-hidden="true" focusable="false" size={21} color={T.purple} />
           </span>
-          <div style={{ color: T.white, fontSize: 15, fontWeight: 800 }}>
+          <div style={{ color: T.white, fontSize: "var(--text-md)", fontWeight: "var(--weight-bold)" }}>
             No packages yet
           </div>
-          <div style={{ color: T.muted, fontSize: 13, marginTop: 5 }}>
+          <div style={{ color: T.muted, fontSize: "var(--text-md)", marginTop: 5 }}>
             Packs from the backend will appear here, ready to review and export.
           </div>
         </Card>

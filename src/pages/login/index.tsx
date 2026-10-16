@@ -1,3 +1,4 @@
+import { Button } from "@/design-system";
 import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -31,7 +32,9 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await dispatch(mode === "pin" ? loginWithPin({ email, pin }) : login({ email, password })).unwrap();
+      const result = mode === "pin"
+        ? await dispatch(loginWithPin({ email, pin })).unwrap()
+        : await dispatch(login({ email, password })).unwrap();
       if (result.deletionCancelled) {
         toast.success("Welcome back. Your account deletion request has been cancelled.");
       }
@@ -131,30 +134,27 @@ export default function LoginPage() {
 
         {error ? <p className="text-sm text-[var(--lp-coral)]">{error}</p> : null}
 
-        <button
+        <Button size="lg" loading={isSubmitting} variant="primary"
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-2xl bg-[var(--lp-action)] px-4 py-3 text-sm font-semibold text-[var(--lp-action-text)] transition hover:bg-[var(--lp-action-hover)] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Logging in..." : mode === "pin" ? "Sign in with R-pin" : "Login"}
-        </button>
+        </Button>
       </form>
 
       <div className="mt-6 space-y-3 text-sm">
-        <button
+        <Button size="sm" variant="tertiary"
           type="button"
           onClick={() => navigate("/signup")}
-          className="block text-[var(--lp-action)] transition hover:text-[var(--lp-action-hover)]"
-        >
+         >
           Go to signup
-        </button>
-        <button
+        </Button>
+        <Button size="sm" variant="tertiary"
           type="button"
           onClick={() => navigate("/forgot-password")}
-          className="block text-[var(--lp-text)] transition hover:text-[var(--lp-heading)]"
-        >
+         >
           Go to forgot password
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -89,13 +89,14 @@ export function documentMatchesRequirement(requirement: PackageRequirement, docu
 export function calculatePackReadiness(requirements: PackageRequirement[], documents: DocumentRecord[], now = Date.now()): PackReadiness {
   const usable = documents.filter((document) => isUsable(document, now));
   const derived = requirements.map((requirement): DerivedRequirement => {
-    const assigned = requirement.assignment
-      ? usable.find((document) => document.id === requirement.assignment?.documentId)
+    const assignment = requirement.assignment;
+    const assigned = assignment
+      ? usable.find((document) => document.id === assignment.documentId)
       : undefined;
-    if (assigned) {
+    if (assignment && assigned) {
       return {
         ...requirement,
-        assignmentSource: requirement.assignment.assignmentSource,
+        assignmentSource: assignment.assignmentSource,
         matchedDocument: toMatchedDocument(assigned),
         status: "ready",
       };

@@ -15,7 +15,8 @@ type AuthState = {
   initialized: boolean;
   initializationStatus: "idle" | "loading" | "succeeded" | "failed";
   initializationError: string | null;
-  sessionStatus: "idle" | "loading" | "authenticated" | "anonymous";
+  sessionStatus: "idle" | "loading" | "authenticated" | "anonymous" | "failed";
+  sessionError: string | null;
 };
 
 const initialState: AuthState = {
@@ -27,14 +28,23 @@ const initialState: AuthState = {
   initializationStatus: "idle",
   initializationError: null,
   sessionStatus: "idle",
+  sessionError: null,
 };
 
 export const restoreSession = createAsyncThunk(
   "auth/restoreSession",
-  async () => api.auth.refresh(),
+  async (_, { rejectWithValue }) => {
+    try {
+      return await api.auth.refresh();
+    } catch (error) {
+      // Only an explicit rejection of the refresh session means login is needed.
+      if ((error as { status?: number }).status === 401) return rejectWithValue("anonymous");
+      throw error;
+    }
+  },
   {
     condition: (_, { getState }) =>
-      (getState() as { auth: AuthState }).auth.sessionStatus === "idle",
+      ["idle", "failed"].includes((getState() as { auth: AuthState }).auth.sessionStatus),
   },
 );
 
@@ -81,6 +91,7 @@ const authSlice = createSlice({
       state.initializationStatus = "idle";
       state.initializationError = null;
       state.sessionStatus = "anonymous";
+      state.sessionError = null;
       clearInMemoryAuth();
     },
   },
@@ -180,6 +191,7 @@ const authSlice = createSlice({
       })
       .addCase(restoreSession.pending, (state) => {
         state.sessionStatus = "loading";
+        state.sessionError = null;
       })
       .addCase(restoreSession.fulfilled, (state, action) => {
         state.token = action.payload.accessToken ?? action.payload.token;
@@ -188,10 +200,11 @@ const authSlice = createSlice({
         state.status = "succeeded";
         setAccessToken(state.token);
       })
-      .addCase(restoreSession.rejected, (state) => {
+      .addCase(restoreSession.rejected, (state, action) => {
         state.token = null;
         state.user = null;
-        state.sessionStatus = "anonymous";
+        state.sessionStatus = action.payload === "anonymous" ? "anonymous" : "failed";
+        state.sessionError = action.payload === "anonymous" ? null : "Unable to restore your session. Please try again.";
         clearInMemoryAuth();
       });
   },

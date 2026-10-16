@@ -16,7 +16,7 @@ describe("AddRecordDialog", () => {
     const onCreate = vi.fn().mockResolvedValue(undefined);
     const file = healthFile();
 
-    const { container } = render(
+    const { baseElement } = render(
       <AddRecordDialog
         aiProcessingEnabled={true}
         onClose={vi.fn()}
@@ -25,7 +25,7 @@ describe("AddRecordDialog", () => {
     );
 
     expect(screen.queryByLabelText(/Document type/i)).toBeNull();
-    fireEvent.change(container.querySelector("input[type='file']")!, {
+    fireEvent.change(baseElement.querySelector("input[type='file']")!, {
       target: { files: [file] },
     });
     fireEvent.click(screen.getByRole("button", { name: /Process/i }));
@@ -39,7 +39,7 @@ describe("AddRecordDialog", () => {
     const onCreate = vi.fn().mockResolvedValue(undefined);
     const file = healthFile();
 
-    const { container } = render(
+    const { baseElement } = render(
       <AddRecordDialog
         aiProcessingEnabled={false}
         onClose={vi.fn()}
@@ -50,7 +50,7 @@ describe("AddRecordDialog", () => {
     fireEvent.change(screen.getByLabelText(/Document type/i), {
       target: { value: "prescription" },
     });
-    fireEvent.change(container.querySelector("input[type='file']")!, {
+    fireEvent.change(baseElement.querySelector("input[type='file']")!, {
       target: { files: [file] },
     });
     fireEvent.click(screen.getByRole("button", { name: /Process/i }));

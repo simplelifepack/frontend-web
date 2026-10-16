@@ -29,9 +29,9 @@ function MetricInsight({
   return parts.length ? (
     <div className="lp-health-insight lp-health-metric-insight">
       <span>
-        <CircleAlert size={16} color={T.warning} /> {parts.join(" · ")}
+        <CircleAlert aria-hidden="true" focusable="false" size="var(--icon-small)" color={T.warning} /> {parts.join(" · ")}
       </span>
-      <ChevronDown size={16} />
+      <ChevronDown aria-hidden="true" focusable="false" size="var(--icon-small)" />
     </div>
   ) : null;
 }

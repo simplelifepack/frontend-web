@@ -1,5 +1,7 @@
+import { Heading, Text, Card } from "@/design-system";
+
 import { Activity, Stethoscope } from "lucide-react";
-import Card from "@/components/Card";
+
 import type { HealthTimelineEvent } from "@/lib/api.types";
 import { formatDate, formatMonthYear } from "../healthUtils";
 
@@ -18,22 +20,22 @@ function Timeline({ events }: { events: HealthTimelineEvent[] }) {
       {groups.length ? (
         groups.map((group) => (
           <section className="lp-health-timeline-group" key={group.month}>
-            <h3>{group.month}</h3>
-            <div className="lp-health-timeline-events">
+            <Heading level={3} size="sm">{group.month}</Heading>
+            <div   className="lp-health-timeline-events">
               {group.events.map((event) => (
                 <div
                   className="lp-health-timeline-event"
                   key={`${event.eventType}:${event.id}`}
                 >
                   <i aria-hidden="true" />
-                  <span className="lp-health-timeline-icon">
+                  <Text size="md" className="lp-health-timeline-icon">
                     {event.eventType === "measurement" ? (
-                      <Activity size={16} />
+                      <Activity aria-hidden="true" focusable="false" size="var(--icon-small)" />
                     ) : (
-                      <Stethoscope size={16} />
+                      <Stethoscope aria-hidden="true" focusable="false" size="var(--icon-small)" />
                     )}
-                  </span>
-                  <div>
+                  </Text>
+                  <Text as="div" size="md">
                     <b>
                       {event.title}
                       {event.value != null
@@ -47,7 +49,7 @@ function Timeline({ events }: { events: HealthTimelineEvent[] }) {
                       · {event.eventType === "measurement" ? "Reading logged" : event.source}
                     </small>
                     {event.detail ? <small>{event.detail}</small> : null}
-                  </div>
+                  </Text>
                   <time>{formatDate(event.occurredAt)}</time>
                 </div>
               ))}
@@ -55,7 +57,7 @@ function Timeline({ events }: { events: HealthTimelineEvent[] }) {
           </section>
         ))
       ) : (
-        <p className="lp-health-muted">No health events recorded yet.</p>
+        <Text as="p" size="sm" className="lp-health-muted">No health events recorded yet.</Text>
       )}
     </Card>
   );

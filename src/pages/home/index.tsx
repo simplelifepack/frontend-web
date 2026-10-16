@@ -1,3 +1,5 @@
+import { Text, Button, Card, Ring } from "@/design-system";
+
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
@@ -15,10 +17,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import Card from "@/components/Card";
-import Ring from "@/components/Ring";
 import SectionHead from "@/components/SectionHead";
-import { A, btnGhost, T } from "@/constants/theme";
+import { A, T } from "@/constants/theme";
 import { api, type DocumentRecord, type WealthRecord } from "@/lib/api";
 import type { HealthHomeAttention } from "@/lib/api.types";
 import { expiryValue } from "@/pages/documents/document-utils";
@@ -112,18 +112,18 @@ export default function HomePage() {
 
   return (
     <div>
-      <div className="lp-eyebrow">Ready when you need them . private . encrypted storage</div>
+      <Text as="div" size="sm" weight="semibold" className="lp-eyebrow">Ready when you need them . private . encrypted storage</Text>
       <SectionHead
         title={`${greeting()}, ${firstName}`}
         sub="Your archive at a glance, and what needs attention today."
         action={null}
       />
 
-      <div className="lp-home-stats">
+      <div   className="lp-home-stats">
         {stats.map(({ label, value, icon: Icon, color, route }) => (
           <button key={label} type="button" className="lp-home-stat" onClick={() => navigate(route)}>
-            <span className="lp-home-stat-icon" style={{ background: `${color}22` }}>
-              <Icon size={17} color={color} />
+            <span className="lp-home-stat-icon" style={{ background: `color-mix(in srgb, ${color} 13.33%, transparent)` }}>
+              <Icon aria-hidden="true" focusable="false" size={17} color={color} />
             </span>
             <strong>{value}</strong>
             <span>{label}</span>
@@ -132,11 +132,11 @@ export default function HomePage() {
       </div>
 
       <div className="lp-cols2">
-        <Card style={{ padding: 0, overflow: "hidden" }}>
+        <Card flush style={{ overflow: "hidden" }}>
           <div className="lp-action-title">
-            <AlertTriangle size={16} color={attentionItems.length ? T.warning : T.mint} />
-            <b>Action center</b>
-            <span>{attentionItems.length || "all clear"}</span>
+            <AlertTriangle aria-hidden="true" focusable="false" size="var(--icon-small)" color={attentionItems.length ? T.warning : T.mint} />
+            <Text as="b" size="md" weight="semibold">Action center</Text>
+            <Text size="md">{attentionItems.length || "all clear"}</Text>
           </div>
           {attentionItems.length ? (
             attentionItems.slice(0, 10).map((action) => (
@@ -150,28 +150,28 @@ export default function HomePage() {
                 <em>{action.module}</em>
                 <span>{action.label}</span>
                 <time style={{ color: action.tone }}>{action.detail}</time>
-                <ChevronRight size={16} color={T.faint} />
+                <ChevronRight aria-hidden="true" focusable="false" size="var(--icon-small)" color={T.faint} />
               </button>
             ))
           ) : (
             <div className="lp-action-empty">
-              <CheckCircle2 size={18} color={T.mint} />
-              <span>Nothing pressing across your documents. Nicely handled.</span>
+              <CheckCircle2 aria-hidden="true" focusable="false" size="var(--icon-regular)" color={T.mint} />
+              <Text size="md">Nothing pressing across your documents. Nicely handled.</Text>
             </div>
           )}
           {attentionItems.length > 10 ? (
-            <button type="button" className="lp-action-more" onClick={() => navigate("/documents")}>
+            <Button variant="tertiary" type="button" onClick={() => navigate("/documents")}>
               +{attentionItems.length - 10} more across Readiness
-            </button>
+            </Button>
           ) : null}
         </Card>
 
         <Card>
           <div className="lp-insight-title">
-            <ShieldCheck size={16} color={T.readiness} />
-            <b>Connected across Readiness</b>
+            <ShieldCheck aria-hidden="true" focusable="false" size="var(--icon-small)" color={T.readiness} />
+            <Text as="b" size="md" weight="semibold">Connected across Readiness</Text>
           </div>
-          <p className="lp-insight-copy">What your modules mean together, not what they already show apart.</p>
+          <Text as="p" size="sm" className="lp-insight-copy">What your modules mean together, not what they already show apart.</Text>
           {insights.map((insight, index) => (
             <button
               key={insight.text}
@@ -182,22 +182,22 @@ export default function HomePage() {
             >
               <span className="lp-insight-icons">
                 {insight.icons.map((Icon) => (
-                  <i key={Icon.displayName || Icon.name} style={{ background: `${insight.tone}1f` }}>
-                    <Icon size={12} color={insight.tone} />
+                  <i key={Icon.displayName || Icon.name} style={{ background: `color-mix(in srgb, ${insight.tone} 12.16%, transparent)` }}>
+                    <Icon aria-hidden="true" focusable="false" size={12} color={insight.tone} />
                   </i>
                 ))}
               </span>
               <span>{insight.text}</span>
-              <ChevronRight size={14} color={T.faint} />
+              <ChevronRight aria-hidden="true" focusable="false" size={14} color={T.faint} />
             </button>
           ))}
           <div className="lp-most-ready">
             <Ring score={readiness} size={40} />
-            <span>Most ready: <b>{readiness === 100 ? "Your document archive" : "Review your packages"}</b></span>
+            <Text size="md">Most ready: <b>{readiness === 100 ? "Your document archive" : "Review your packages"}</b></Text>
           </div>
-          <button type="button" style={{ ...btnGhost, width: "100%", justifyContent: "center", marginTop: 12 }} onClick={() => navigate("/packages")}>
-            See all packages <ArrowRight size={14} />
-          </button>
+          <Button variant="secondary" type="button" style={{ width: "100%", marginTop: "var(--space-s12)" }} onClick={() => navigate("/packages")}>
+            See all packages <ArrowRight aria-hidden="true" focusable="false" size={14} />
+          </Button>
         </Card>
       </div>
     </div>

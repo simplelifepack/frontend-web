@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-type MockPackageQuery = { limit?: number; page?: number; search?: string; sort?: string };
-type MockCachedPage = { key: string; query: MockPackageQuery; response: unknown };
+import type { PackageListQuery, PackageListResponse } from "@/lib/api";
+import type { CachedPackagePage } from "@/packages/packageCatalogueCache";
+type MockPackageQuery = PackageListQuery;
+type MockCachedPage = CachedPackagePage;
 
 const { cache, list, get } = vi.hoisted(() => ({
   cache: new Map<string, MockCachedPage>(),
@@ -22,17 +24,14 @@ vi.mock("@/lib/api", () => ({ api: { packages: { list, get } } }));
 import reducer, { fetchPackages, setActivePackageQuery } from "./packagesSlice";
 
 const key = (page: number, search = "") => `packages:limit=20:page=${page}:sort=category:search=${search}`;
-const response = (page: number, start: number, count = 20) => ({
+const response = (page: number, start: number, count = 20): PackageListResponse => ({
   query: "", matches: [], hasConfidentMatch: false, canGenerate: false,
   pagination: { page, limit: 20, total: 60, hasNextPage: page < 3 },
   items: Array.from({ length: count }, (_, offset) => ({
-    id: `id-${start + offset}`, slug: `pack-${start + offset}`, name: `Pack ${start + offset}`,
-    title: start + offset === 25 ? "Car Loan" : `Pack ${start + offset}`, subtitle: null,
-    category: "Finance", provider: null, location: null, description: "Package", shortDescription: "Package",
-    icon: null, sourceType: "official", sourceName: null, sourceTitle: null, sourceUrl: null,
-    lastCheckedAt: null, verificationSources: [], lastVerifiedAt: null, verificationStatus: "verified" as const,
-    createdAt: "2026-01-01T00:00:00.000Z", requiredDocumentCount: 1, readyDocumentCount: 0,
-    source: "official", generationSource: "seed", version: 1,
+    id: `id-${start + offset}`, slug: `pack-${start + offset}`,
+    title: start + offset === 25 ? "Car Loan" : `Pack ${start + offset}`,
+    category: "Finance", description: "Package", requirements: [],
+    verificationSources: [], verificationStatus: "verified", createdBy: "seed",
   })),
 });
 const pageRecord = (page: number, result: ReturnType<typeof response>) => ({ key: key(page), query: { limit: 20, page, sort: "category" as const }, response: result });

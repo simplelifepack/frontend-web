@@ -1,3 +1,5 @@
+import { Text, Button } from "@/design-system";
+
 import { useEffect, useRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 
@@ -42,32 +44,30 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
 
   if (!configured) {
     return <div>
-      <button
+      <Button variant="default"
           type="button"
           disabled
-          className="w-full rounded-lg border border-[var(--lp-border)] bg-[var(--lp-panel)] px-4 py-2.5 text-sm font-medium text-[var(--lp-faint)] opacity-70"
         >
           Continue with Google
-        </button>
-      <p className="mt-2 text-center text-xs text-[var(--lp-muted)]">Google sign-in is unavailable right now.</p>
+        </Button>
+      <Text as="p" size="md" className="mt-2 text-center text-[var(--lp-muted)]">Google sign-in is unavailable right now.</Text>
     </div>;
   }
 
   if (scriptFailed || isLoopbackIp) {
     return (
       <div>
-        <button
+        <Button variant="default"
           type="button"
           disabled
-          className="w-full rounded-lg border border-[var(--lp-border)] bg-[var(--lp-panel)] px-4 py-2.5 text-sm font-medium text-[var(--lp-faint)] opacity-70"
         >
           Continue with Google
-        </button>
-        <p className="mt-2 text-center text-xs text-[var(--lp-muted)]">
+        </Button>
+        <Text as="p" size="md" className="mt-2 text-center text-[var(--lp-muted)]">
           {isLoopbackIp
             ? "Open Readiness at http://localhost:5173 to use Google sign-in."
             : "Google sign-in could not load. Disable blockers for accounts.google.com and try again."}
-        </p>
+        </Text>
       </div>
     );
   }
@@ -92,7 +92,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
           width={String(buttonWidth)}
         />
       </div>
-      {disabled ? <p className="mt-2 text-center text-xs text-[var(--lp-muted)]">Signing in securely…</p> : null}
+      {disabled ? <Text as="p" size="md" className="mt-2 text-center text-[var(--lp-muted)]">Signing in securely…</Text> : null}
     </div>
   );
 }

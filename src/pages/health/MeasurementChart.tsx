@@ -1,3 +1,4 @@
+import { colors } from "@/design-system/variables";
 import type { HealthMeasurement } from '@/lib/api.types';
 
 export default function MeasurementChart({ measurements, large = false }: { measurements: HealthMeasurement[]; large?: boolean }) {
@@ -15,7 +16,7 @@ export default function MeasurementChart({ measurements, large = false }: { meas
   const start = times[0], end = times[times.length - 1];
   const x = (i: number) => rows.length === 1 || (dated && start === end) ? 190 : 38 + (dated ? (times[i] - start) / (end - start) : i / (rows.length - 1)) * 300;
   const label = (date: string | null) => date ? new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(date)) : 'Date unavailable';
-  const mint = "var(--lp-mint)";
+  const mint = colors.chart[0];
   return <svg className={`lp-measurement-chart${large ? ' large' : ''}`} viewBox="0 0 360 150" role="img" aria-label={`${rows.length} recorded measurements`}>
     {limits.length > 0 && <rect x="38" width="300" y={y(latest.referenceMax ?? max)} height={y(latest.referenceMin ?? min) - y(latest.referenceMax ?? max)} fill="color-mix(in srgb, var(--lp-mint) 12%, transparent)" />}
     {limits.map((limit, i) => <g key={i}><line x1="38" x2="338" y1={y(limit)} y2={y(limit)} stroke={mint} strokeDasharray="3 4" /><text x="336" y={y(limit) - 5} textAnchor="end" fill={mint}>{limit} {latest.unit}</text></g>)}

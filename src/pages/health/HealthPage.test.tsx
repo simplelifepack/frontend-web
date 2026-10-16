@@ -13,6 +13,7 @@ import { preferencesApi } from "@/lib/preferences-api";
 import type {
   DocumentRecord,
   HealthMember,
+  HealthMedication,
   HealthRecord,
   HealthRecordDetail,
 } from "@/lib/api.types";
@@ -132,7 +133,7 @@ const documents: Record<string, DocumentRecord> = Object.fromEntries(
     },
   ]),
 );
-const manualMedication = {
+const manualMedication: HealthMedication = {
   id: "medication-manual",
   memberId: "member-a",
   name: "Metformin",

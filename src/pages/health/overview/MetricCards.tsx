@@ -1,5 +1,7 @@
+import { Text, Card } from "@/design-system";
+
 import { Microscope } from "lucide-react";
-import Card from "@/components/Card";
+
 import type { HealthOverview } from "@/lib/api.types";
 import MeasurementChart from "../MeasurementChart";
 import { documentTypeLabels, formatDate } from "../healthUtils";
@@ -17,43 +19,43 @@ function MetricCards({
   tracked: MetricCardMetric[];
 }) {
   return (
-    <div className="lp-health-vitals">
+    <div   className="lp-health-vitals">
       {tracked.map((metric) => {
         const status = metric.latest ? measurementStatus(metric.latest) : null;
         return (
           <Card key={metric.id}>
-            <div className="lp-health-vital-head">
+            <Text as="div" size="md" className="lp-health-vital-head">
               <span>{metric.displayName}</span>
               {status ? (
                 <b className={`lp-health-metric-status ${status.tone}`}>
                   {status.label}
                 </b>
               ) : null}
-            </div>
+            </Text>
             {metric.latest ? (
               <>
-                <div className="lp-health-vital-value">
+                <Text as="div" size="lg" weight="semibold" className="lp-health-vital-value">
                   {metric.latest.value}
                   {metric.latest.secondaryValue != null
                     ? `/${metric.latest.secondaryValue}`
                     : ""}{" "}
                   <small>{metric.latest.unit}</small>
-                </div>
+                </Text>
                 <MiniChart measurements={metric.measurements} />
-                <div className="lp-health-log">
-                  <Microscope size={12} />{" "}
+                <Text as="div" size="sm" className="lp-health-log">
+                  <Microscope aria-hidden="true" focusable="false" size={12} />{" "}
                   {formatDate(metric.latest.measuredAt)} · From{" "}
                   {documentTypeLabels[metric.latest.sourceType] ??
                     metric.latest.sourceType}
-                </div>
+                </Text>
                 {metric.latest.referenceText ? (
-                  <div className="lp-health-reference">
+                  <Text as="div" size="sm" className="lp-health-reference">
                     Report reference: {metric.latest.referenceText}
-                  </div>
+                  </Text>
                 ) : null}
               </>
             ) : (
-              <p className="lp-health-muted">No measurements available yet.</p>
+              <Text as="p" size="sm" className="lp-health-muted">No measurements available yet.</Text>
             )}
           </Card>
         );

@@ -1,7 +1,8 @@
+import { Heading, Text, ModalBackdrop, ModalPanel, Select, Button } from "@/design-system";
+
 import { useState } from "react";
 import { X } from "lucide-react";
 import type { HealthMember, HealthMemberResolution } from "@/lib/api.types";
-import { btnGhost, btnPrimary } from "@/constants/theme";
 
 function MemberResolutionDialog({
   resolution,
@@ -29,39 +30,38 @@ function MemberResolutionDialog({
     patientName
   )
     return (
-      <div className="lp-modal-backdrop" style={{ zIndex: 90 }}>
-        <div
-          className="lp-modal-panel lp-health-add-dialog"
+      <ModalBackdrop  style={{ zIndex: "var(--layer-nestedDialog)" }}>
+        <ModalPanel onDismiss={onClose}
+          className="lp-health-add-dialog"
           role="dialog"
           aria-modal="true"
         >
           <header className="lp-health-dialog-head">
-            <h2>No Health profile found for {patientName}.</h2>
-            <button type="button" onClick={onClose} aria-label="Close">
-              <X size={18} />
-            </button>
+            <Heading level={2} size="md">No Health profile found for {patientName}.</Heading>
+            <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+              <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+            </Button>
           </header>
-          <p>This record appears to belong to a new person.</p>
+          <Text as="p" size="md">This record appears to belong to a new person.</Text>
           <footer>
-            <button type="button" style={btnPrimary} onClick={onCreateProfile}>
+            <Button variant="primary" type="button" onClick={onCreateProfile}>
               Create profile for {patientName}
-            </button>
-            <button
+            </Button>
+            <Button variant="secondary"
               type="button"
-              style={btnGhost}
               onClick={() => setChoosingExisting(true)}
             >
               Choose existing profile
-            </button>
-            <button type="button" style={btnGhost} onClick={onClose}>
+            </Button>
+            <Button variant="secondary" type="button" onClick={onClose}>
               Cancel
-            </button>
+            </Button>
           </footer>
           {choosingExisting ? (
             <div className="lp-health-form">
-              <label>
+              <Text as="label" size="sm" weight="semibold">
                 <span>Who does this record belong to?</span>
-                <select
+                <Select
                   value={memberId}
                   onChange={(event) => setMemberId(event.target.value)}
                 >
@@ -71,12 +71,11 @@ function MemberResolutionDialog({
                       {member.name} · {member.relation}
                     </option>
                   ))}
-                </select>
-              </label>
+                </Select>
+              </Text>
               {memberId ? (
-                <button
+                <Button variant="primary"
                   type="button"
-                  style={btnPrimary}
                   disabled={saving}
                   onClick={() => {
                     setSaving(true);
@@ -84,39 +83,39 @@ function MemberResolutionDialog({
                   }}
                 >
                   Confirm
-                </button>
+                </Button>
               ) : null}
             </div>
           ) : null}
-        </div>
-      </div>
+        </ModalPanel>
+      </ModalBackdrop>
     );
   return (
-    <div className="lp-modal-backdrop" style={{ zIndex: 90 }}>
-      <div
-        className="lp-modal-panel lp-health-add-dialog"
+    <ModalBackdrop  style={{ zIndex: "var(--layer-nestedDialog)" }}>
+      <ModalPanel onDismiss={onClose}
+        className="lp-health-add-dialog"
         role="dialog"
         aria-modal="true"
       >
         <header className="lp-health-dialog-head">
-          <h2>
+          <Heading level={2} size="md">
             {ambiguous
               ? "We found more than one matching profile."
               : "We couldn't identify who this health record belongs to."}
-          </h2>
-          <button type="button" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
+          </Heading>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
-        <p>
+        <Text as="p" size="md">
           {ambiguous
             ? "Who does this record belong to?"
             : "Choose an existing profile to continue."}
-        </p>
+        </Text>
         <div className="lp-health-form">
-          <label>
+          <Text as="label" size="sm" weight="semibold">
             <span>Health profile</span>
-            <select
+            <Select
               value={memberId}
               onChange={(event) => setMemberId(event.target.value)}
             >
@@ -128,21 +127,19 @@ function MemberResolutionDialog({
                   </option>
                 ),
               )}
-            </select>
-          </label>
+            </Select>
+          </Text>
         </div>
         <footer>
-          <button
+          <Button variant="secondary"
             type="button"
-            style={btnGhost}
             disabled={saving}
             onClick={onClose}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button loading={saving} variant="primary"
             type="button"
-            style={btnPrimary}
             disabled={!memberId || saving}
             onClick={async () => {
               setSaving(true);
@@ -151,10 +148,10 @@ function MemberResolutionDialog({
             }}
           >
             {saving ? "Assigning..." : "Confirm"}
-          </button>
+          </Button>
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 

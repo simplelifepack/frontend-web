@@ -1,7 +1,8 @@
+import { Text, Button, Card } from "@/design-system";
+
 import { useState } from "react";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 
-import Card from "@/components/Card";
 import type { WealthRecord } from "@/lib/api";
 import { attentionRows, recordSubtitle } from "./wealth-view";
 
@@ -18,12 +19,12 @@ export function NeedsAttention({
   const rows = attentionRows(records);
   const shownRows = all ? rows : rows.slice(0, 3);
   return (
-    <Card style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
+    <Card flush style={{ overflow: "hidden", marginBottom: "var(--space-s16)" }}>
       <div className="lp-wealth-panel-head">
-        <span>
-          <AlertTriangle size={16} /> Needs attention
-        </span>
-        <b>{rows.length}</b>
+        <Text size="md" weight="semibold">
+          <AlertTriangle aria-hidden="true" focusable="false" size="var(--icon-small)" /> Needs attention
+        </Text>
+        <Text as="b" size="sm" weight="semibold">{rows.length}</Text>
       </div>
       {shownRows.map(({ record, severity, reason, action }) => (
         <button
@@ -48,21 +49,20 @@ export function NeedsAttention({
             <small>{recordSubtitle(record)}</small>
           </span>
           <strong>{action}</strong>
-          <ChevronRight size={14} />
+          <ChevronRight aria-hidden="true" focusable="false" size={14} />
         </button>
       ))}
       {rows.length > 3 ? (
-        <button
+        <Button size="sm" variant="tertiary"
           type="button"
-          className="lp-wealth-view-all"
           onClick={() => setAll((value) => !value)}
         >
           {all ? "Show less" : `View all ${rows.length}`}{" "}
-          <ChevronRight size={14} />
-        </button>
+          <ChevronRight aria-hidden="true" focusable="false" size={14} />
+        </Button>
       ) : null}
       {!rows.length ? (
-        <div className="lp-wealth-empty">No urgent Wealth gaps right now.</div>
+        <Text as="div" size="sm" className="lp-wealth-empty">No urgent Wealth gaps right now.</Text>
       ) : null}
     </Card>
   );

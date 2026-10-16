@@ -1,6 +1,8 @@
+import { Text, Button, Card } from "@/design-system";
+
 import { useEffect, useMemo, useState } from "react";
 import { CalendarClock } from "lucide-react";
-import Card from "@/components/Card";
+
 import type {
   HealthAvailableMetric,
   HealthMeasurement,
@@ -49,15 +51,15 @@ function Overview({
   return (
     <>
       {upcoming[0] ? (
-        <Card style={{ marginBottom: 16, padding: "13px 16px" }}>
+        <Card style={{ marginBottom: "var(--space-s16)" }}>
           <div className="lp-health-event">
-            <CalendarClock size={18} color={T.action} />
+            <CalendarClock aria-hidden="true" focusable="false" size="var(--icon-regular)" color={T.action} />
             <div>
-              <b>{upcoming[0].title}</b>
-              <small>
+              <Text as="b" size="md" weight="semibold">{upcoming[0].title}</Text>
+              <Text as="small" size="sm">
                 {formatDate(upcoming[0].dueDate)} ·{" "}
                 {relativeDate(upcoming[0].dueDate)}
-              </small>
+              </Text>
             </div>
           </div>
         </Card>
@@ -65,16 +67,16 @@ function Overview({
       {total ? (
         <>
           <div className="lp-health-tracked-bar">
-            <span>
+            <Text size="md" weight="semibold">
               Showing {visibleMetrics.length} of {total} tracked tests
-            </span>
+            </Text>
             <div>
-              <button type="button" onClick={() => setChoosing(true)}>
+              <Button size="sm" variant="secondary" type="button" onClick={() => setChoosing(true)}>
                 Choose tests
-              </button>
-              <button type="button" onClick={() => setShowAll(true)}>
+              </Button>
+              <Button size="sm" variant="secondary" type="button" onClick={() => setShowAll(true)}>
                 Show all
-              </button>
+              </Button>
             </div>
           </div>
           <MetricCards tracked={visibleMetrics} />

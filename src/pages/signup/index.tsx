@@ -1,3 +1,4 @@
+import { Button } from "@/design-system";
 import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -152,23 +153,21 @@ export default function SignupPage() {
 
         {error ? <p className="text-sm text-[var(--lp-coral)]">{error}</p> : null}
 
-        <button
+        <Button size="lg" loading={isSubmitting} variant="primary"
           type="submit"
           disabled={isSubmitting}
-          className="w-full rounded-2xl bg-[var(--lp-action)] px-4 py-3 text-sm font-semibold text-[var(--lp-action-text)] transition hover:bg-[var(--lp-action-hover)] disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Working..." : awaitingOtp ? "Verify and create account" : "Send signup code"}
-        </button>
+        </Button>
       </form>
 
       <div className="mt-6 text-sm">
-        <button
+        <Button size="sm" variant="tertiary"
           type="button"
           onClick={() => navigate("/login")}
-          className="text-[var(--lp-text)] transition hover:text-[var(--lp-heading)]"
         >
           Go to login
-        </button>
+        </Button>
       </div>
     </div>
   );

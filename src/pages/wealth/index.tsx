@@ -1,3 +1,5 @@
+import { Heading, Text, Button } from "@/design-system";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { useLocation } from "react-router-dom";
@@ -129,19 +131,19 @@ export default function WealthPage() {
   return (
     <div className="lp-route lp-wealth-route">
       <div className="lp-mobile-module-head">
-        <h1>Wealth</h1>
+        <Heading level={1} size="sm">Wealth</Heading>
         <div>
-          <button
+          <Button size="sm" iconOnly variant="primary"
             type="button"
             onClick={() => setActionSheetOpen(true)}
             aria-label="Wealth actions"
           >
-            <Plus size={18} />
-          </button>
-          <button type="button" aria-label="Search Wealth">
-            <Search size={17} />
-          </button>
-          <span>{user?.name?.charAt(0).toUpperCase() || "A"}</span>
+            <Plus aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
+          <Button size="sm" iconOnly variant="tertiary" type="button" aria-label="Search Wealth">
+            <Search aria-hidden="true" focusable="false" size={17} />
+          </Button>
+          <Text size="md" weight="semibold">{user?.name?.charAt(0).toUpperCase() || "A"}</Text>
         </div>
       </div>
       <SectionHead

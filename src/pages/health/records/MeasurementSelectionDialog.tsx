@@ -1,7 +1,9 @@
+import { Heading, Text, ModalBackdrop, ModalPanel, Select, SearchField, Button } from "@/design-system";
+
 import { useState } from "react";
-import { Check, Search, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import type { HealthRecordDetail, TrackedHealthMetric } from "@/lib/api.types";
-import { btnGhost, btnPrimary } from "@/constants/theme";
+
 import {
   documentTypeLabels,
   filterMeasurements,
@@ -87,26 +89,26 @@ function MeasurementSelectionDialog({
     }
   };
   return (
-    <div className="lp-modal-backdrop" style={{ zIndex: 90 }}>
-      <div
-        className="lp-modal-panel lp-health-add-dialog lp-health-measurement-dialog"
+    <ModalBackdrop  style={{ zIndex: "var(--layer-nestedDialog)" }}>
+      <ModalPanel
+        className="lp-health-add-dialog lp-health-measurement-dialog"
         role="dialog"
         aria-modal="true"
         aria-label="Choose measurements to track"
       >
         <header className="lp-health-dialog-head">
           <div>
-            <h2>Report processed</h2>
-            <p>{record.measurementCount} measurements found</p>
+            <Heading level={2} size="md">Report processed</Heading>
+            <Text as="p" size="md">{record.measurementCount} measurements found</Text>
           </div>
-          <button type="button" onClick={onSkip} aria-label="Close">
-            <X size={18} />
-          </button>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onSkip} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
-        <h3>Correct details</h3>
-        <label className="lp-health-document-type lp-health-correct-type">
+        <Heading level={3} size="sm">Correct details</Heading>
+        <Text as="label" size="md" className="lp-health-document-type lp-health-correct-type">
           <span>Document type</span>
-          <select
+          <Select
             value={documentType}
             onChange={(event) =>
               setDocumentType(event.target.value as HealthDocumentType)
@@ -117,21 +119,17 @@ function MeasurementSelectionDialog({
                 {documentTypeLabels[type] ?? type}
               </option>
             ))}
-          </select>
-        </label>
-        <h3>Choose what you want to track</h3>
+          </Select>
+        </Text>
+        <Heading level={3} size="sm">Choose what you want to track</Heading>
         <div className="lp-health-toolbar compact">
-          <label>
-            <Search size={15} />
-            <input
+          <SearchField aria-label="Search measurements"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search measurements..."
-            />
-          </label>
+              placeholder="Search measurements..." />
         </div>
         <div className="lp-health-measurement-picker">
-          <h4>Selected</h4>
+          <Heading level={4} size="sm">Selected</Heading>
           {selectedMeasurements.length ? (
             selectedMeasurements.map((item) => (
               <MeasurementChoice
@@ -143,9 +141,9 @@ function MeasurementSelectionDialog({
               />
             ))
           ) : (
-            <p className="lp-health-muted">No measurements selected.</p>
+            <Text as="p" size="sm" className="lp-health-muted">No measurements selected.</Text>
           )}
-          <h4>All measurements</h4>
+          <Heading level={4} size="sm">All measurements</Heading>
           {unselectedMeasurements.map((item) => (
             <MeasurementChoice
               key={item.id}
@@ -156,27 +154,25 @@ function MeasurementSelectionDialog({
             />
           ))}
         </div>
-        {error ? <div className="lp-health-form-error">{error}</div> : null}
+        {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}
         <footer>
-          <button
+          <Button variant="secondary"
             type="button"
-            style={btnGhost}
             disabled={saving}
             onClick={onSkip}
           >
             Skip for now
-          </button>
-          <button
+          </Button>
+          <Button loading={saving} variant="primary"
             type="button"
-            style={btnPrimary}
             disabled={saving}
             onClick={save}
           >
             {saving ? "Saving..." : "Save tracking"}
-          </button>
+          </Button>
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -200,7 +196,7 @@ function MeasurementChoice({
     >
       <span>
         {selected ? (
-          <Check size={14} />
+          <Check aria-hidden="true" focusable="false" size={14} />
         ) : (
           <span className="lp-health-open-circle" />
         )}

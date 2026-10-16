@@ -1,7 +1,6 @@
+import { Card, Pill } from "@/design-system";
 import { Clock } from "lucide-react";
 
-import Card from "@/components/Card";
-import Pill from "@/components/Pill";
 import { T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 
@@ -15,8 +14,8 @@ export default function ExpiringSoonCard({ items }: ExpiringSoonCardProps) {
       style={{
         display: "grid",
         gridTemplateColumns: "1fr",
-        gap: 12,
-        marginBottom: 22,
+        gap: "var(--space-s12)",
+        marginBottom: "var(--space-s22)",
       }}
     >
       <Card>
@@ -24,17 +23,17 @@ export default function ExpiringSoonCard({ items }: ExpiringSoonCardProps) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            marginBottom: 12,
+            gap: "var(--space-s8)",
+            marginBottom: "var(--space-s12)",
           }}
         >
-          <Clock size={16} color={T.warning} />
-          <span style={{ fontWeight: 700, color: T.white, fontSize: 14 }}>
+          <Clock aria-hidden="true" focusable="false" size="var(--icon-small)" color={T.warning} />
+          <span style={{ fontWeight: "var(--weight-bold)", color: T.white, fontSize: "var(--text-md)" }}>
             Expiring soon
           </span>
         </div>
         {items.length === 0 ? (
-          <div style={{ color: T.muted, fontSize: 13.5 }}>
+          <div style={{ color: T.muted, fontSize: "var(--text-md)" }}>
             No expiry dates found in saved backend documents yet.
           </div>
         ) : null}
@@ -49,7 +48,7 @@ export default function ExpiringSoonCard({ items }: ExpiringSoonCardProps) {
               borderTop: index ? `1px solid ${T.border}` : "none",
             }}
           >
-            <span style={{ color: T.text, fontSize: 13.5 }}>
+            <span style={{ color: T.text, fontSize: "var(--text-md)" }}>
               {doc.originalName}
             </span>
             <Pill tone={days < 90 ? "wax" : "warn"}>{days} days</Pill>

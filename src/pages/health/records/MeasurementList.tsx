@@ -55,7 +55,7 @@ function MeasurementRow({
     <button type="button" onClick={() => onToggle(measurement, tracked)}>
       <span>
         {tracked ? (
-          <Check size={14} />
+          <Check aria-hidden="true" focusable="false" size={14} />
         ) : (
           <span className="lp-health-open-circle" />
         )}

@@ -1,5 +1,7 @@
+import { Heading, Text, ModalBackdrop, ModalPanel, Input, Select, Button, vars } from "@/design-system";
+
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
-import { T, btnGhost, btnPrimary } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { analyzeDocument, clearPendingAnalysis, saveDocument } from "@/store/slices/documentsSlice";
 import { categories as documentCategories } from "@/pages/documents/document-utils";
@@ -9,7 +11,7 @@ import { validateImageUploadBatch } from "@/lib/document-file-validation";
 const categories = documentCategories.map((item) => item.name);
 const acceptedDocumentTypes = ".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf";
 const isPdf = (file: File) => file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-export default function UploadDocumentModal({ open, onClose, onSaved, zIndex = 50 }: { open: boolean; onClose: () => void; onSaved?: (document: DocumentRecord) => void; zIndex?: number }) {
+export default function UploadDocumentModal({ open, onClose, onSaved, zIndex = vars.layers.confirmation }: { open: boolean; onClose: () => void; onSaved?: (document: DocumentRecord) => void; zIndex?: number }) {
   const dispatch = useAppDispatch(); const inputRef = useRef<HTMLInputElement>(null);
   const { pendingAnalysis, analyzeStatus, uploadStatus, error } = useAppSelector((state) => state.documents);
   const [files, setFiles] = useState<File[]>([]);
@@ -19,7 +21,9 @@ export default function UploadDocumentModal({ open, onClose, onSaved, zIndex = 5
   const previews = useMemo(() => files.map((file) => ({ file, url: URL.createObjectURL(file) })), [files]);
   useEffect(() => () => previews.forEach((item) => URL.revokeObjectURL(item.url)), [previews]);
   const aiDisabled = pendingAnalysis?.warnings.some((warning) => warning.code === "AI_PROCESSING_DISABLED") ?? false;
-  useEffect(() => { if (!pendingAnalysis) return; const item = pendingAnalysis.document; setCategory(aiDisabled ? "" : item.category); setDocumentType(aiDisabled ? "" : item.documentType); setUniqueNumber(aiDisabled ? "" : item.uniqueNumber ?? ""); setName(aiDisabled ? "" : item.nameOnDocument ?? ""); setExpiryDate(aiDisabled ? "" : item.expiryDate ?? ""); setTitle(aiDisabled ? "" : item.nameOnDocument || item.title); setInlineError(""); }, [pendingAnalysis, aiDisabled]);
+  const aiFailed = pendingAnalysis?.warnings.some((warning) => ["AI_ANALYSIS_UNAVAILABLE", "OPENAI_API_KEY_MISSING", "OPENAI_API_AUTH_FAILED", "OPENAI_QUOTA_EXCEEDED"].includes(warning.code)) ?? false;
+  const manualReview = aiDisabled || aiFailed;
+  useEffect(() => { if (!pendingAnalysis) return; const item = pendingAnalysis.document; setCategory(manualReview ? "" : item.category); setDocumentType(manualReview ? "" : item.documentType); setUniqueNumber(manualReview ? "" : item.uniqueNumber ?? ""); setName(manualReview ? "" : item.nameOnDocument ?? ""); setExpiryDate(manualReview ? "" : item.expiryDate ?? ""); setTitle(manualReview ? "" : item.nameOnDocument || item.title); setInlineError(""); }, [pendingAnalysis, manualReview]);
   if (!open) return null;
   const close = () => { dispatch(clearPendingAnalysis()); setFiles([]); setInlineError(""); onClose(); };
   const chooseFiles = () => inputRef.current?.click();
@@ -55,7 +59,7 @@ export default function UploadDocumentModal({ open, onClose, onSaved, zIndex = 5
     if (!category.trim()) { setInlineError("Please select a category."); return; }
     setInlineError("");
     try {
-      const saved = await dispatch(saveDocument({ tempFileIds: pendingAnalysis.files.map((file) => file.tempFileId), originalName: pendingAnalysis.files[0]!.originalName, mimeType: pendingAnalysis.files[0]!.mimeType, size: pendingAnalysis.files.reduce((sum, file) => sum + file.size, 0), title: title.trim() || (aiDisabled ? undefined : pendingAnalysis.document.title), category, documentType: documentType.trim(), confidence: aiDisabled ? 0 : documentType === "Unknown" ? 0 : 90, fields: { uniqueNumber: uniqueNumber.trim() || undefined, nameOnDocument: name.trim() || undefined }, reviewFields: [], rawExtractedText: "", warnings: pendingAnalysis.warnings, evidence: [], analysisSource: aiDisabled ? "manual" : "ai", expiry: expiryDate || null, userConfirmedUnknown: documentType !== "Unknown" })).unwrap();
+      const saved = await dispatch(saveDocument({ tempFileIds: pendingAnalysis.files.map((file) => file.tempFileId), originalName: pendingAnalysis.files[0]!.originalName, mimeType: pendingAnalysis.files[0]!.mimeType, size: pendingAnalysis.files.reduce((sum, file) => sum + file.size, 0), title: title.trim() || (manualReview ? undefined : pendingAnalysis.document.title), category, documentType: documentType.trim(), confidence: manualReview ? 0 : documentType === "Unknown" ? 0 : 90, fields: { ...(manualReview ? {} : pendingAnalysis.document.fields ?? {}), uniqueNumber: uniqueNumber.trim() || undefined, nameOnDocument: name.trim() || undefined }, reviewFields: [], rawExtractedText: manualReview ? "" : pendingAnalysis.document.extractedText ?? "", warnings: pendingAnalysis.warnings, evidence: [], analysisSource: manualReview ? "manual" : "ai", expiry: expiryDate || null, userConfirmedUnknown: documentType !== "Unknown" })).unwrap();
       onSaved?.(saved.document);
       close();
     } catch { /* The documents slice exposes a user-safe error below. */ }
@@ -64,26 +68,28 @@ export default function UploadDocumentModal({ open, onClose, onSaved, zIndex = 5
     event.preventDefault();
     addFiles(event.dataTransfer.files);
   };
-  return <div className="lp-modal-backdrop" style={{ zIndex }}><div className="lp-modal-panel" style={{ width: "min(720px, calc(100vw - 36px))", maxHeight: "86vh", overflow: "auto" }}>
-    <div style={{ display: "flex", justifyContent: "space-between" }}><h2 style={{ color: T.white }}>Upload document pages</h2><button onClick={close} style={btnGhost}>Cancel</button></div>
-    {!pendingAnalysis ? <div data-testid="document-drop-zone" onDragOver={(event) => event.preventDefault()} onDrop={onDrop} style={{ border: `1px dashed ${T.border}`, borderRadius: 12, padding: 20 }}>
+  return <ModalBackdrop  style={{ zIndex }}><ModalPanel onDismiss={close} aria-label="Upload document"  style={{ width: "min(720px, calc(100vw - 36px))", maxHeight: "86vh", overflow: "auto" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--space-s12)", justifyContent: "space-between" }}><Heading level={2} size="md" style={{ color: T.white }}>Upload document pages</Heading><Button variant="secondary" type="button" onClick={close} >Cancel</Button></div>
+    {!pendingAnalysis ? <div data-testid="document-drop-zone" onDragOver={(event) => event.preventDefault()} onDrop={onDrop} style={{ border: `1px dashed ${T.border}`, borderRadius: "var(--radius-surface)", padding: "var(--space-s20)" }}>
       <input ref={inputRef} type="file" multiple accept={acceptedDocumentTypes} onChange={(event) => addFiles(event.target.files)} style={{ display: "none" }} />
-      <button type="button" onClick={chooseFiles} style={{ ...btnGhost, width: "100%", minHeight: 92, justifyContent: "center", borderStyle: "dashed" }}>
+      <Button variant="secondary" type="button" onClick={chooseFiles} >
         {files.length ? "Add more document pages" : "Choose images or PDFs"}
-      </button>
-      <div style={{ color: T.muted, fontSize: 12, marginTop: 8 }}>JPG, PNG, WebP, or PDF · image pages up to 10 MB per upload batch</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 10, marginTop: 14 }}>{previews.map(({ file, url }, index) => <div key={`${file.name}-${file.size}-${index}`} style={{ display: "grid", gap: 8 }}><div style={{ color: T.muted, fontSize: 12, fontWeight: 800 }}>Page {index + 1}</div>{isPdf(file) ? <div style={{ height: 100, display: "grid", placeItems: "center", padding: 10, border: `1px solid ${T.border}`, borderRadius: 8, background: T.raised, color: T.white, fontWeight: 800, textAlign: "center", wordBreak: "break-word" }}>PDF<br /><small style={{ color: T.muted, fontWeight: 600 }}>{file.name}</small></div> : <img src={url} alt={`Page ${index + 1}`} style={{ width: "100%", height: 100, objectFit: "contain", background: T.raised }} />}<div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}><button type="button" style={btnGhost} disabled={index === 0} onClick={() => moveFile(index, -1)}>Up</button><button type="button" style={btnGhost} disabled={index === files.length - 1} onClick={() => moveFile(index, 1)}>Down</button><button type="button" style={btnGhost} onClick={() => setFiles((items) => items.filter((_, i) => i !== index))}>Remove</button></div></div>)}</div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}><button type="button" style={btnPrimary} disabled={!files.length || analyzeStatus === "loading"} onClick={() => void dispatch(analyzeDocument({ files, aiAnalysisConsent: true }))}>{analyzeStatus === "loading" ? "Preparing pages…" : files.length ? `Continue with ${files.length} page${files.length === 1 ? "" : "s"}` : "Select document images"}</button></div>
-    </div> : <div style={{ display: "grid", gap: 12 }}><div style={{ color: T.text }}>Pages: {pendingAnalysis.files.map((file) => file.originalName).join(", ")}</div>
-      {aiDisabled ? <div style={{ color: T.muted, fontSize: 13 }}>AI processing is off. Your file was uploaded for review; enter the details manually.</div> : null}
-      <label style={{ color: T.muted }}>Title<input value={title} onChange={(e) => setTitle(e.target.value)} style={inputStyle} /></label>
-      <label style={{ color: T.muted }}>Category<select value={category} onChange={(e) => { setCategory(e.target.value); setInlineError(""); }} style={inputStyle}><option value="">Select a category</option>{categories.map((item) => <option key={item}>{item}</option>)}</select></label>
-      <label style={{ color: T.muted }}>Document type<input value={documentType} onChange={(e) => setDocumentType(e.target.value)} style={inputStyle} /></label>
-      <label style={{ color: T.muted }}>Unique number<input value={uniqueNumber} onChange={(e) => setUniqueNumber(e.target.value)} style={inputStyle} /></label>
-      <label style={{ color: T.muted }}>Name on document<input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} /></label>
-      <label style={{ color: T.muted }}>Expiry date<input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} style={inputStyle} /></label>
-      <div style={{ color: T.muted }}>Ownership: {pendingAnalysis.document.ownership}</div><button style={btnPrimary} disabled={uploadStatus === "loading"} onClick={() => void save()}>Confirm & Save</button>
-    </div>}{inlineError || error ? <div role="alert" style={{ color: T.coral }}>{inlineError || error}</div> : null}
-  </div></div>;
+      </Button>
+      <Text as="div" size="sm" tone="muted" style={{ color: T.muted, marginTop: "var(--space-s8)" }}>JPG, PNG, WebP, or PDF · image pages up to 10 MB per upload batch</Text>
+      <div   style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: "var(--space-s10)", marginTop: "var(--space-s14)" }}>{previews.map(({ file, url }, index) => <div key={`${file.name}-${file.size}-${index}`} style={{ display: "grid", gap: "var(--space-s8)" }}><Text as="div" size="sm" weight="semibold" tone="muted" style={{ color: T.muted }}>Page {index + 1}</Text>{isPdf(file) ? <Text as="div" size="md" weight="semibold" style={{ height: 100, display: "grid", placeItems: "center", padding: "var(--space-s10)", border: `1px solid ${T.border}`, borderRadius: "var(--radius-compact)", background: T.raised, color: T.white, textAlign: "center", wordBreak: "break-word" }}>PDF<br /><small style={{ color: T.muted, fontWeight: "var(--weight-semibold)" }}>{file.name}</small></Text> : <img src={url} alt={`Page ${index + 1}`} style={{ width: "100%", height: 100, objectFit: "contain", background: T.raised }} />}<div style={{ display: "flex", gap: "var(--space-s6)", flexWrap: "wrap" }}><Button variant="secondary" type="button" disabled={index === 0} onClick={() => moveFile(index, -1)}>Up</Button><Button variant="secondary" type="button" disabled={index === files.length - 1} onClick={() => moveFile(index, 1)}>Down</Button><Button tone="danger" variant="secondary" type="button" onClick={() => setFiles((items) => items.filter((_, i) => i !== index))}>Remove</Button></div></div>)}</div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "var(--space-s16)" }}><Button loading={analyzeStatus === "loading"} variant="primary" type="button" disabled={!files.length || analyzeStatus === "loading"} onClick={() => void dispatch(analyzeDocument({ files, aiAnalysisConsent: true }))}>{analyzeStatus === "loading" ? "Preparing pages…" : files.length ? `Continue with ${files.length} page${files.length === 1 ? "" : "s"}` : "Select document images"}</Button></div>
+    </div> : <div style={{ display: "grid", gap: "var(--space-s12)" }}><Text as="div" size="md" style={{ color: T.text }}>Pages: {pendingAnalysis.files.map((file) => file.originalName).join(", ")}</Text>
+      {aiDisabled ? <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>AI processing is off. Your file was uploaded for review; enter the details manually.</Text> : null}
+      {aiFailed ? <Text as="div" size="md" tone="muted">AI could not read this document. Enter the details manually or retry analysis.</Text> : null}
+      {aiFailed && files.length > 0 ? <Button variant="secondary" type="button" disabled={analyzeStatus === "loading"} onClick={() => void dispatch(analyzeDocument({ files, aiAnalysisConsent: true }))}>Retry AI analysis</Button> : null}
+      <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Title<Input value={title} onChange={(e) => setTitle(e.target.value)} style={inputStyle} /></Text>
+      <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Category<Select value={category} onChange={(e) => { setCategory(e.target.value); setInlineError(""); }} style={inputStyle}><option value="">Select a category</option>{categories.map((item) => <option key={item}>{item}</option>)}</Select></Text>
+      <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Document type<Input value={documentType} onChange={(e) => setDocumentType(e.target.value)} style={inputStyle} /></Text>
+      <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Unique number<Input value={uniqueNumber} onChange={(e) => setUniqueNumber(e.target.value)} style={inputStyle} /></Text>
+      <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Name on document<Input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} /></Text>
+      <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Expiry date<Input type="date" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} style={inputStyle} /></Text>
+      <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>Ownership: {pendingAnalysis.document.ownership}</Text><Button variant="primary" type="button" disabled={uploadStatus === "loading"} onClick={() => void save()}>Confirm & Save</Button>
+    </div>}{inlineError || error ? <Text as="div" size="md" tone="danger" role="alert" style={{ color: T.coral }}>{inlineError || error}</Text> : null}
+  </ModalPanel></ModalBackdrop>;
 }
-const inputStyle = { width: "100%", marginTop: 6, padding: 10, borderRadius: 8, background: T.raised, color: T.white, border: `1px solid ${T.border}` };
+const inputStyle = { width: "100%", marginTop: "var(--space-s6)" };

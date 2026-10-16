@@ -1,10 +1,11 @@
+import { Heading, Text, Input, Button, Card } from "@/design-system";
+
 import { useEffect, useState } from "react";
 import { Check, ShieldCheck, X } from "lucide-react";
 import { useParams } from "react-router-dom";
 
-import Card from "@/components/Card";
 import { api, type TrustInvitation } from "@/lib/api";
-import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 
 export default function InvitePage() {
   const { token = "" } = useParams();
@@ -70,20 +71,20 @@ export default function InvitePage() {
 
   return (
     <Card style={{ maxWidth: 520, margin: "72px auto" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <ShieldCheck color={T.action} size={20} />
-        <h1 style={{ color: T.white, fontSize: 24, margin: 0 }}>Readiness Invitation</h1>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-s10)", marginBottom: "var(--space-s14)" }}>
+        <ShieldCheck aria-hidden="true" focusable="false" color={T.action} size="var(--icon-medium)" />
+        <Heading level={1} size="md" style={{ color: T.white, margin: 0 }}>Readiness Invitation</Heading>
       </div>
 
-      {done ? <p style={{ color: T.mint, margin: 0 }}>{done}</p> : null}
-      {error ? <p role="alert" style={{ color: T.coral, margin: done ? "12px 0 0" : "0 0 14px" }}>{error}</p> : null}
+      {done ? <Text as="p" size="md" tone="success" style={{ color: T.mint, margin: 0 }}>{done}</Text> : null}
+      {error ? <Text as="p" size="md" tone="danger" role="alert" style={{ color: T.coral, margin: done ? "12px 0 0" : "0 0 14px" }}>{error}</Text> : null}
 
       {invitation ? (
         <>
-          <p style={{ color: T.text, fontSize: 15, lineHeight: 1.6, margin: "0 0 16px" }}>
+          <Text as="p" size="md" style={{ color: T.text, margin: "0 0 var(--space-s16)" }}>
             {invitation.ownerName} invited you to join their Readiness.
-          </p>
-          <div style={{ display: "grid", gap: 10, marginBottom: 18 }}>
+          </Text>
+          <div style={{ display: "grid", gap: "var(--space-s10)", marginBottom: "var(--space-s18)" }}>
             <Info label="Invited person" value={invitation.memberName} />
             <Info label="Relationship" value={invitation.relationLabel} />
             <Info label="Access" value={invitation.accessType.name} />
@@ -91,30 +92,30 @@ export default function InvitePage() {
           </div>
 
           {accepting ? (
-            <label style={{ display: "block", color: T.muted, fontSize: 12, fontWeight: 800, textTransform: "uppercase" }}>
+            <Text as="label" size="sm" weight="semibold" tone="muted" style={{ display: "block", color: T.muted, textTransform: "uppercase" }}>
               Enter the 6-digit PIN provided by {invitation.ownerName}
-              <input
+              <Input
                 inputMode="numeric"
                 maxLength={6}
                 value={pin}
                 onChange={(event) => setPin(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                style={{ width: "100%", marginTop: 7, background: T.raised, border: `1px solid ${T.border}`, borderRadius: 9, padding: "10px 12px", color: T.text, fontSize: 16 }}
+                style={{ width: "100%", marginTop: 7 }}
               />
-            </label>
+            </Text>
           ) : null}
 
-          <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-            <button
+          <div style={{ display: "flex", gap: "var(--space-s10)", marginTop: "var(--space-s18)" }}>
+            <Button variant="primary"
               type="button"
               disabled={working || (accepting && pin.length !== 6)}
               onClick={() => accepting ? void accept() : setAccepting(true)}
-              style={{ ...btnPrimary, justifyContent: "center", flex: 1 }}
+              style={{ flex: 1 }}
             >
-              <Check size={16} /> Accept
-            </button>
-            <button type="button" disabled={working} onClick={() => void reject()} style={{ ...btnGhost, color: T.coral, borderColor: T.coralBorder, justifyContent: "center", flex: 1 }}>
-              <X size={16} /> Reject
-            </button>
+              <Check aria-hidden="true" focusable="false" size="var(--icon-small)" /> Accept
+            </Button>
+            <Button tone="danger" variant="secondary" type="button" disabled={working} onClick={() => void reject()} style={{ flex: 1 }}>
+              <X aria-hidden="true" focusable="false" size="var(--icon-small)" /> Reject
+            </Button>
           </div>
         </>
       ) : null}
@@ -124,9 +125,9 @@ export default function InvitePage() {
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ background: T.raised, border: `1px solid ${T.border}`, borderRadius: 8, padding: "10px 12px" }}>
-      <div style={{ color: T.muted, fontSize: 11, fontWeight: 800, textTransform: "uppercase" }}>{label}</div>
-      <div style={{ color: T.white, fontSize: 14, fontWeight: 700, marginTop: 4 }}>{value}</div>
+    <div style={{ background: T.raised, border: `1px solid ${T.border}`, borderRadius: "var(--radius-compact)", padding: "var(--space-s10) var(--space-s12)" }}>
+      <Text as="div" size="sm" weight="semibold" tone="muted" style={{ color: T.muted, textTransform: "uppercase" }}>{label}</Text>
+      <Text as="div" size="md" weight="semibold" style={{ color: T.white, marginTop: "var(--space-s4)" }}>{value}</Text>
     </div>
   );
 }

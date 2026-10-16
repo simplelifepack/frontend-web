@@ -1,8 +1,9 @@
-import { Plus, Search } from "lucide-react";
-import Pill from "@/components/Pill";
-import Card from "@/components/Card";
+import { Text, Heading, SearchField, Button, Pill, Card } from "@/design-system";
+
+import { Plus } from "lucide-react";
+
 import MeasurementChart from "../MeasurementChart";
-import { btnPrimary } from "@/constants/theme";
+
 import type {
   HealthAvailableMetric,
   HealthOverview,
@@ -31,17 +32,13 @@ function Trends({
   return (
     <>
       <div className="lp-health-toolbar">
-        <label>
-          <Search size={15} />
-          <input
+        <SearchField aria-label="Search measurements"
             value={search}
             onChange={(event) => onSearch(event.target.value)}
-            placeholder="Search measurements..."
-          />
-        </label>
-        <button type="button" style={btnPrimary}>
-          <Plus size={15} /> Track measurement
-        </button>
+            placeholder="Search measurements..." />
+        <Button variant="primary" type="button" >
+          <Plus aria-hidden="true" focusable="false" size={15} /> Track measurement
+        </Button>
       </div>
       {tracked.length ? (
         tracked.map((metric) => (
@@ -55,7 +52,7 @@ function Trends({
         <EmptyTracked onTrack={() => undefined} />
       )}
       <HealthBlock title="Available from records">
-        <div className="lp-health-search-results">
+        <div   className="lp-health-search-results">
           {available.map((metric) => (
             <button
               key={metric.metricKey}
@@ -92,33 +89,33 @@ function MetricDetail({
     <Card className="lp-health-trend-card">
       <div className="lp-health-trend-head">
         <div>
-          <h3>{metric.displayName}</h3>
+          <Heading level={3} size="sm">{metric.displayName}</Heading>
           {latest ? (
-            <span>
+            <Text size="sm">
               Latest · {valueWithUnit(latest)} · {formatDate(latest.measuredAt)}
-            </span>
+            </Text>
           ) : (
-            <span>No measurements available yet.</span>
+            <Text size="sm">No measurements available yet.</Text>
           )}
         </div>
-        <button type="button" onClick={onStop}>
+        <Button size="sm" variant="tertiary" type="button" onClick={onStop}>
           Stop tracking
-        </button>
+        </Button>
       </div>
       {latest ? (
         <>
           <MiniChart measurements={metric.measurements} large />
-          <div className="lp-health-history">
+          <div   className="lp-health-history">
             {metric.measurements
               .slice()
               .reverse()
               .map((item) => (
                 <div key={item.id}>
-                  <span>{formatDate(item.measuredAt)}</span>
-                  <b>{valueWithUnit(item)}</b>
-                  <small>
+                  <Text size="md">{formatDate(item.measuredAt)}</Text>
+                  <Text as="b" size="md" weight="semibold">{valueWithUnit(item)}</Text>
+                  <Text as="small" size="sm">
                     {documentTypeLabels[item.sourceType] ?? item.sourceType}
-                  </small>
+                  </Text>
                 </div>
               ))}
           </div>

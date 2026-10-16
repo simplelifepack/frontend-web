@@ -1,3 +1,6 @@
+import { typography } from "@/design-system/variables/typography";
+import { Text, Heading, ChoiceGroup, Choice, ModalPanel, ModalBackdrop, Input, Button } from "@/design-system";
+
 import { motion } from "framer-motion";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { BrandMark, BrandWordmark } from "./BrandLogo";
@@ -124,8 +127,8 @@ function Bar({ label, score, delay, color }: { label: string; score: number; del
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
-        <span style={{ fontSize: 13.5, fontWeight: 600, color: C.ink }}>{label}</span>
-        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12.5, color: C.muted }}>{score}%</span>
+        <Text size="md" weight="semibold" style={{ color: C.ink }}>{label}</Text>
+        <Text size="md" tone="muted" style={{ color: C.muted }}>{score}%</Text>
       </div>
       <div style={{ height: 7, borderRadius: 6, background: C.paperDeep, overflow: "hidden" }}>
         <motion.div
@@ -143,35 +146,16 @@ function ReadinessMock() {
   return (
     <div className="lp-mock" style={{ padding: 20 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-        <span
-          style={{
-            fontFamily: "'JetBrains Mono',monospace",
-            fontSize: 10.5,
-            letterSpacing: 2,
-            color: C.muted,
-            textTransform: "uppercase",
-          }}
+        <Text size="sm" tone="muted"
+          style={{ letterSpacing: 2, color: C.muted, textTransform: "uppercase" }}
         >
           Readiness
-        </span>
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 5,
-            transform: "rotate(-6deg)",
-            border: `1.5px solid ${C.emerald}`,
-            color: C.emerald,
-            borderRadius: 7,
-            padding: "3px 9px",
-            fontSize: 10.5,
-            fontWeight: 800,
-            letterSpacing: 1.5,
-            fontFamily: "'JetBrains Mono',monospace",
-          }}
+        </Text>
+        <Text size="sm" weight="semibold"
+          style={{ display: "inline-flex", alignItems: "center", gap: 5, transform: "rotate(-6deg)", border: `1.5px solid ${C.emerald}`, color: C.emerald, borderRadius: 7, padding: "3px 9px", letterSpacing: 1.5 }}
         >
-          <Stamp size={12} /> READY
-        </span>
+          <Stamp aria-hidden="true" focusable="false" size={12} /> READY
+        </Text>
       </div>
       <div style={{ display: "grid", gap: 16 }}>
         <Bar label="Travel paperwork" score={82} delay={0.1} color={C.action} />
@@ -198,14 +182,14 @@ function PackDetail() {
             background: C.blue + "1c",
           }}
         >
-          <Plane size={19} color={C.blue} />
+          <Plane aria-hidden="true" focusable="false" size={19} color={C.blue} />
         </span>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>Ready pack</div>
-          <div style={{ fontSize: 12, color: C.muted, fontFamily: "'JetBrains Mono',monospace" }}>4 of 5 ready</div>
+          <Text as="div" size="md" weight="semibold" style={{ color: C.ink }}>Ready pack</Text>
+          <Text as="div" size="sm" tone="muted" style={{ color: C.muted }}>4 of 5 ready</Text>
         </div>
       </div>
-      <div style={{ display: "grid", gap: 6 }}>
+      <div   style={{ display: "grid", gap: 6 }}>
         {inc.map((x) => (
           <div
             key={x}
@@ -229,9 +213,9 @@ function PackDetail() {
                 background: C.emerald + "22",
               }}
             >
-              <Check size={11} color={C.emerald} />
+              <Check aria-hidden="true" focusable="false" size={11} color={C.emerald} />
             </span>
-            <span style={{ fontSize: 13, color: C.ink }}>{x}</span>
+            <Text size="md" style={{ color: C.ink }}>{x}</Text>
           </div>
         ))}
         {add.map((x) => (
@@ -247,25 +231,15 @@ function PackDetail() {
               padding: "8px 11px",
             }}
           >
-            <span
-              style={{
-                display: "grid",
-                placeItems: "center",
-                width: 18,
-                height: 18,
-                borderRadius: 6,
-                background: C.clay + "22",
-                color: C.clay,
-                fontSize: 12,
-                fontWeight: 800,
-              }}
+            <Text size="sm" weight="semibold"
+              style={{ display: "grid", placeItems: "center", width: 18, height: 18, borderRadius: 6, background: C.clay + "22", color: C.clay }}
             >
               +
-            </span>
-            <span style={{ fontSize: 13, color: C.ink }}>{x}</span>
-            <span style={{ marginLeft: "auto", fontSize: 11, color: C.clay, fontFamily: "'JetBrains Mono',monospace" }}>
+            </Text>
+            <Text size="md" style={{ color: C.ink }}>{x}</Text>
+            <Text size="sm" style={{ marginLeft: "auto", color: C.clay }}>
               to add
-            </span>
+            </Text>
           </div>
         ))}
       </div>
@@ -283,27 +257,20 @@ function DocGraph() {
   ];
   return (
     <div className="lp-mock" style={{ padding: 18 }}>
-      <div
-        style={{
-          fontFamily: "'JetBrains Mono',monospace",
-          fontSize: 10.5,
-          letterSpacing: 2,
-          color: C.muted,
-          textTransform: "uppercase",
-          marginBottom: 14,
-        }}
+      <Text as="div" size="sm" tone="muted"
+        style={{ letterSpacing: 2, color: C.muted, textTransform: "uppercase", marginBottom: 14 }}
       >
         Document graph
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 9 }}>
+      </Text>
+      <div   style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 9 }}>
         {cats.map((x) => (
           <div
             key={x.n}
             style={{ background: C.panel2, border: `1px solid ${C.border}`, borderRadius: 11, padding: "12px 13px" }}
           >
             <div style={{ width: 8, height: 8, borderRadius: 9, background: x.c, marginBottom: 9 }} />
-            <div style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{x.n}</div>
-            <div style={{ fontSize: 11.5, color: C.muted, fontFamily: "'JetBrains Mono',monospace" }}>{x.d} docs</div>
+            <Text as="div" size="md" weight="semibold" style={{ color: C.ink }}>{x.n}</Text>
+            <Text as="div" size="sm" tone="muted" style={{ color: C.muted }}>{x.d} docs</Text>
           </div>
         ))}
       </div>
@@ -320,27 +287,18 @@ function WealthMock() {
     <div className="lp-mock" style={{ padding: 18 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 12, color: C.muted }}>Documented value</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26, fontWeight: 700, color: C.ink }}>
+          <Text as="div" size="sm" tone="muted" style={{ color: C.muted }}>Documented value</Text>
+          <Text as="div" size="lg" weight="semibold" style={{ color: C.ink }}>
             $32.7M
-          </div>
+          </Text>
         </div>
-        <span
-          style={{
-            fontSize: 11.5,
-            fontWeight: 600,
-            color: C.clay,
-            background: C.clay + "16",
-            border: `1px solid ${C.clay}33`,
-            borderRadius: 20,
-            padding: "4px 10px",
-            fontFamily: "'JetBrains Mono',monospace",
-          }}
+        <Text size="sm" weight="semibold"
+          style={{ color: C.clay, background: C.clay + "16", border: `1px solid ${C.clay}33`, borderRadius: 20, padding: "4px 10px" }}
         >
           1 nominee gap
-        </span>
+        </Text>
       </div>
-      <div style={{ display: "grid", gap: 7 }}>
+      <div   style={{ display: "grid", gap: 7 }}>
         {rows.map((r) => (
           <div
             key={r.n}
@@ -364,20 +322,15 @@ function WealthMock() {
                 background: C.action + "1c",
               }}
             >
-              <Wallet size={14} color={C.action} />
+              <Wallet aria-hidden="true" focusable="false" size={14} color={C.action} />
             </span>
-            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.ink }}>{r.n}</span>
-            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: C.body }}>{r.v}</span>
-            <span
-              style={{
-                fontSize: 10.5,
-                fontWeight: 700,
-                color: r.ok ? C.emerald : C.clay,
-                fontFamily: "'JetBrains Mono',monospace",
-              }}
+            <Text size="md" weight="semibold" style={{ flex: 1, color: C.ink }}>{r.n}</Text>
+            <Text size="md" style={{ color: C.body }}>{r.v}</Text>
+            <Text size="sm" weight="semibold"
+              style={{ color: r.ok ? C.emerald : C.clay }}
             >
               {r.ok ? "nominee" : "add"}
-            </span>
+            </Text>
           </div>
         ))}
       </div>
@@ -397,25 +350,16 @@ function HealthMock() {
   return (
     <div className="lp-mock" style={{ padding: 18 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <span style={{ fontSize: 13, color: C.muted }}>HbA1c · recent trend</span>
-        <span
-          style={{
-            fontFamily: "'JetBrains Mono',monospace",
-            fontSize: 10.5,
-            fontWeight: 600,
-            color: C.red,
-            background: C.red + "16",
-            border: `1px solid ${C.red}40`,
-            padding: "2px 8px",
-            borderRadius: 20,
-          }}
+        <Text size="md" tone="muted" style={{ color: C.muted }}>HbA1c · recent trend</Text>
+        <Text size="sm" weight="semibold"
+          style={{ color: C.red, background: C.red + "16", border: `1px solid ${C.red}40`, padding: "2px 8px", borderRadius: 20 }}
         >
           above range
-        </span>
+        </Text>
       </div>
-      <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26, fontWeight: 700, color: C.ink }}>
-        7.2<span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}> %</span>
-      </div>
+      <Text as="div" size="lg" weight="semibold" style={{ color: C.ink }}>
+        7.2<span style={{ fontSize: "var(--text-md)", color: C.muted, fontWeight: "var(--weight-medium)" }}> %</span>
+      </Text>
       <svg viewBox="0 0 300 60" style={{ width: "100%", height: 60, marginTop: 6 }}>
         <rect x={0} y={38} width={300} height={20} fill={C.emerald} opacity={0.14} />
         <line x1={0} x2={300} y1={38} y2={38} stroke={C.emerald} strokeWidth={1} strokeDasharray="3 3" opacity={0.6} />
@@ -432,20 +376,20 @@ function HealthMock() {
           strokeLinejoin="round"
         />
         <circle cx={300} cy={26} r={3.5} fill={C.red} />
-        <text x={298} y={34} textAnchor="end" fontSize="8" fill={C.emerald} fontFamily="'JetBrains Mono',monospace">
+        <text x={298} y={34} textAnchor="end" fontSize={typography.chartLabel} fill={C.emerald} >
           normal ≤ 5.7
         </text>
       </svg>
       <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-        <span className="lp-tag">
-          <Pill size={12} color={C.purple} /> 3 meds
-        </span>
-        <span className="lp-tag">
-          <FlaskConical size={12} color={C.pink} /> last 3 labs
-        </span>
-        <span className="lp-tag">
-          <CalendarClock size={12} color={C.action} /> visit pack
-        </span>
+        <Text size="md" className="lp-tag">
+          <Pill aria-hidden="true" focusable="false" size={12} color={C.purple} /> 3 meds
+        </Text>
+        <Text size="md" className="lp-tag">
+          <FlaskConical aria-hidden="true" focusable="false" size={12} color={C.pink} /> last 3 labs
+        </Text>
+        <Text size="md" className="lp-tag">
+          <CalendarClock aria-hidden="true" focusable="false" size={12} color={C.action} /> visit pack
+        </Text>
       </div>
     </div>
   );
@@ -469,11 +413,11 @@ function SearchMock() {
           padding: "10px 12px",
         }}
       >
-        <Search size={15} color={C.muted} />
-        <span style={{ fontSize: 13.5, color: C.ink }}>thyroid</span>
+        <Search aria-hidden="true" focusable="false" size={15} color={C.muted} />
+        <Text size="md" style={{ color: C.ink }}>thyroid</Text>
         <span className="lp-caret" />
       </div>
-      <div style={{ marginTop: 10, display: "grid", gap: 6 }}>
+      <div   style={{ marginTop: 10, display: "grid", gap: 6 }}>
         {hits.map((h) => (
           <div
             key={h.t}
@@ -500,8 +444,8 @@ function SearchMock() {
               <h.icon size={14} color={h.c} />
             </span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{h.t}</div>
-              <div style={{ fontSize: 11.5, color: C.muted }}>{h.s}</div>
+              <Text as="div" size="md" weight="semibold" style={{ color: C.ink }}>{h.t}</Text>
+              <Text as="div" size="sm" tone="muted" style={{ color: C.muted }}>{h.s}</Text>
             </div>
           </div>
         ))}
@@ -732,7 +676,7 @@ const MOMENTS: {
 function MomentCard({ m, i }: { m: (typeof MOMENTS)[number]; i: number }) {
   return (
     <motion.div {...fade(0.08 * i)} className="lp-moment">
-      <div className="lp-momentimg">
+      <Text as="div" size="md" className="lp-momentimg">
         {m.img ? (
           <img
             src={m.img}
@@ -743,24 +687,24 @@ function MomentCard({ m, i }: { m: (typeof MOMENTS)[number]; i: number }) {
         ) : (
           <MomentScene kind={m.kind} />
         )}
-      </div>
+      </Text>
       <div style={{ padding: "13px 16px 16px" }}>
-        <span className="lp-momentchip">
-          {m.state === "configured" ? <ShieldCheck size={11} color={C.action} /> : <Check size={11} color={C.action} />}
+        <Text size="md" className="lp-momentchip">
+          {m.state === "configured" ? <ShieldCheck aria-hidden="true" focusable="false" size={11} color={C.action} /> : <Check aria-hidden="true" focusable="false" size={11} color={C.action} />}
           {m.chip}
           {m.state === "progress" && m.progress ? (
             <>
-              <span style={{ color: C.muted, fontWeight: 700 }}>{m.progress[0]} of {m.progress[1]}</span>
+              <span style={{ color: C.muted, fontWeight: "var(--weight-bold)" }}>{m.progress[0]} of {m.progress[1]}</span>
               <span aria-hidden style={{ width: 44, height: 4, borderRadius: 4, background: "#E8DFCA", overflow: "hidden", display: "inline-block" }}>
                 <span style={{ display: "block", width: `${(m.progress[0] / m.progress[1]) * 100}%`, height: "100%", background: C.action }} />
               </span>
             </>
           ) : (
-            <span style={{ color: C.muted, fontWeight: 700 }}>{m.state === "configured" ? "configured" : "ready"}</span>
+            <span style={{ color: C.muted, fontWeight: "var(--weight-bold)" }}>{m.state === "configured" ? "configured" : "ready"}</span>
           )}
-        </span>
-        <div style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 16.5, color: C.ink, marginTop: 9 }}>{m.title}</div>
-        <p style={{ margin: "6px 0 0", fontSize: 13.5, lineHeight: 1.6, color: C.body }}>{m.body}</p>
+        </Text>
+        <Text as="div" size="lg" weight="semibold" style={{ color: C.ink, marginTop: 9 }}>{m.title}</Text>
+        <Text as="p" size="md" style={{ margin: "6px 0 0", color: C.body }}>{m.body}</Text>
       </div>
     </motion.div>
   );
@@ -770,12 +714,12 @@ function Feature({ eyebrow, title, body, points, mock, flip }: any) {
   return (
     <motion.div {...fade()} className="lp-feature" style={{ direction: flip ? "rtl" : "ltr" }}>
       <div style={{ direction: "ltr" }}>
-        <div className="lp-eyebrow">{eyebrow}</div>
-        <h3 className="lp-h3">{title}</h3>
-        <p className="lp-body" style={{ marginTop: 12 }}>
+        <Text as="div" size="sm" weight="semibold" className="lp-eyebrow">{eyebrow}</Text>
+        <Heading level={3} size="lg" className="lp-h3">{title}</Heading>
+        <Text as="p" size="md" className="lp-body" style={{ marginTop: 12 }}>
           {body}
-        </p>
-        <div style={{ marginTop: 18, display: "grid", gap: 11 }}>
+        </Text>
+        <div   style={{ marginTop: 18, display: "grid", gap: 11 }}>
           {points.map((p: string) => (
             <div key={p} style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span
@@ -789,14 +733,14 @@ function Feature({ eyebrow, title, body, points, mock, flip }: any) {
                   flexShrink: 0,
                 }}
               >
-                <Check size={12} color={C.emerald} />
+                <Check aria-hidden="true" focusable="false" size={12} color={C.emerald} />
               </span>
-              <span style={{ fontSize: 14.5, color: C.ink }}>{p}</span>
+              <Text size="md" style={{ color: C.ink }}>{p}</Text>
             </div>
           ))}
         </div>
       </div>
-      <div style={{ direction: "ltr" }}>{mock}</div>
+      <Text as="div" size="md" style={{ direction: "ltr" }}>{mock}</Text>
     </motion.div>
   );
 }
@@ -859,18 +803,7 @@ function AuthModal({
     scrim: "var(--lpv-scrim)",
     shadow: "0 30px 80px color-mix(in srgb, var(--lp-navy) 35%, transparent)",
   };
-  const inp: CSSProperties = {
-    width: "100%",
-    background: auth.raised,
-    border: `1px solid ${auth.border}`,
-    borderRadius: 11,
-    padding: "12px 14px",
-    color: auth.heading,
-    fontSize: 15,
-    outline: "none",
-    marginTop: 10,
-    fontFamily: "inherit",
-  };
+  const inp: CSSProperties = { width: "100%", marginTop: 10 };
   const passwordRule = (value: string) => {
     if (value.length < 8) return "Password must be at least 8 characters.";
     if (!/[a-z]/.test(value)) return "Password must include a lowercase letter.";
@@ -1020,45 +953,19 @@ function AuthModal({
     ["Emergency SOS handoff", "The right people get access only when you release it"],
     ["Free export, forever", "Your documents are never held hostage"],
   ];
-  const ghostBtn: CSSProperties = {
-    background: "none",
-    border: "none",
-    color: auth.muted,
-    fontSize: 13,
-    cursor: "pointer",
-    fontFamily: "inherit",
-    marginTop: 12,
-  };
+
   return (
-    <div
+    <ModalBackdrop
       onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 200,
-        background: auth.scrim,
-        backdropFilter: "blur(4px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 18,
-      }}
+      style={{ position: "fixed", inset: 0, zIndex: "var(--layer-overlay)", display: "flex", alignItems: "center", justifyContent: "center" }}
     >
-      <div
+      <ModalPanel onDismiss={onClose} aria-label="Account access" flush
         onClick={(e) => e.stopPropagation()}
-        style={{
-          background: auth.panel,
-          border: `1px solid ${auth.border}`,
-          borderRadius: 20,
-          width: screen === "start" ? "min(780px,100%)" : "min(440px,100%)",
-          display: "flex",
-          overflow: "hidden",
-          boxShadow: auth.shadow,
-        }}
+        style={{ width: screen === "start" ? "min(780px,100%)" : "min(440px,100%)", display: "flex", overflow: "hidden" }}
       >
         <div style={{ flex: 1, padding: 26, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <b style={{ fontFamily: "'Space Grotesk'", fontSize: 20, color: auth.heading }}>
+            <Text as="b" size="lg" weight="semibold" style={{ color: auth.heading }}>
               {screen === "forgot-email"
                 ? "Reset your password"
                 : screen === "signup-code"
@@ -1072,125 +979,83 @@ function AuthModal({
                   : mode === "signin"
                     ? "Welcome back"
                     : "Create your account"}
-            </b>
-            <button
+            </Text>
+            <Button size="sm" iconOnly variant="tertiary" type="button" aria-label="Close sign in"
               onClick={onClose}
-              style={{ background: "none", border: "none", cursor: "pointer", color: auth.muted, display: "flex" }}
             >
-              <X size={18} />
-            </button>
+              <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+            </Button>
           </div>
 
           {screen === "start" && (
             <>
-              <div
-                style={{
-                  display: "flex",
-                  border: `1px solid ${auth.border}`,
-                  borderRadius: 11,
-                  overflow: "hidden",
-                  background: auth.raised,
-                  marginBottom: 14,
-                }}
+              <ChoiceGroup
+                style={{ display: "flex", marginBottom: 14 }}
               >
                 {(["signin", "signup"] as const).map((m) => (
-                  <button
+                  <Choice aria-pressed={mode === m}
                     key={m}
                     onClick={() => {
                       setMode(m);
                       setErr("");
                     }}
-                    style={{
-                      flex: 1,
-                      padding: "10px 0",
-                      fontSize: 13.5,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      border: "none",
-                      fontFamily: "inherit",
-                      background: mode === m ? auth.actionSoft : "transparent",
-                      color: mode === m ? auth.heading : auth.muted,
-                    }}
+                    style={{flex: 1}}
                   >
                     {m === "signin" ? "Sign in" : "Create account"}
-                  </button>
+                  </Choice>
                 ))}
-              </div>
+              </ChoiceGroup>
               <div style={{ width: "100%", maxWidth: 400, margin: "0 auto" }}>
                 <LandingGoogleButton
                   disabled={submitting}
                   onCredential={handleGoogleCredential}
                   onError={setErr}
                 />
-                <button
+                <Button variant="primary" type="button"
                   onClick={() => setScreen("creds")}
-                  style={{
-                    width: "100%",
-                    background: auth.raised,
-                    border: "none",
-                    borderRadius: 0,
-                    padding: "13px",
-                    fontSize: 14.5,
-                    fontWeight: 700,
-                    color: auth.heading,
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                    marginTop: 10,
-                  }}
+                  style={{ marginTop: 10 }}
                 >
                   Continue with email
-                </button>
+                </Button>
                 {mode === "signin" ? (
-                  <button
+                  <Button variant="secondary" type="button"
                     onClick={() => {
                       setErr("");
                       setScreen("pin-creds");
                     }}
-                    style={{
-                      width: "100%",
-                      background: "transparent",
-                      border: `1px solid ${auth.border}`,
-                      borderRadius: 0,
-                      padding: "13px",
-                      fontSize: 14.5,
-                      fontWeight: 700,
-                      color: auth.heading,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      marginTop: 10,
-                    }}
+                    style={{ marginTop: 10 }}
                   >
                     Sign in with PIN
-                  </button>
+                  </Button>
                 ) : null}
               </div>
               {mode === "signin" && (
-                <button
+                <Button variant="tertiary" type="button"
                   onClick={() => {
                     setErr("");
                     setScreen("forgot-email");
                   }}
-                  style={{ ...ghostBtn, display: "block", margin: "12px auto 0" }}
+                  style={{ margin: "12px auto 0" }}
                 >
                   Forgot password?
-                </button>
+                </Button>
               )}
-              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
-              <p style={{ fontSize: 11.5, color: auth.muted, textAlign: "center", marginTop: 16, lineHeight: 1.5 }}>
+              {err && <Text as="div" size="md" tone="danger" style={{ color: auth.danger, marginTop: 10 }}>{err}</Text>}
+              <Text as="p" size="sm" tone="muted" style={{ color: auth.muted, textAlign: "center", marginTop: 16 }}>
                 By continuing you agree to our Terms and Privacy Policy.
                 <br />
                 Your account is created in Readiness and protected by the app's normal sign-in flow.
-              </p>
+              </Text>
             </>
           )}
 
           {screen === "creds" && (
             <>
               {mode === "signup" && (
-                <input style={inp} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
+                <Input style={inp} placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
               )}
-              <input style={inp} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              <input
+              <Input style={inp} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
                 style={inp}
                 type="password"
                 placeholder="Password"
@@ -1199,7 +1064,7 @@ function AuthModal({
                 onKeyDown={(e) => e.key === "Enter" && mode === "signin" && submit()}
               />
               {mode === "signup" && (
-                <input
+                <Input
                   style={inp}
                   type="password"
                   placeholder="Repeat password"
@@ -1208,20 +1073,20 @@ function AuthModal({
                   onKeyDown={(e) => e.key === "Enter" && submit()}
                 />
               )}
-              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
-              <button onClick={submit} className="lp-cta" style={{ width: "100%", justifyContent: "center", marginTop: 14 }}>
-                {submitting ? "Working..." : mode === "signin" ? "Sign in" : "Create my Readiness"} <ArrowRight size={15} />
-              </button>
-              <button onClick={() => { setScreen("start"); setErr(""); }} style={ghostBtn}>
+              {err && <Text as="div" size="md" tone="danger" style={{ color: auth.danger, marginTop: 10 }}>{err}</Text>}
+              <Button size="lg" variant="primary" type="button" onClick={submit} style={{ width: "100%", marginTop: 14 }}>
+                {submitting ? "Working..." : mode === "signin" ? "Sign in" : "Create my Readiness"} <ArrowRight aria-hidden="true" focusable="false" size={15} />
+              </Button>
+              <Button variant="tertiary" type="button" onClick={() => { setScreen("start"); setErr(""); }} style={{ marginTop: 12 }}>
                 ← Other sign-in options
-              </button>
+              </Button>
             </>
           )}
 
           {screen === "pin-creds" && (
             <>
-              <input style={inp} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              <input
+              <Input style={inp} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
                 style={inp}
                 type="text"
                 inputMode="numeric"
@@ -1231,22 +1096,22 @@ function AuthModal({
                 onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 onKeyDown={(e) => e.key === "Enter" && submitPin()}
               />
-              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
-              <button onClick={submitPin} className="lp-cta" style={{ width: "100%", justifyContent: "center", marginTop: 14 }}>
-                {submitting ? "Working..." : "Sign in with PIN"} <ArrowRight size={15} />
-              </button>
-              <button onClick={() => { setScreen("start"); setErr(""); }} style={ghostBtn}>
+              {err && <Text as="div" size="md" tone="danger" style={{ color: auth.danger, marginTop: 10 }}>{err}</Text>}
+              <Button size="lg" variant="primary" type="button" onClick={submitPin} style={{ width: "100%", marginTop: 14 }}>
+                {submitting ? "Working..." : "Sign in with PIN"} <ArrowRight aria-hidden="true" focusable="false" size={15} />
+              </Button>
+              <Button variant="tertiary" type="button" onClick={() => { setScreen("start"); setErr(""); }} style={{ marginTop: 12 }}>
                 ← Other sign-in options
-              </button>
+              </Button>
             </>
           )}
 
           {screen === "signup-code" && (
             <>
-              <p style={{ fontSize: 13.5, color: auth.muted, lineHeight: 1.6, margin: "0 0 6px" }}>
+              <Text as="p" size="md" tone="muted" style={{ color: auth.muted, margin: "0 0 6px" }}>
                 Enter the 6-digit code sent to {email.trim()} to create your account.
-              </p>
-              <input
+              </Text>
+              <Input
                 style={inp}
                 inputMode="numeric"
                 pattern="[0-9]{6}"
@@ -1255,22 +1120,22 @@ function AuthModal({
                 onChange={(e) => setOtp(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && verifySignupOtp()}
               />
-              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
-              <button onClick={verifySignupOtp} className="lp-cta" style={{ width: "100%", justifyContent: "center", marginTop: 14 }}>
-                {submitting ? "Verifying..." : "Verify and create account"} <ArrowRight size={15} />
-              </button>
-              <button onClick={() => { setScreen("creds"); setErr(""); }} style={ghostBtn}>
+              {err && <Text as="div" size="md" tone="danger" style={{ color: auth.danger, marginTop: 10 }}>{err}</Text>}
+              <Button size="lg" variant="primary" type="button" onClick={verifySignupOtp} style={{ width: "100%", marginTop: 14 }}>
+                {submitting ? "Verifying..." : "Verify and create account"} <ArrowRight aria-hidden="true" focusable="false" size={15} />
+              </Button>
+              <Button variant="tertiary" type="button" onClick={() => { setScreen("creds"); setErr(""); }} style={{ marginTop: 12 }}>
                 ← Edit signup details
-              </button>
+              </Button>
             </>
           )}
 
           {screen === "forgot-email" && (
             <>
-              <p style={{ fontSize: 13.5, color: auth.muted, lineHeight: 1.6, margin: "0 0 6px" }}>
+              <Text as="p" size="md" tone="muted" style={{ color: auth.muted, margin: "0 0 6px" }}>
                 Enter your account email. If it exists, we will send a 6-digit reset code.
-              </p>
-              <input
+              </Text>
+              <Input
                 style={inp}
                 type="email"
                 placeholder="Email"
@@ -1278,34 +1143,33 @@ function AuthModal({
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && requestResetOtp()}
               />
-              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
-              <button
+              {err && <Text as="div" size="md" tone="danger" style={{ color: auth.danger, marginTop: 10 }}>{err}</Text>}
+              <Button size="lg" loading={submitting} variant="primary" type="button"
                 onClick={requestResetOtp}
                 disabled={submitting}
-                className="lp-cta"
-                style={{ width: "100%", justifyContent: "center", marginTop: 14, opacity: submitting ? 0.6 : 1 }}
+                style={{ width: "100%", marginTop: 14 }}
               >
-                {submitting ? "Sending..." : "Send OTP"} <ArrowRight size={15} />
-              </button>
-              <button onClick={() => { setScreen("start"); setErr(""); }} style={ghostBtn}>
+                {submitting ? "Sending..." : "Send OTP"} <ArrowRight aria-hidden="true" focusable="false" size={15} />
+              </Button>
+              <Button variant="tertiary" type="button" onClick={() => { setScreen("start"); setErr(""); }} style={{ marginTop: 12 }}>
                 ← Back to sign in
-              </button>
+              </Button>
             </>
           )}
 
           {screen === "forgot-code" && (
             <>
-              <p style={{ fontSize: 13.5, color: auth.muted, lineHeight: 1.6, margin: "0 0 6px" }}>
+              <Text as="p" size="md" tone="muted" style={{ color: auth.muted, margin: "0 0 6px" }}>
                 Check your email for the 6-digit OTP. It expires in 30 minutes.
-              </p>
+              </Text>
               <div style={{ ...inp, display: "flex", justifyContent: "space-between", alignItems: "center", background: auth.raised, cursor: "default" }}>
-                <span style={{ fontSize: 14.5, color: auth.heading, fontWeight: 600 }}>{email}</span>
-                <button onClick={() => setScreen("forgot-email")} style={{ background: "none", border: "none", color: auth.action, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                <Text size="md" weight="semibold" style={{ color: auth.heading }}>{email}</Text>
+                <Button size="sm" variant="tertiary" type="button" onClick={() => setScreen("forgot-email")} >
                   Edit
-                </button>
+                </Button>
               </div>
-              <input
-                style={{ ...inp, textAlign: "center", letterSpacing: 8, fontFamily: "ui-monospace, monospace", fontSize: 18 }}
+              <Input
+                style={{ ...inp, textAlign: "center" }}
                 inputMode="numeric"
                 placeholder="000000"
                 value={otp}
@@ -1313,39 +1177,37 @@ function AuthModal({
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 onKeyDown={(e) => e.key === "Enter" && otp.length === 6 && continueWithOtp()}
               />
-              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
-              <button
+              {err && <Text as="div" size="md" tone="danger" style={{ color: auth.danger, marginTop: 10 }}>{err}</Text>}
+              <Button size="lg" variant="primary" type="button"
                 onClick={continueWithOtp}
                 disabled={otp.length !== 6}
-                className="lp-cta"
-                style={{ width: "100%", justifyContent: "center", marginTop: 14, opacity: otp.length === 6 ? 1 : 0.45 }}
+                style={{ width: "100%", marginTop: 14 }}
               >
-                Continue <ArrowRight size={15} />
-              </button>
-              <div style={{ display: "grid", justifyItems: "center", gap: 4, marginTop: 12, fontSize: 13, color: auth.muted }}>
-                <button
+                Continue <ArrowRight aria-hidden="true" focusable="false" size={15} />
+              </Button>
+              <div style={{ display: "grid", justifyItems: "center", gap: 4, marginTop: 12, fontSize: "var(--text-md)", color: auth.muted }}>
+                <Button variant="tertiary" size="sm" type="button"
                   onClick={requestResetOtp}
-                  style={{ background: "none", border: "none", color: auth.action, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 13, padding: 0 }}
                 >
                   Resend OTP
-                </button>
+                </Button>
               </div>
             </>
           )}
 
           {screen === "forgot-password" && (
             <>
-              <p style={{ fontSize: 13.5, color: auth.muted, lineHeight: 1.6, margin: "0 0 6px" }}>
+              <Text as="p" size="md" tone="muted" style={{ color: auth.muted, margin: "0 0 6px" }}>
                 Use at least 8 characters with lowercase, uppercase, number, and symbol.
-              </p>
-              <input
+              </Text>
+              <Input
                 style={inp}
                 type="password"
                 placeholder="New password"
                 value={resetPw}
                 onChange={(e) => setResetPw(e.target.value)}
               />
-              <input
+              <Input
                 style={inp}
                 type="password"
                 placeholder="Confirm new password"
@@ -1353,24 +1215,23 @@ function AuthModal({
                 onChange={(e) => setResetPw2(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && resetPassword()}
               />
-              {err && <div style={{ color: auth.danger, fontSize: 13, marginTop: 10 }}>{err}</div>}
-              <button
+              {err && <Text as="div" size="md" tone="danger" style={{ color: auth.danger, marginTop: 10 }}>{err}</Text>}
+              <Button size="lg" loading={submitting} variant="primary" type="button"
                 onClick={resetPassword}
                 disabled={submitting}
-                className="lp-cta"
-                style={{ width: "100%", justifyContent: "center", marginTop: 14, opacity: submitting ? 0.6 : 1 }}
+                style={{ width: "100%", marginTop: 14 }}
               >
-                {submitting ? "Updating..." : "Update password"} <ArrowRight size={15} />
-              </button>
-              <button
+                {submitting ? "Updating..." : "Update password"} <ArrowRight aria-hidden="true" focusable="false" size={15} />
+              </Button>
+              <Button variant="tertiary" type="button"
                 onClick={() => {
                   setErr("");
                   setScreen("forgot-code");
                 }}
-                style={ghostBtn}
+                style={{ marginTop: 12 }}
               >
                 ← Back
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -1388,26 +1249,26 @@ function AuthModal({
               flexShrink: 0,
             }}
           >
-            <b style={{ color: auth.heading, fontSize: 17, fontFamily: "'Space Grotesk'", lineHeight: 1.35 }}>
+            <Text as="b" size="lg" weight="semibold" style={{ color: auth.heading }}>
               Security you can verify. Privacy you don't have to trust us for.
-            </b>
-            <div style={{ display: "grid", gap: 10 }}>
+            </Text>
+            <div   style={{ display: "grid", gap: 10 }}>
               {SEC.map(([t, sub]) => (
                 <div key={t} style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
                   <span style={{ width: 20, height: 20, borderRadius: 99, background: auth.action, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 1 }}>
-                    <Check size={12} color={auth.actionText} strokeWidth={3} />
+                    <Check aria-hidden="true" focusable="false" size={12} color={auth.actionText} strokeWidth={3} />
                   </span>
                   <span>
-                    <span style={{ display: "block", color: auth.heading, fontSize: 13, fontWeight: 700 }}>{t}</span>
-                    <span style={{ display: "block", color: auth.muted, fontSize: 11.5, lineHeight: 1.45 }}>{sub}</span>
+                    <Text size="md" weight="semibold" style={{ display: "block", color: auth.heading }}>{t}</Text>
+                    <Text size="sm" style={{ display: "block", color: auth.muted }}>{sub}</Text>
                   </span>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -1437,37 +1298,25 @@ export default function Landing({
             <BrandWordmark size={19} color={C.ink} />
           </div>
           <div className="lp-navlinks">
-            <a href="#features">Features</a>
-            <a href="#how">How it works</a>
-            <a href="#privacy">Privacy</a>
-            <a href="#pricing">Pricing</a>
+            <Text as="a" size="md" href="#features">Features</Text>
+            <Text as="a" size="md" href="#how">How it works</Text>
+            <Text as="a" size="md" href="#privacy">Privacy</Text>
+            <Text as="a" size="md" href="#pricing">Pricing</Text>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <button
+            <Button size="sm" variant="tertiary" type="button"
               onClick={() => setAuth("signin")}
-              style={{
-                background: "none",
-                border: `1px solid ${C.border}`,
-                borderRadius: 10,
-                padding: "9px 16px",
-                fontSize: 14,
-                fontWeight: 600,
-                color: C.ink,
-                cursor: "pointer",
-                fontFamily: "inherit",
-              }}
             >
               Sign in
-            </button>
-            <button
+            </Button>
+            <Button size="lg" variant="primary" type="button"
               onClick={() => {
                 sessionStorage.setItem("lp-fresh", "1");
                 setAuth("signup");
               }}
-              className="lp-navcta"
             >
-              Get started <ArrowRight size={15} />
-            </button>
+              Get started <ArrowRight aria-hidden="true" focusable="false" size={15} />
+            </Button>
           </div>
         </div>
       </nav>
@@ -1478,36 +1327,35 @@ export default function Landing({
         </div>
         <div className="lp-heroinner">
           <motion.div {...fade()}>
-            <span className="lp-badge">
-              <Sparkles size={13} /> Be ready for life's important moments
-            </span>
-            <h1 className="lp-h1">
+            <Text size="md" className="lp-badge">
+              <Sparkles aria-hidden="true" focusable="false" size={13} /> Be ready for life's important moments
+            </Text>
+            <Heading level={1} size="xl" className="lp-h1">
               Your documents,
               <br />
               in order and{" "}
-              <span style={{ color: C.clay }}>
+              <span  style={{ color: C.clay }}>
                 ready
                 <br />
                 when you need them.
               </span>
-            </h1>
-            <p className="lp-sub">
+            </Heading>
+            <Text as="p" size="md" className="lp-sub">
               Readiness quietly gathers, classifies, and assembles your important records, so the next big moment is
               only a few taps away.
-            </p>
+            </Text>
             <div className="lp-herocta">
-              <button
+              <Button size="lg" variant="primary" type="button"
                 onClick={() => {
                   sessionStorage.setItem("lp-fresh", "1");
                   setAuth("signup");
                 }}
-                className="lp-cta"
               >
-                Get started <ArrowRight size={17} />
-              </button>
-              <span className="lp-trust">
-                <Lock size={12} /> private by design · encrypted · you control what is stored
-              </span>
+                Get started <ArrowRight aria-hidden="true" focusable="false" size={17} />
+              </Button>
+              <Text size="md" className="lp-trust">
+                <Lock aria-hidden="true" focusable="false" size={12} /> private by design · encrypted · you control what is stored
+              </Text>
             </div>
           </motion.div>
           <motion.div {...fade(0.15)} className="lp-heromock">
@@ -1517,52 +1365,52 @@ export default function Landing({
           </motion.div>
         </div>
         <div className="lp-connectors">
-          <span>Brings everything together from</span>
-          <span className="lp-conn">
-            <Mail size={14} /> Email
-          </span>
-          <span className="lp-conn">
-            <HardDrive size={14} /> Drive
-          </span>
-          <span className="lp-conn">
-            <UploadCloud size={14} /> Upload &amp; scan
-          </span>
+          <Text size="md">Brings everything together from</Text>
+          <Text size="md" className="lp-conn">
+            <Mail aria-hidden="true" focusable="false" size={14} /> Email
+          </Text>
+          <Text size="md" className="lp-conn">
+            <HardDrive aria-hidden="true" focusable="false" size={14} /> Drive
+          </Text>
+          <Text size="md" className="lp-conn">
+            <UploadCloud aria-hidden="true" focusable="false" size={14} /> Upload &amp; scan
+          </Text>
         </div>
       </header>
 
       <section className="lp-band" style={{ paddingTop: 54 }}>
         <div className="lp-wrap">
           <motion.div {...fade()} style={{ textAlign: "center", maxWidth: 760, margin: "0 auto 26px" }}>
-            <div className="lp-eyebrow" style={{ display: "flex", justifyContent: "center" }}>
+            <Text as="div" size="sm" weight="semibold" className="lp-eyebrow" style={{ display: "flex", justifyContent: "center" }}>
               Life happens on paper
-            </div>
-            <h2 className="lp-h2" style={{ margin: 0 }}>
+            </Text>
+            <Heading level={2} size="lg" className="lp-h2" style={{ margin: 0 }}>
               You know these moments. Readiness makes sure the papers are never the hard part.
-            </h2>
+            </Heading>
           </motion.div>
-          <div className="lp-moments">
+          <Text as="div" size="md" className="lp-moments">
             {MOMENTS.map((m, i) => (
               <MomentCard key={m.kind} m={m} i={i} />
             ))}
-          </div>
+          </Text>
         </div>
       </section>
 
       <section className="lp-band">
         <motion.div {...fade()} className="lp-wrap" style={{ textAlign: "center", maxWidth: 840 }}>
-          <div className="lp-eyebrow" style={{ display: "flex", justifyContent: "center" }}>
+          <Text as="div" size="sm" weight="semibold" className="lp-eyebrow" style={{ display: "flex", justifyContent: "center" }}>
             For life's real moments
-          </div>
-          <h2 className="lp-h2">
+          </Text>
+          <Heading level={2} size="lg" className="lp-h2">
             A new role. A new place. A trip. A care visit. Whatever comes next, the right papers are
             already gathered and waiting.
-          </h2>
-          <p
+          </Heading>
+          <Text as="p" size="lg"
             className="lp-body"
-            style={{ marginTop: 16, fontSize: 17, maxWidth: 640, marginLeft: "auto", marginRight: "auto" }}
+            style={{ marginTop: 16, maxWidth: 640, marginLeft: "auto", marginRight: "auto" }}
           >
             You simply open Readiness, and everything is ready to go. Calm, in order, and entirely yours.
-          </p>
+          </Text>
         </motion.div>
       </section>
 
@@ -1617,12 +1465,12 @@ export default function Landing({
       <section id="how" className="lp-band">
         <div className="lp-wrap">
           <motion.div {...fade()} style={{ textAlign: "center", marginBottom: 44 }}>
-            <div className="lp-eyebrow" style={{ display: "flex", justifyContent: "center" }}>
+            <Text as="div" size="sm" weight="semibold" className="lp-eyebrow" style={{ display: "flex", justifyContent: "center" }}>
               How it works
-            </div>
-            <h2 className="lp-h2">Three gentle steps to lasting peace of mind.</h2>
+            </Text>
+            <Heading level={2} size="lg" className="lp-h2">Three gentle steps to lasting peace of mind.</Heading>
           </motion.div>
-          <div className="lp-steps">
+          <div   className="lp-steps">
             {[
               {
                 n: "01",
@@ -1658,22 +1506,16 @@ export default function Landing({
                   >
                     <s.icon size={20} color={C.action} />
                   </span>
-                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: C.muted }}>{s.n}</span>
+                  <Text size="md" style={{ color: C.muted }}>{s.n}</Text>
                 </div>
-                <h4
-                  style={{
-                    fontFamily: "'Space Grotesk'",
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: C.ink,
-                    margin: "16px 0 6px",
-                  }}
+                <Heading level={4} size="sm"
+                  style={{ color: C.ink, margin: "16px 0 6px" }}
                 >
                   {s.t}
-                </h4>
-                <p className="lp-body" style={{ fontSize: 14.5 }}>
+                </Heading>
+                <Text as="p" size="md" className="lp-body" >
                   {s.d}
-                </p>
+                </Text>
               </motion.div>
             ))}
           </div>
@@ -1694,44 +1536,44 @@ export default function Landing({
               margin: "0 auto 20px",
             }}
           >
-            <Lock size={26} color={C.action} />
+            <Lock aria-hidden="true" focusable="false" size={26} color={C.action} />
           </span>
-          <h2 className="lp-h2" style={{ maxWidth: 640, margin: "0 auto" }}>
+          <Heading level={2} size="lg" className="lp-h2" style={{ maxWidth: 640, margin: "0 auto" }}>
             Private by design. Yours alone.
-          </h2>
-          <p className="lp-body" style={{ marginTop: 14, maxWidth: 620, margin: "14px auto 0", fontSize: 16 }}>
+          </Heading>
+          <Text as="p" size="lg" className="lp-body" style={{ marginTop: 14, maxWidth: 620, margin: "14px auto 0" }}>
             Your cloud documents are stored encrypted, sharing is controlled through Trust Center, and document
             analysis uses file content only when you choose that option. You choose who in the family sees what,
             and you can pass it on cleanly when it matters most.
-          </p>
-          <div className="lp-trust" style={{ justifyContent: "center", marginTop: 22, color: C.muted }}>
-            <ShieldCheck size={13} color={C.action} /> encrypted storage · consent-led analysis · no ads, ever
-          </div>
+          </Text>
+          <Text as="div" size="md" tone="muted" className="lp-trust" style={{ justifyContent: "center", marginTop: 22, color: C.muted }}>
+            <ShieldCheck aria-hidden="true" focusable="false" size={13} color={C.action} /> encrypted storage · consent-led analysis · no ads, ever
+          </Text>
         </motion.div>
       </section>
 
       <section id="pricing" className="lp-wrap">
         <motion.div {...fade()} style={{ textAlign: "center" }}>
-          <div className="lp-eyebrow" style={{ display: "flex", justifyContent: "center" }}>Pricing</div>
-          <h2 className="lp-h2">Start free. One plan when you're ready.</h2>
-          <p className="lp-sub" style={{ marginTop: 10, marginLeft: "auto", marginRight: "auto" }}>
+          <Text as="div" size="sm" weight="semibold" className="lp-eyebrow" style={{ display: "flex", justifyContent: "center" }}>Pricing</Text>
+          <Heading level={2} size="lg" className="lp-h2">Start free. One plan when you're ready.</Heading>
+          <Text as="p" size="md" className="lp-sub" style={{ marginTop: 10, marginLeft: "auto", marginRight: "auto" }}>
             No silver-gold-platinum ladder to decode. A free vault to begin, and a single full plan with everything included.
-          </p>
+          </Text>
         </motion.div>
         <motion.div
           {...fade(0.1)}
           style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))", gap: 18, maxWidth: 900, margin: "30px auto 0", alignItems: "start" }}
         >
           <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 22, overflow: "hidden" }}>
-            <div style={{ background: C.paper, color: C.muted, fontSize: 11.5, fontWeight: 800, letterSpacing: 1.8, textAlign: "center", padding: "9px 0", borderBottom: `1px solid ${C.border}` }}>
+            <Text as="div" size="sm" weight="semibold" tone="muted" style={{ background: C.paper, color: C.muted, letterSpacing: 1.8, textAlign: "center", padding: "9px 0", borderBottom: `1px solid ${C.border}` }}>
               FREE
-            </div>
+            </Text>
             <div style={{ padding: "22px 26px 26px" }}>
               <div style={{ textAlign: "center", marginBottom: 6, paddingTop: 47 }}>
-                <span style={{ fontFamily: "'Space Grotesk'", fontSize: 44, fontWeight: 700, color: C.ink }}>₹0</span>
-                <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>Everything you need to try the idea</div>
+                <Text size="lg" weight="semibold" style={{ color: C.ink }}>₹0</Text>
+                <Text as="div" size="md" tone="muted" style={{ color: C.muted, marginTop: 4 }}>Everything you need to try the idea</Text>
               </div>
-              <div style={{ display: "grid", gap: 8, margin: "18px 0 20px" }}>
+              <div   style={{ display: "grid", gap: 8, margin: "18px 0 20px" }}>
                 {[
                   "Encrypted vault with 50 MB of storage",
                   "AI reads and files 3 documents a month",
@@ -1739,75 +1581,74 @@ export default function Landing({
                   "Every module open: browse and add manually",
                   "Export everything, free, always",
                 ].map((f) => (
-                  <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13.5, color: C.body }}>
-                    <span style={{ width: 18, height: 18, borderRadius: 99, background: C.actionSoft, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 1 }}><Check size={11} color={C.action} strokeWidth={3} /></span>
+                  <Text as="div" size="md" key={f} style={{ display: "flex", alignItems: "flex-start", gap: 9, color: C.body }}>
+                    <span style={{ width: 18, height: 18, borderRadius: 99, background: C.actionSoft, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 1 }}><Check aria-hidden="true" focusable="false" size={11} color={C.action} strokeWidth={3} /></span>
                     {f}
-                  </div>
+                  </Text>
                 ))}
               </div>
-              <button
+              <Button variant="secondary" type="button"
                 onClick={() => {
                   sessionStorage.setItem("lp-fresh", "1");
                   setAuth("signup");
                 }}
-                style={{ width: "100%", background: "none", border: `1.5px solid ${C.ink}`, borderRadius: 12, padding: "13px", fontSize: 14.5, fontWeight: 700, color: C.ink, cursor: "pointer", fontFamily: "inherit", display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}
               >
-                Start free <ArrowRight size={15} />
-              </button>
+                Start free <ArrowRight aria-hidden="true" focusable="false" size={15} />
+              </Button>
             </div>
           </div>
 
           <div style={{ background: "#fff", border: `1.5px solid ${C.action}`, borderRadius: 22, overflow: "hidden", boxShadow: "0 24px 60px rgba(34,30,23,.10)" }}>
-            <div style={{ background: C.ink, color: "#E6EBF5", fontSize: 11.5, fontWeight: 800, letterSpacing: 1.8, textAlign: "center", padding: "9px 0" }}>
+            <Text as="div" size="sm" weight="semibold" style={{ background: C.ink, color: "#E6EBF5", letterSpacing: 1.8, textAlign: "center", padding: "9px 0" }}>
               READY FOR EVERYTHING
-            </div>
+            </Text>
             <div style={{ padding: "22px 26px 26px" }}>
-              <div style={{ display: "flex", border: `1px solid ${C.border}`, borderRadius: 11, overflow: "hidden", background: C.paper, marginBottom: 18 }}>
+              <ChoiceGroup style={{ display: "flex", marginBottom: 18 }}>
                 {(["annual", "monthly"] as const).map((b) => (
-                  <button
+                  <Choice aria-pressed={billing === b}
                     key={b}
                     onClick={() => setBilling(b)}
-                    style={{ flex: 1, padding: "9px 0", fontSize: 13.5, fontWeight: 700, cursor: "pointer", border: "none", fontFamily: "inherit", background: billing === b ? C.actionSoft : "transparent", color: billing === b ? C.ink : C.muted }}
+                    style={{flex: 1}}
                   >
                     {b === "annual" ? "Annual" : "Monthly"}
-                  </button>
+                  </Choice>
                 ))}
-              </div>
+              </ChoiceGroup>
               {billing === "annual" ? (
                 <div style={{ textAlign: "center", marginBottom: 6 }}>
                   {founder ? (
                     <>
-                      <span style={{ fontFamily: "'Space Grotesk'", fontSize: 44, fontWeight: 700, color: C.ink }}>₹1,499</span>
-                      <span style={{ fontSize: 15, color: C.muted }}> /year</span>
-                      <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>
+                      <Text size="lg" weight="semibold" style={{ color: C.ink }}>₹1,499</Text>
+                      <Text size="md" tone="muted" style={{ color: C.muted }}> /year</Text>
+                      <div style={{ fontSize: "var(--text-md)", color: C.muted, marginTop: 4 }}>
                         Early member price · standard <s style={{ opacity: 0.7 }}>₹1,999</s>
                       </div>
                     </>
                   ) : (
                     <>
-                      <span style={{ fontFamily: "'Space Grotesk'", fontSize: 44, fontWeight: 700, color: C.ink }}>₹1,999</span>
-                      <span style={{ fontSize: 15, color: C.muted }}> /year</span>
-                      <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>About ₹167 a month, billed yearly</div>
+                      <Text size="lg" weight="semibold" style={{ color: C.ink }}>₹1,999</Text>
+                      <Text size="md" tone="muted" style={{ color: C.muted }}> /year</Text>
+                      <Text as="div" size="md" tone="muted" style={{ color: C.muted, marginTop: 4 }}>About ₹167 a month, billed yearly</Text>
                     </>
                   )}
-                  <button
+                  <Choice aria-pressed={founder}
                     onClick={() => setFounder((v) => !v)}
-                    style={{ marginTop: 8, background: founder ? C.actionSoft : "none", border: `1px solid ${founder ? C.action : C.border}`, borderRadius: 99, padding: "5px 12px", fontSize: 12, fontWeight: 700, color: C.ink, cursor: "pointer", fontFamily: "inherit" }}
+                    style={{marginTop: 8}}
                   >
                     {founder ? "Early member offer applied ✓" : "Early member offer · ₹1,499/year"}
-                  </button>
+                  </Choice>
                 </div>
               ) : (
                 <div style={{ textAlign: "center", marginBottom: 6 }}>
-                  <span style={{ fontFamily: "'Space Grotesk'", fontSize: 44, fontWeight: 700, color: C.ink }}>₹249</span>
-                  <span style={{ fontSize: 15, color: C.muted }}> /month</span>
-                  <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>Cancel anytime · annual saves ₹989 a year</div>
+                  <Text size="lg" weight="semibold" style={{ color: C.ink }}>₹249</Text>
+                  <Text size="md" tone="muted" style={{ color: C.muted }}> /month</Text>
+                  <Text as="div" size="md" tone="muted" style={{ color: C.muted, marginTop: 4 }}>Cancel anytime · annual saves ₹989 a year</Text>
                 </div>
               )}
-              <p style={{ fontSize: 13, color: C.muted, textAlign: "center", margin: "14px 0 0" }}>
+              <Text as="p" size="md" tone="muted" style={{ color: C.muted, textAlign: "center", margin: "14px 0 0" }}>
                 One plan that keeps the whole family ready:
-              </p>
-              <div style={{ display: "grid", gap: 8, margin: "10px 0 20px" }}>
+              </Text>
+              <div   style={{ display: "grid", gap: 8, margin: "10px 0 20px" }}>
                 {[
                   "All available packages, prepared before you need them",
                   "AI reads, files and scores every document, without limits",
@@ -1816,31 +1657,30 @@ export default function Landing({
                   "Encrypted storage for your whole family",
                   "And everything in Free, without limits",
                 ].map((f) => (
-                  <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 13.5, color: C.body }}>
-                    <span style={{ width: 18, height: 18, borderRadius: 99, background: C.actionSoft, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 1 }}><Check size={11} color={C.action} strokeWidth={3} /></span>
+                  <Text as="div" size="md" key={f} style={{ display: "flex", alignItems: "flex-start", gap: 9, color: C.body }}>
+                    <span style={{ width: 18, height: 18, borderRadius: 99, background: C.actionSoft, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 1 }}><Check aria-hidden="true" focusable="false" size={11} color={C.action} strokeWidth={3} /></span>
                     {f}
-                  </div>
+                  </Text>
                 ))}
               </div>
-              <button
+              <Button size="lg" variant="primary" type="button"
                 onClick={() => {
                   sessionStorage.setItem("lp-fresh", "1");
                   setAuth("signup");
                 }}
-                className="lp-cta"
-                style={{ width: "100%", justifyContent: "center" }}
+                style={{ width: "100%" }}
               >
-                Get started <ArrowRight size={15} />
-              </button>
+                Get started <ArrowRight aria-hidden="true" focusable="false" size={15} />
+              </Button>
             </div>
           </div>
         </motion.div>
 
         <motion.div {...fade(0.15)} style={{ maxWidth: 900, margin: "28px auto 0", background: "#fff", border: `1px solid ${C.border}`, borderRadius: 18, overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1.7fr 1fr 1fr", background: C.paper, borderBottom: `1px solid ${C.border}`, padding: "12px 18px", fontSize: 12.5, fontWeight: 800, color: C.ink, letterSpacing: 0.4 }}>
-            <span>What you get</span>
-            <span style={{ textAlign: "center" }}>Free</span>
-            <span style={{ textAlign: "center" }}>Full plan</span>
+          <div style={{ display: "grid", gridTemplateColumns: "1.7fr 1fr 1fr", background: C.paper, borderBottom: `1px solid ${C.border}`, padding: "12px 18px", fontSize: "var(--text-md)", fontWeight: "var(--weight-bold)", color: C.ink, letterSpacing: 0.4 }}>
+            <Text size="md">What you get</Text>
+            <Text size="md" style={{ textAlign: "center" }}>Free</Text>
+            <Text size="md" style={{ textAlign: "center" }}>Full plan</Text>
           </div>
           {[
             ["Encrypted storage", "50 MB", "For your whole family"],
@@ -1853,17 +1693,17 @@ export default function Landing({
             ["Export your documents", "Free, always", "Free, always"],
             ["Your files if you stop paying", "Yours, always", "Yours, always"],
           ].map(([a, b, c], i) => (
-            <div key={a} style={{ display: "grid", gridTemplateColumns: "1.7fr 1fr 1fr", padding: "11px 18px", fontSize: 13, color: C.body, borderBottom: i < 8 ? `1px solid ${C.border}` : "none", alignItems: "center" }}>
-              <span style={{ fontWeight: 600, color: C.ink }}>{a}</span>
-              <span style={{ textAlign: "center", color: b === "—" ? C.muted : C.body }}>{b}</span>
-              <span style={{ textAlign: "center", fontWeight: 600 }}>{c}</span>
+            <div key={a} style={{ display: "grid", gridTemplateColumns: "1.7fr 1fr 1fr", padding: "11px 18px", fontSize: "var(--text-md)", color: C.body, borderBottom: i < 8 ? `1px solid ${C.border}` : "none", alignItems: "center" }}>
+              <Text size="md" weight="semibold" style={{ color: C.ink }}>{a}</Text>
+              <Text size="md" style={{ textAlign: "center", color: b === "—" ? C.muted : C.body }}>{b}</Text>
+              <Text size="md" weight="semibold" style={{ textAlign: "center" }}>{c}</Text>
             </div>
           ))}
         </motion.div>
-        <p style={{ fontSize: 12.5, color: C.muted, textAlign: "center", lineHeight: 1.6, margin: "16px auto 0", maxWidth: 460 }}>
+        <Text as="p" size="md" tone="muted" style={{ color: C.muted, textAlign: "center", margin: "16px auto 0", maxWidth: 460 }}>
           Your documents are never locked behind a paywall. If you ever stop paying, you keep every file and every
           export — the AI simply stops doing new work. No ads, no selling your data, ever.
-        </p>
+        </Text>
       </section>
 
       <section className="lp-wrap">
@@ -1872,22 +1712,21 @@ export default function Landing({
             <Radar />
           </div>
           <div style={{ position: "relative" }}>
-            <h2 className="lp-h1" style={{ fontSize: 40 }}>
-              Be ready for life's <span style={{ color: C.clay }}>important moments.</span>
-            </h2>
-            <p className="lp-sub" style={{ marginTop: 12, marginLeft: "auto", marginRight: "auto" }}>
+            <Heading level={2} size="xl" className="lp-h1" >
+              Be ready for life's <span  style={{ color: C.clay }}>important moments.</span>
+            </Heading>
+            <Text as="p" size="md" className="lp-sub" style={{ marginTop: 12, marginLeft: "auto", marginRight: "auto" }}>
               Set it up once, and let the next big moment be the easy one.
-            </p>
-            <button
+            </Text>
+            <Button size="lg" variant="primary" type="button"
               onClick={() => {
                 sessionStorage.setItem("lp-fresh", "1");
                 setAuth("signup");
               }}
-              className="lp-cta"
               style={{ marginTop: 26 }}
             >
-              Get started <ArrowRight size={17} />
-            </button>
+              Get started <ArrowRight aria-hidden="true" focusable="false" size={17} />
+            </Button>
           </div>
         </motion.div>
       </section>
@@ -1898,12 +1737,12 @@ export default function Landing({
             <BrandMark size={26} carve={C.paper} />
             <BrandWordmark size={15} color={C.ink} />
           </div>
-          <span style={{ fontSize: 13, color: C.muted }}>A private, ready archive for your whole family.</span>
-          <span
-            style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11.5, letterSpacing: 1.5, color: C.muted }}
+          <Text size="md" tone="muted" style={{ color: C.muted }}>A private, ready archive for your whole family.</Text>
+          <Text size="sm" tone="muted"
+            style={{ letterSpacing: 1.5, color: C.muted }}
           >
             PRIVATE BY DESIGN · ENCRYPTED · NO ADS, EVER
-          </span>
+          </Text>
         </div>
       </footer>
       {auth && (
@@ -1923,37 +1762,32 @@ export default function Landing({
 const CSS = `
 @media(max-width:819px){.rn-authside{display:none!important}}
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-.lp-root{background:${C.paper};color:${C.ink};font-family:'Inter',system-ui,sans-serif;overflow-x:hidden}
+.lp-root{background:${C.paper};color:${C.ink};overflow-x:hidden}
 .lp-root *{box-sizing:border-box}
 .lp-root a{text-decoration:none;color:inherit}
 .lp-wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-.lp-eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:${C.action}}
-.lp-h1{font-family:'Space Grotesk';font-weight:700;font-size:56px;line-height:1.04;letter-spacing:-1.6px;color:${C.ink};margin:20px 0 0}
-.lp-h2{font-family:'Space Grotesk';font-weight:700;font-size:29px;line-height:1.24;letter-spacing:-.5px;color:${C.ink};margin:10px 0 0}
-.lp-h3{font-family:'Space Grotesk';font-weight:700;font-size:27px;line-height:1.15;letter-spacing:-.5px;color:${C.ink};margin:8px 0 0}
-.lp-body{color:${C.body};font-size:15.5px;line-height:1.66}
-.lp-tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:${C.body};background:${C.panel2};border:1px solid ${C.border};border-radius:8px;padding:5px 9px}
-.lp-nav{position:sticky;top:0;z-index:50;background:${C.paper}d9;backdrop-filter:blur(12px);border-bottom:1px solid ${C.border}}
+.lp-eyebrow{letter-spacing:.18em;text-transform:uppercase;color:${C.action}}
+.lp-h1{letter-spacing:-1.6px;color:${C.ink};margin:20px 0 0}
+.lp-h2{letter-spacing:-.5px;color:${C.ink};margin:10px 0 0}
+.lp-h3{letter-spacing:-.5px;color:${C.ink};margin:8px 0 0}
+.lp-body{color:${C.body}}
+.lp-tag{display:inline-flex;align-items:center;gap:5px;color:${C.body};background:${C.panel2};border:1px solid ${C.border};border-radius:8px;padding:5px 9px}
+.lp-nav{position:sticky;top:0;z-index:var(--layer-navigation);background:${C.paper}d9;backdrop-filter:blur(12px);border-bottom:1px solid ${C.border}}
 .lp-navinner{max-width:1120px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.lp-navlinks{display:flex;gap:28px;font-size:14.5px;color:${C.body}}
+.lp-navlinks{display:flex;gap:28px;font-size:var(--text-md);color:${C.body}}
 .lp-navlinks a:hover{color:${C.ink}}
-.lp-navcta{display:inline-flex;align-items:center;gap:7px;background:${C.action};color:${C.actionText};font-weight:700;font-size:14px;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;font-family:inherit}
-.lp-navcta:hover{filter:brightness(1.04)}
 .lp-hero{position:relative;padding:60px 0 40px;overflow:hidden}
 .lp-herobg{position:absolute;inset:0;pointer-events:none}
 .lp-heroinner{position:relative;max-width:1120px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}
-.lp-badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:${C.action};background:${C.actionSoft};border:1px solid ${C.action}44;border-radius:20px;padding:6px 13px}
-.lp-sub{color:${C.body};font-size:17.5px;line-height:1.6;margin-top:22px;max-width:540px}
+.lp-badge{display:inline-flex;align-items:center;gap:7px;letter-spacing:1.5px;text-transform:uppercase;color:${C.action};background:${C.actionSoft};border:1px solid ${C.action}44;border-radius:20px;padding:6px 13px}
+.lp-sub{color:${C.body};margin-top:22px;max-width:540px}
 .lp-herocta{display:flex;gap:18px;align-items:center;margin-top:30px;flex-wrap:wrap}
-.lp-cta{display:inline-flex;align-items:center;gap:9px;background:${C.action};color:${C.actionText};font-weight:700;font-size:15.5px;border:0;border-radius:12px;padding:14px 24px;cursor:pointer;font-family:inherit;box-shadow:0 14px 36px ${C.action}66}
-.lp-cta:hover{filter:brightness(1.04);transform:translateY(-1px)}
-.lp-trust{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.4px;color:${C.muted}}
+.lp-trust{display:inline-flex;align-items:center;gap:7px;letter-spacing:.4px;color:${C.muted}}
 .lp-heromock{position:relative}
 .lp-mock{background:${C.panel};border:1px solid ${C.border};border-radius:18px;box-shadow:0 30px 70px rgba(80,60,30,.16)}
 .lp-heromock:before{content:"";position:absolute;inset:-30px;background:radial-gradient(circle at 60% 45%,${C.action}44,transparent 66%);filter:blur(30px);z-index:-1}
-.lp-connectors{max-width:1120px;margin:48px auto 0;padding:0 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;color:${C.muted};font-size:13px}
-.lp-conn{display:inline-flex;align-items:center;gap:7px;color:${C.body};background:${C.panel};border:1px solid ${C.border};border-radius:20px;padding:7px 14px;font-size:13px}
+.lp-connectors{max-width:1120px;margin:48px auto 0;padding:0 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;color:${C.muted};font-size:var(--text-md)}
+.lp-conn{display:inline-flex;align-items:center;gap:7px;color:${C.body};background:${C.panel};border:1px solid ${C.border};border-radius:20px;padding:7px 14px}
 .lp-moments{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
 .lp-moment{background:#fff;border:1px solid #E3D8C2;border-radius:16px;overflow:hidden;box-shadow:0 14px 34px rgba(60,48,20,.08);transition:transform .18s ease}
 .lp-moment:hover{transform:translateY(-4px);box-shadow:0 20px 44px rgba(60,48,20,.12)}
@@ -1961,7 +1795,7 @@ const CSS = `
 .lp-momentimg>div{transition:transform .35s ease}
 .lp-moment:hover .lp-momentimg>div{transform:scale(1.028)}
 @media(max-width:640px){.lp-momentimg{height:150px}}
-.lp-momentchip{display:inline-flex;align-items:center;gap:7px;background:#FBF7EC;border:1px solid #E4DAC4;border-radius:99px;padding:4px 11px;font-size:11px;font-weight:800;color:#221E17;font-family:'JetBrains Mono',monospace}
+.lp-momentchip{display:inline-flex;align-items:center;gap:7px;background:#FBF7EC;border:1px solid #E4DAC4;border-radius:99px;padding:4px 11px;color:#221E17}
 .lp-band{padding:84px 0}
 .lp-band:nth-of-type(even){background:${C.paperDeep}}
 .lp-features{padding:92px 24px;display:grid;gap:104px}
@@ -1978,7 +1812,7 @@ const CSS = `
   .lp-navlinks{display:none}
   .lp-heroinner{grid-template-columns:1fr;gap:36px}
   .lp-heromock{max-width:460px;margin:0 auto;width:100%}
-  .lp-h1{font-size:40px}
+  .lp-h1{}
   .lp-feature{grid-template-columns:1fr!important;gap:28px;direction:ltr!important}
   .lp-steps{grid-template-columns:1fr}
   .lp-features{gap:68px;padding:68px 24px}

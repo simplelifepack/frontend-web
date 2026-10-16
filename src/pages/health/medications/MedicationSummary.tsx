@@ -1,8 +1,10 @@
+import { Heading, Text, Choice, ModalBackdrop, ModalPanel, Button, Card } from "@/design-system";
+
 import { useState } from "react";
 import { Check, Pill, Plus, Trash2 } from "lucide-react";
-import Card from "@/components/Card";
+
 import type { HealthTimelineEvent } from "@/lib/api.types";
-import { btnGhost } from "@/constants/theme";
+
 import { formatDate } from "../healthUtils";
 import AddMedicationDialog from "./AddMedicationDialog";
 
@@ -50,40 +52,39 @@ function MedicationSummary({
   return (
     <Card className="lp-health-med-card">
       <div className="lp-health-med-head">
-        <h2>
-          <Pill size={18} /> Current medications
-        </h2>
-        <button type="button" onClick={() => setAdding(true)}>
-          <Plus size={18} /> Add
-        </button>
+        <Heading level={2} size="sm">
+          <Pill aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Current medications
+        </Heading>
+        <Button variant="primary" type="button" onClick={() => setAdding(true)}>
+          <Plus aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Add
+        </Button>
       </div>
-      <div className="lp-health-med-list">
+      <div   className="lp-health-med-list">
         {medications.length ? (
           medications.map((item) => {
             const detail = medicationDetail(item);
             const stopped = item.medication?.status === "stopped";
             return (
               <div className={`lp-health-med-row${stopped ? " stopped" : ""}`} key={item.id}>
-                <button
+                <Button size="sm" iconOnly variant="tertiary"
                   type="button"
-                  className="lp-health-med-icon"
                   aria-label={`Edit ${item.title}`}
                   onClick={() => setEditing(item)}
                 >
-                  <Pill size={18} />
-                </button>
+                  <Pill aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+                </Button>
                 <span className="lp-health-med-main">
-                  <b>
+                  <Text as="b" size="md" weight="semibold">
                     {item.title}
                     {detail.dose ? <em>{detail.dose}</em> : null}
-                  </b>
+                  </Text>
                 </span>
-                <span className="lp-health-med-frequency">{detail.frequency || "Not set"}</span>
-                <span className="lp-health-med-confirmation">{detail.confirmation}</span>
+                <Text size="md" className="lp-health-med-frequency">{detail.frequency || "Not set"}</Text>
+                <Text size="md" className="lp-health-med-confirmation">{detail.confirmation}</Text>
                 <span className="lp-health-med-actions">
-                  <button
+                  <Choice aria-pressed={!stopped}
                     type="button"
-                    className={`lp-health-med-status${stopped ? "" : " active"}`}
+
                     disabled={statusId === item.id}
                     onClick={async () => {
                       if (!stopped) return;
@@ -99,12 +100,12 @@ function MedicationSummary({
                       }
                     }}
                   >
-                    {!stopped ? <Check size={14} /> : null}
+                    {!stopped ? <Check aria-hidden="true" focusable="false" size={14} /> : null}
                     Still taking
-                  </button>
-                  <button
+                  </Choice>
+                  <Choice aria-pressed={stopped}
                     type="button"
-                    className={`lp-health-med-status${stopped ? " active" : ""}`}
+
                     disabled={statusId === item.id}
                     onClick={async () => {
                       if (stopped) return;
@@ -121,22 +122,21 @@ function MedicationSummary({
                     }}
                   >
                     Stopped
-                  </button>
+                  </Choice>
                 </span>
-                <button
+                <Button size="sm" tone="danger" iconOnly variant="tertiary"
                   type="button"
-                  className="lp-health-med-delete"
                   aria-label={`Delete ${item.title}`}
                   disabled={deletingId === item.id}
                   onClick={() => setDeleteTarget(item)}
                 >
-                  <Trash2 size={18} />
-                </button>
+                  <Trash2 aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+                </Button>
               </div>
             );
           })
         ) : (
-          <p className="lp-health-muted">No medications recorded.</p>
+          <Text as="p" size="sm" className="lp-health-muted">No medications recorded.</Text>
         )}
       </div>
       {adding ? (
@@ -235,24 +235,24 @@ function DeleteMedicationDialog({
   onConfirm: () => Promise<void>;
 }) {
   return (
-    <div className="lp-modal-backdrop" style={{ zIndex: 90 }}>
-      <div className="lp-modal-panel lp-health-add-dialog" role="dialog" aria-modal="true" aria-label="Delete medication">
+    <ModalBackdrop  style={{ zIndex: "var(--layer-nestedDialog)" }}>
+      <ModalPanel onDismiss={onClose} className="lp-health-add-dialog" role="dialog" aria-modal="true" aria-label="Delete medication">
         <header className="lp-health-dialog-head">
           <div>
-            <h2>Delete medication?</h2>
-            <p>{medicationName} will be permanently removed from this Health profile.</p>
+            <Heading level={2} size="md">Delete medication?</Heading>
+            <Text as="p" size="md">{medicationName} will be permanently removed from this Health profile.</Text>
           </div>
         </header>
         <footer>
-          <button type="button" style={btnGhost} disabled={deleting} onClick={onClose}>
+          <Button variant="secondary" type="button" disabled={deleting} onClick={onClose}>
             Cancel
-          </button>
-          <button type="button" className="lp-health-danger-button" disabled={deleting} onClick={() => void onConfirm()}>
+          </Button>
+          <Button tone="danger" variant="primary" type="button" disabled={deleting} onClick={() => void onConfirm()}>
             {deleting ? "Deleting..." : "Delete medication"}
-          </button>
+          </Button>
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 

@@ -1,11 +1,12 @@
+import { Text, Select, ModalBackdrop, ModalPanel, Input, Button, Card } from "@/design-system";
+
 import type { CSSProperties, FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { KeyRound, LockKeyhole, Pencil, Plus, RotateCcw, ShieldCheck, Users, X } from "lucide-react";
 
-import Card from "@/components/Card";
 import SectionHead from "@/components/SectionHead";
 import { api, type TrustCenterResponse, type TrustMember, type TrustMemberPayload, type TrustPermission } from "@/lib/api";
-import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 
 const relations = ["SPOUSE", "PARENT", "CHILD", "SIBLING", "GUARDIAN", "RELATIVE", "FRIEND", "OTHER"] as const;
 const bloodGroups = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"] as const;
@@ -114,16 +115,16 @@ export default function TrustPage() {
       />
 
       <div className="lp-trust-stats">
-        <Card><span><LockKeyhole size={17} color={T.mint} /></span><div>Encrypted storage</div><p>Documents use encrypted storage. The current backend can decrypt them for processing.</p></Card>
-        <Card><span><Users size={17} color={T.mint} /></span><div>{data.memberCount + 1} people</div><p>Have some level of access, set by you.</p></Card>
+        <Card><span><LockKeyhole aria-hidden="true" focusable="false" size={17} color={T.mint} /></span><Text as="div" size="md">Encrypted storage</Text><Text as="p" size="sm">Documents use encrypted storage. The current backend can decrypt them for processing.</Text></Card>
+        <Card><span><Users aria-hidden="true" focusable="false" size={17} color={T.mint} /></span><Text as="div" size="md">{data.memberCount + 1} people</Text><Text as="p" size="sm">Have some level of access, set by you.</Text></Card>
       </div>
 
-      <Card style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
+      <Card flush style={{ marginBottom: "var(--space-s16)", overflow: "hidden" }}>
         <div className="lp-trust-family-head">
-          <span>Family &amp; access</span>
-          <button type="button" onClick={() => setAddOpen(true)} style={btnPrimary}>
-            <Plus size={15} /> Add member
-          </button>
+          <Text size="md">Family &amp; access</Text>
+          <Button variant="primary" type="button" onClick={() => setAddOpen(true)} >
+            <Plus aria-hidden="true" focusable="false" size={15} /> Add member
+          </Button>
         </div>
         <OwnerRow owner={data.owner} />
         {data.members.map((member) => (
@@ -137,46 +138,45 @@ export default function TrustPage() {
             removing={removingId === member.id}
           />
         ))}
-        {!data.members.length ? <p style={{ color: T.muted, margin: 0, padding: "0 16px 16px" }}>No trusted members yet.</p> : null}
+        {!data.members.length ? <Text as="p" size="md" tone="muted" style={{ color: T.muted, margin: 0, padding: "0 var(--space-s16) var(--space-s16)" }}>No trusted members yet.</Text> : null}
       </Card>
 
       {notice ? (
-        <Card style={{ marginBottom: 16, borderColor: "color-mix(in srgb, var(--lp-action) 40%, transparent)" }}>
-          <b style={{ color: T.white }}>Invitation status</b>
-          <p style={{ color: T.muted, margin: "6px 0 0", fontSize: 13 }}>{notice}</p>
+        <Card style={{ marginBottom: "var(--space-s16)" }}>
+          <Text as="b" size="md" weight="semibold" style={{ color: T.white }}>Invitation status</Text>
+          <Text as="p" size="md" tone="muted" style={{ color: T.muted, margin: "var(--space-s6) 0 0" }}>{notice}</Text>
         </Card>
       ) : null}
 
-
       {data.connections.length ? (
-        <Card style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
-          <div className="lp-trust-family-head"><span>Connected to</span></div>
+        <Card flush style={{ marginBottom: "var(--space-s16)", overflow: "hidden" }}>
+          <div className="lp-trust-family-head"><Text size="md">Connected to</Text></div>
           {data.connections.map((connection) => (
             <div key={connection.id} className="lp-trust-member" style={{ borderTop: `1px solid ${T.border}` }}>
-              <span>{connection.owner.name.charAt(0)}</span>
+              <Text size="md">{connection.owner.name.charAt(0)}</Text>
               <div style={{ flex: 1, minWidth: 190 }}>
-                <div>{connection.owner.name} <small>· {connection.relationLabel}</small></div>
-                <small>{connection.accessType.name}</small>
+                <Text as="div" size="md">{connection.owner.name} <small>· {connection.relationLabel}</small></Text>
+                <Text as="small" size="sm">{connection.accessType.name}</Text>
               </div>
-              <button
+              <Button tone="danger" variant="secondary"
                 type="button"
                 disabled={leavingId === connection.id}
                 onClick={() => void leaveConnection(connection.id, connection.owner.name)}
-                style={{ ...btnGhost, color: T.coral, borderColor: T.coralBorder, opacity: leavingId === connection.id ? 0.55 : 1 }}
+
               >
                 Leave Readiness
-              </button>
+              </Button>
             </div>
           ))}
         </Card>
       ) : null}
 
       <Card>
-        <b style={{ color: T.white, fontSize: 15 }}>Reset demo data</b>
-        <p style={{ fontSize: 13, color: T.muted, margin: "6px 0 12px" }}>Restore the sample family and documents on this device.</p>
-        <button type="button" style={{ ...btnGhost, color: T.coral, borderColor: T.coralBorder }}>
-          <RotateCcw size={15} /> Reset everything
-        </button>
+        <Text as="b" size="md" weight="semibold" style={{ color: T.white }}>Reset demo data</Text>
+        <Text as="p" size="md" tone="muted" style={{ color: T.muted, margin: "var(--space-s6) 0 var(--space-s12)" }}>Restore the sample family and documents on this device.</Text>
+        <Button tone="danger" variant="secondary" type="button" >
+          <RotateCcw aria-hidden="true" focusable="false" size={15} /> Reset everything
+        </Button>
       </Card>
 
       {addOpen ? (
@@ -193,9 +193,9 @@ export default function TrustPage() {
 function TrustError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <Card>
-      <b style={{ color: T.white }}>Trust Center unavailable</b>
-      <p style={{ color: T.muted }}>{message}</p>
-      <button type="button" style={btnPrimary} onClick={onRetry}><RotateCcw size={15} /> Retry</button>
+      <Text as="b" size="md" weight="semibold" style={{ color: T.white }}>Trust Center unavailable</Text>
+      <Text as="p" size="md" tone="muted" style={{ color: T.muted }}>{message}</Text>
+      <Button variant="primary" type="button" onClick={onRetry}><RotateCcw aria-hidden="true" focusable="false" size={15} /> Retry</Button>
     </Card>
   );
 }
@@ -203,14 +203,14 @@ function TrustError({ message, onRetry }: { message: string; onRetry: () => void
 function OwnerRow({ owner }: { owner: TrustCenterResponse["owner"] }) {
   return (
     <div className="lp-trust-member" style={{ borderTop: `1px solid ${T.border}` }}>
-      <span>{owner.name.charAt(0)}</span>
+      <Text size="md">{owner.name.charAt(0)}</Text>
       <div style={{ flex: 1, minWidth: 190 }}>
-        <div>{owner.name} <small>· Owner</small></div>
-        <small>Full access cannot be changed</small>
+        <Text as="div" size="md">{owner.name} <small>· Owner</small></Text>
+        <Text as="small" size="sm">Full access cannot be changed</Text>
       </div>
-      <select disabled value="OWNER" style={selectStyle} aria-label="Owner access">
+      <Select disabled value="OWNER" style={selectStyle} aria-label="Owner access">
         <option>Owner</option>
-      </select>
+      </Select>
     </div>
   );
 }
@@ -232,39 +232,39 @@ function MemberRow({
 }) {
   return (
     <div className="lp-trust-member" style={{ borderTop: `1px solid ${T.border}` }}>
-      <span>{member.name.charAt(0)}</span>
+      <Text size="md">{member.name.charAt(0)}</Text>
       <div style={{ flex: 1, minWidth: 190 }}>
-        <div>{member.name} <small>· {member.relationLabel}</small></div>
-        <small>
+        <Text as="div" size="md">{member.name} <small>· {member.relationLabel}</small></Text>
+        <Text as="small" size="sm">
           {member.status} · DOB {member.dateOfBirth} · {member.bloodGroup}
           {member.invitationStatus === "EXPIRED" ? " · Expired" : null}
           {member.invitationStatus === "PENDING" && member.inviteExpiresAt ? ` · Expires ${new Date(member.inviteExpiresAt).toLocaleString()}` : null}
-        </small>
+        </Text>
       </div>
-      <select value={member.accessType.code} onChange={(event) => onChange(event.target.value as TrustMemberPayload["accessTypeCode"])} style={selectStyle} aria-label={`${member.name} access`}>
+      <Select value={member.accessType.code} onChange={(event) => onChange(event.target.value as TrustMemberPayload["accessTypeCode"])} style={selectStyle} aria-label={`${member.name} access`}>
         {accessTypes.map((accessType) => <option key={accessType} value={accessType}>{accessLabels[accessType]}</option>)}
-      </select>
-      <button type="button" aria-label={`Edit ${member.name}`} title={`Edit ${member.name}`} onClick={() => { if (member.accessType.code !== "OWNER") onChange(member.accessType.code); }} style={iconButtonStyle}>
-        <Pencil size={14} />
-      </button>
+      </Select>
+      <Button size="sm" iconOnly variant="tertiary" type="button" aria-label={`Edit ${member.name}`} title={`Edit ${member.name}`} onClick={() => { if (member.accessType.code !== "OWNER") onChange(member.accessType.code); }} >
+        <Pencil aria-hidden="true" focusable="false" size={14} />
+      </Button>
       {member.status === "INVITED" || member.invitationStatus === "EXPIRED" ? (
         <>
-          <button type="button" onClick={onResend} style={inlineButtonStyle}>Resend Invitation</button>
-          <button type="button" aria-label={`Reset PIN for ${member.name}`} title={`Reset PIN for ${member.name}`} onClick={onResetPin} style={iconButtonStyle}>
-            <KeyRound size={14} />
-          </button>
+          <Button size="sm" variant="tertiary" type="button" onClick={onResend} style={{ marginLeft: "var(--space-s8)" }}>Resend Invitation</Button>
+          <Button size="sm" iconOnly variant="tertiary" type="button" aria-label={`Reset PIN for ${member.name}`} title={`Reset PIN for ${member.name}`} onClick={onResetPin} >
+            <KeyRound aria-hidden="true" focusable="false" size={14} />
+          </Button>
         </>
       ) : null}
-      <button
+      <Button size="sm" tone="danger" iconOnly variant="tertiary"
         type="button"
         aria-label={`Remove ${member.name}`}
         title={`Remove ${member.name}`}
         disabled={removing}
         onClick={onRemove}
-        style={{ ...removeButtonStyle, opacity: removing ? 0.45 : 1 }}
+
       >
-        <X size={15} />
-      </button>
+        <X aria-hidden="true" focusable="false" size={15} />
+      </Button>
     </div>
   );
 }
@@ -280,31 +280,31 @@ function MemberModal({ enabledModules, onClose, onSave }: { enabledModules: Trus
   };
 
   return (
-    <div onClick={onClose} style={scrimStyle}>
-      <form onSubmit={submit} onClick={(event) => event.stopPropagation()} style={modalStyle}>
+    <ModalBackdrop onClick={onClose} style={scrimStyle}>
+      <ModalPanel onDismiss={onClose} aria-label="Trusted access" as="form" onSubmit={submit} onClick={(event) => event.stopPropagation()} style={modalStyle}>
         <div style={modalHeadStyle}>
-          <b style={{ color: T.white, fontSize: 18 }}>Add a family member</b>
-          <button type="button" onClick={onClose} style={{ ...btnGhost, padding: 8 }} aria-label="Close"><X size={16} /></button>
+          <Text as="b" size="lg" weight="semibold" style={{ color: T.white }}>Add a family member</Text>
+          <Button iconOnly variant="tertiary" size="sm" type="button" onClick={onClose} aria-label="Close"><X aria-hidden="true" focusable="false" size="var(--icon-small)" /></Button>
         </div>
 
-        <label style={labelStyle}>Name<input required style={inputStyle} value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Taylor Morgan" /></label>
-        <label style={labelStyle}>Email<input required type="email" style={inputStyle} value={draft.email} onChange={(event) => update({ email: event.target.value })} placeholder="name@example.com" /></label>
+        <Text as="label" size="md" style={labelStyle}>Name<Input required style={inputStyle} value={draft.name} onChange={(event) => update({ name: event.target.value })} placeholder="e.g. Taylor Morgan" /></Text>
+        <Text as="label" size="md" style={labelStyle}>Email<Input required type="email" style={inputStyle} value={draft.email} onChange={(event) => update({ email: event.target.value })} placeholder="name@example.com" /></Text>
         <div style={grid2Style}>
-          <label style={labelStyle}>Relation<select style={inputStyle} value={draft.relation} onChange={(event) => update({ relation: event.target.value as TrustMemberPayload["relation"] })}>{relations.map((relation) => <option key={relation} value={relation}>{labelize(relation)}</option>)}</select></label>
-          <label style={labelStyle}>Access<select style={inputStyle} value={draft.accessTypeCode} onChange={(event) => update({ accessTypeCode: event.target.value as TrustMemberPayload["accessTypeCode"] })}>{accessTypes.map((accessType) => <option key={accessType} value={accessType}>{accessLabels[accessType]}</option>)}</select></label>
+          <Text as="label" size="md" style={labelStyle}>Relation<Select style={inputStyle} value={draft.relation} onChange={(event) => update({ relation: event.target.value as TrustMemberPayload["relation"] })}>{relations.map((relation) => <option key={relation} value={relation}>{labelize(relation)}</option>)}</Select></Text>
+          <Text as="label" size="md" style={labelStyle}>Access<Select style={inputStyle} value={draft.accessTypeCode} onChange={(event) => update({ accessTypeCode: event.target.value as TrustMemberPayload["accessTypeCode"] })}>{accessTypes.map((accessType) => <option key={accessType} value={accessType}>{accessLabels[accessType]}</option>)}</Select></Text>
         </div>
-        {draft.relation === "OTHER" ? <label style={labelStyle}>Custom relation<input required style={inputStyle} value={draft.customRelation ?? ""} onChange={(event) => update({ customRelation: event.target.value })} /></label> : null}
+        {draft.relation === "OTHER" ? <Text as="label" size="md" style={labelStyle}>Custom relation<Input required style={inputStyle} value={draft.customRelation ?? ""} onChange={(event) => update({ customRelation: event.target.value })} /></Text> : null}
         <div style={grid2Style}>
-          <label style={labelStyle}>Date of birth<input required type="date" style={inputStyle} value={draft.dateOfBirth} onChange={(event) => update({ dateOfBirth: event.target.value })} /></label>
-          <label style={labelStyle}>Blood group<select style={inputStyle} value={draft.bloodGroup} onChange={(event) => update({ bloodGroup: event.target.value as TrustMemberPayload["bloodGroup"] })}>{bloodGroups.map((blood) => <option key={blood} value={blood}>{blood}</option>)}</select></label>
+          <Text as="label" size="md" style={labelStyle}>Date of birth<Input required type="date" style={inputStyle} value={draft.dateOfBirth} onChange={(event) => update({ dateOfBirth: event.target.value })} /></Text>
+          <Text as="label" size="md" style={labelStyle}>Blood group<Select style={inputStyle} value={draft.bloodGroup} onChange={(event) => update({ bloodGroup: event.target.value as TrustMemberPayload["bloodGroup"] })}>{bloodGroups.map((blood) => <option key={blood} value={blood}>{blood}</option>)}</Select></Text>
         </div>
-        <label style={labelStyle}>6-digit PIN<input required inputMode="numeric" maxLength={6} style={inputStyle} value={draft.pin} onChange={(event) => update({ pin: event.target.value.replace(/\D/g, "").slice(0, 6) })} placeholder="Share separately" /></label>
-        <p style={{ color: T.muted, fontSize: 12, lineHeight: 1.5, margin: "2px 0 0" }}>{accessCopy[draft.accessTypeCode]}</p>
-        <button type="submit" disabled={saving || !draft.name.trim() || !draft.email.trim() || !/^\d{6}$/.test(draft.pin ?? "")} style={{ ...btnPrimary, width: "100%", justifyContent: "center", marginTop: 16, opacity: saving ? 0.65 : 1 }}>
+        <Text as="label" size="md" style={labelStyle}>6-digit PIN<Input required inputMode="numeric" maxLength={6} style={inputStyle} value={draft.pin} onChange={(event) => update({ pin: event.target.value.replace(/\D/g, "").slice(0, 6) })} placeholder="Share separately" /></Text>
+        <Text as="p" size="sm" tone="muted" style={{ color: T.muted, margin: "2px 0 0" }}>{accessCopy[draft.accessTypeCode]}</Text>
+        <Button loading={saving} variant="primary" type="submit" disabled={saving || !draft.name.trim() || !draft.email.trim() || !/^\d{6}$/.test(draft.pin ?? "")} style={{ width: "100%", marginTop: "var(--space-s16)" }}>
           {saving ? "Sending..." : "Send invitation"}
-        </button>
-      </form>
-    </div>
+        </Button>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
@@ -329,13 +329,10 @@ function labelize(value: string) {
   return value.toLowerCase().replace(/(^|_)([a-z])/g, (_match, prefix: string, letter: string) => `${prefix ? " " : ""}${letter.toUpperCase()}`);
 }
 
-const grid2Style: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 };
-const inputStyle: CSSProperties = { width: "100%", marginTop: 5, marginBottom: 10, background: T.raised, border: `1px solid ${T.border}`, borderRadius: 9, padding: "9px 11px", color: T.text, fontSize: 14, outline: "none" };
-const labelStyle: CSSProperties = { display: "block", color: T.muted, fontSize: 11, fontWeight: 800, letterSpacing: 0.5, textTransform: "uppercase" };
-const modalHeadStyle: CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 };
-const modalStyle: CSSProperties = { width: "min(430px,100%)", background: T.panel, border: `1px solid ${T.border}`, borderRadius: 16, padding: 18 };
-const scrimStyle: CSSProperties = { position: "fixed", inset: 0, zIndex: 70, display: "flex", alignItems: "center", justifyContent: "center", padding: 18, background: "var(--lpv-scrim)" };
-const selectStyle: CSSProperties = { minWidth: 160, background: T.raised, border: `1px solid ${T.border}`, borderRadius: 8, padding: "6px 10px", color: T.text, fontSize: 12.5, fontWeight: 700 };
-const inlineButtonStyle: CSSProperties = { marginLeft: 8, padding: 0, border: 0, background: "transparent", color: T.action, font: "inherit", cursor: "pointer" };
-const iconButtonStyle: CSSProperties = { width: 32, height: 32, display: "grid", placeItems: "center", flex: "0 0 32px", background: T.raised, border: `1px solid ${T.border}`, borderRadius: 8, color: T.text, cursor: "pointer" };
-const removeButtonStyle: CSSProperties = { width: 32, height: 32, display: "grid", placeItems: "center", flex: "0 0 32px", background: T.coralSoft, border: `1px solid ${T.coralBorder}`, borderRadius: 8, color: T.coral, cursor: "pointer" };
+const grid2Style: CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-s10)" };
+const inputStyle: CSSProperties = { width: "100%", marginTop: 5, marginBottom: "var(--space-s10)" };
+const labelStyle: CSSProperties = { display: "block", color: T.muted, letterSpacing: 0.5, textTransform: "uppercase" };
+const modalHeadStyle: CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-s16)" };
+const modalStyle: CSSProperties = { width: "min(430px,100%)" };
+const scrimStyle: CSSProperties = { position: "fixed", inset: 0, zIndex: "var(--layer-overlay)", display: "flex", alignItems: "center", justifyContent: "center" };
+const selectStyle: CSSProperties = { minWidth: 160 };

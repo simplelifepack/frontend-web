@@ -1,7 +1,8 @@
+import { Text, Card } from "@/design-system";
+
 import { useState } from "react";
 import { Check, ChevronRight } from "lucide-react";
 
-import Card from "@/components/Card";
 import { T } from "@/constants/theme";
 import { daysUntil } from "@/data/demoData";
 import type { DocumentRecord } from "@/lib/api";
@@ -56,9 +57,9 @@ export default function DocumentRows({
   return (
     <>
       <DocumentBulkActions documents={selectedDocuments} onDeleted={() => setSelected(new Set())} />
-      <Card
+      <Card flush
         className="lp-document-table"
-        style={{ padding: 0, overflowX: "auto" }}
+        style={{ overflowX: "auto" }}
       >
         <div
           className="lp-document-head"
@@ -76,14 +77,14 @@ export default function DocumentRows({
             }
             onClick={toggleAll}
           >
-            {allSelected ? <Check size={11} strokeWidth={3} /> : null}
+            {allSelected ? <Check aria-hidden="true" focusable="false" size={11} strokeWidth={3} /> : null}
           </button>
-          <div>Document</div>
-          <div>Person</div>
-          {showCategory ? <div>Category</div> : null}
-          <div>Source</div>
-          <div>Added</div>
-          <div>Expiry</div>
+          <Text as="div" size="md">Document</Text>
+          <Text as="div" size="md">Person</Text>
+          {showCategory ? <Text as="div" size="md">Category</Text> : null}
+          <Text as="div" size="md">Source</Text>
+          <Text as="div" size="md">Added</Text>
+          <Text as="div" size="md">Expiry</Text>
           <div />
         </div>
 
@@ -143,55 +144,51 @@ export default function DocumentRows({
                   });
                 }}
               >
-                {isSelected ? <Check size={11} strokeWidth={3} /> : null}
+                {isSelected ? <Check aria-hidden="true" focusable="false" size={11} strokeWidth={3} /> : null}
               </button>
               <div className="lp-document-main">
                 <span
                   className="lp-document-icon"
                   style={{
-                    background: `${categoryMeta.accent}18`,
+                    background: `color-mix(in srgb, ${categoryMeta.accent} 12%, transparent)`,
                     color: categoryMeta.accent,
                   }}
                 >
-                  <CategoryIcon size={16} strokeWidth={1.9} />
+                  <CategoryIcon aria-hidden="true" focusable="false" size="var(--icon-small)" strokeWidth={1.9} />
                 </span>
                 <span className="lp-document-copy">
-                  <strong>
+                  <Text as="strong" size="md" weight="semibold">
                     {doc.displayName ||
                       labelize(doc.documentType) ||
                       documentTitle(doc)}
-                  </strong>
-                  <small>{doc.originalName}</small>
+                  </Text>
+                  <Text as="small" size="sm">{doc.originalName}</Text>
                 </span>
               </div>
               <div className="lp-document-person">
                 <span style={{ background: categoryMeta.accent }} />
-                <span>{person}</span>
+                <Text size="md">{person}</Text>
               </div>
               {showCategory ? (
                 <div>
-                  <span
+                  <Text size="sm" weight="semibold"
                     className="lp-document-category"
-                    style={{
-                      background: `${categoryMeta.accent}14`,
-                      borderColor: `${categoryMeta.accent}35`,
-                      color: categoryMeta.accent,
-                    }}
+                    style={{ background: `color-mix(in srgb, ${categoryMeta.accent} 7.84%, transparent)`, borderColor: `color-mix(in srgb, ${categoryMeta.accent} 20.78%, transparent)`, color: categoryMeta.accent }}
                   >
                     {labelize(category)}
-                  </span>
+                  </Text>
                 </div>
               ) : null}
-              <div className="lp-document-source">{sourceLabel(doc)}</div>
-              <div className="lp-document-date">
+              <Text as="div" size="sm" className="lp-document-source">{sourceLabel(doc)}</Text>
+              <Text as="div" size="sm" className="lp-document-date">
                 {new Date(doc.createdAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "2-digit",
                   year: "2-digit",
                 })}
-              </div>
-              <div className="lp-document-date">{expiryDisplay}</div>
-              <ChevronRight className="lp-document-chevron" size={17} />
+              </Text>
+              <Text as="div" size="sm" className="lp-document-date">{expiryDisplay}</Text>
+              <ChevronRight aria-hidden="true" focusable="false" className="lp-document-chevron" size={17} />
             </div>
           );
         })}

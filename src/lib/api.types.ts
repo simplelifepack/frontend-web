@@ -186,6 +186,8 @@ export type DocumentAIResult = {
   uniqueNumber: string | null;
   nameOnDocument: string | null;
   expiryDate: string | null;
+  extractedText?: string;
+  fields?: Record<string, string>;
 };
 
 export type AnalyzeDocumentResponse = {
@@ -618,7 +620,7 @@ export type AdminPackagePayload = {
   verificationStatus?: string | null;
 };
 
-export type AdminPackage = Omit<PackSummary, "requirements" | "verificationSources"> & {
+export type AdminPackage = Omit<PackSummary, "requirements" | "verificationSources" | "searchMetadata" | "lastVerifiedAt"> & {
   aliases: string[];
   createdAt: string;
   deletedAt?: string | null;

@@ -1,8 +1,10 @@
+import { Heading, Card, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/design-system";
+
 import { useEffect } from 'react';
 import { toast } from 'sonner';
-import Card from './Card';
+
 import { T } from '@/constants/theme';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+
 import type { AccountUsage as Usage } from '@/lib/api.types';
 
 export function storageText(storage: Usage['storage']) {
@@ -20,8 +22,8 @@ export default function AccountUsage({ usage, only }: { usage: Usage; only?: 'st
     toast.info(`${used} of ${limit} actions used this month`, { id: 'ai-usage', duration: 3500 });
   }, [used, limit, unlimited, period, only]);
   if (only === 'ai') return null;
-  return <Card style={{ marginBottom: 16 }}><section aria-label="Account usage">
-    {!only && <h2 style={{ color: T.white, fontSize: 18, fontWeight: 700, marginBottom: 12 }}>{usage.accountTier === 'paid' ? 'Paid' : 'Free'} account</h2>}
+  return <Card style={{ marginBottom: "var(--space-s16)" }}><section aria-label="Account usage">
+    {!only && <Heading level={2} size="sm" style={{ color: T.white, marginBottom: "var(--space-s12)" }}>{usage.accountTier === 'paid' ? 'Paid' : 'Free'} account</Heading>}
     <StorageUsage storage={usage.storage} />
   </section></Card>;
 }
@@ -35,14 +37,14 @@ export function StorageUsage({ storage, circular = false }: { storage: Usage['st
         aria-valuemax={storage.unlimited ? undefined : 100} aria-valuenow={storage.unlimited ? undefined : percentage}
         aria-valuetext={description} style={circular
           ? { width: 36, height: 36, flexShrink: 0, display: 'grid', placeItems: 'center', cursor: 'help' }
-          : { paddingBlock: 6, cursor: 'help' }}>
+          : { paddingBlock: "var(--space-s6)", cursor: 'help' }}>
         {circular ? <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
           <circle cx="16" cy="16" r="13" fill="none" stroke={T.border} strokeWidth="3" />
           <circle cx="16" cy="16" r="13" fill="none" stroke={percentage >= 100 ? T.coral : T.action}
             strokeWidth="3" pathLength="100" strokeDasharray={`${storage.unlimited ? 100 : percentage} 100`}
             transform="rotate(-90 16 16)" opacity={storage.unlimited ? 0.4 : 1} />
-        </svg> : <div style={{ height: 8, borderRadius: 8, background: T.border, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: storage.unlimited ? '100%' : `${percentage}%`, background: percentage >= 100 ? T.coral : T.action, opacity: storage.unlimited ? 0.4 : 1, borderRadius: 8 }} />
+        </svg> : <div style={{ height: 8, borderRadius: "var(--radius-compact)", background: T.border, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: storage.unlimited ? '100%' : `${percentage}%`, background: percentage >= 100 ? T.coral : T.action, opacity: storage.unlimited ? 0.4 : 1, borderRadius: "var(--radius-compact)" }} />
         </div>}
       </div>
     </TooltipTrigger>

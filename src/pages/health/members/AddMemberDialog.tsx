@@ -1,6 +1,8 @@
+import { Heading, Text, ModalBackdrop, ModalPanel, Input, Select, Button } from "@/design-system";
+
 import { useState } from "react";
 import { X } from "lucide-react";
-import { btnPrimary } from "@/constants/theme";
+
 import { isoDateInput, validateDateOfBirth } from "../healthUtils";
 
 function AddMemberDialog({
@@ -58,39 +60,39 @@ function AddMemberDialog({
   };
 
   return (
-    <div
-      className="lp-modal-backdrop"
-      style={{ zIndex: 100 }}
+    <ModalBackdrop
+
+      style={{ zIndex: "var(--layer-confirmation)" }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div
-        className="lp-modal-panel lp-health-add-dialog"
+      <ModalPanel onDismiss={onClose}
+        className="lp-health-add-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="health-member-title"
       >
         <header className="lp-health-dialog-head">
-          <h2 id="health-member-title">Add family member</h2>
-          <button type="button" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
+          <Heading level={2} size="md" id="health-member-title">Add family member</Heading>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
         <div className="lp-health-form">
-          <label>
+          <Text as="label" size="sm" weight="semibold">
             <span>Name</span>
-            <input
+            <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder=""
               aria-invalid={Boolean(errors.name)}
             />
             {errors.name ? <small>{errors.name}</small> : null}
-          </label>
-          <label>
+          </Text>
+          <Text as="label" size="sm" weight="semibold">
             <span>Relation</span>
-            <select
+            <Select
               value={relation}
               onChange={(event) => setRelation(event.target.value)}
               aria-invalid={Boolean(errors.relation)}
@@ -112,19 +114,19 @@ function AddMemberDialog({
                   {option}
                 </option>
               ))}
-            </select>
+            </Select>
             {relation === "Other" ? (
-              <input
+              <Input
                 value={customRelation}
                 onChange={(event) => setCustomRelation(event.target.value)}
                 placeholder="Custom relation"
               />
             ) : null}
             {errors.relation ? <small>{errors.relation}</small> : null}
-          </label>
-          <label>
+          </Text>
+          <Text as="label" size="sm" weight="semibold">
             <span>Blood group</span>
-            <select
+            <Select
               value={bloodGroup}
               onChange={(event) => setBloodGroup(event.target.value)}
             >
@@ -137,11 +139,11 @@ function AddMemberDialog({
               <option>O+</option>
               <option>O-</option>
               <option>Unknown</option>
-            </select>
-          </label>
-          <label>
+            </Select>
+          </Text>
+          <Text as="label" size="sm" weight="semibold">
             <span>Date of birth</span>
-            <input
+            <Input
               value={dateOfBirth}
               onChange={(event) => setDateOfBirth(event.target.value)}
               type="date"
@@ -150,23 +152,22 @@ function AddMemberDialog({
               aria-invalid={Boolean(errors.dateOfBirth)}
             />
             {errors.dateOfBirth ? <small>{errors.dateOfBirth}</small> : null}
-          </label>
+          </Text>
           {errors.form ? (
-            <div className="lp-health-form-error">{errors.form}</div>
+            <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{errors.form}</Text>
           ) : null}
         </div>
         <footer>
-          <button
+          <Button variant="primary"
             type="button"
-            style={btnPrimary}
             disabled={submitting}
             onClick={submit}
           >
             Create profile
-          </button>
+          </Button>
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 

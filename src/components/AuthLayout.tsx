@@ -1,3 +1,4 @@
+import { Heading, Text } from "@/design-system";
 import BrandLogo from "./BrandLogo";
 import type { ReactNode } from "react";
 
@@ -14,17 +15,17 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             <div className="lp-auth-radar" aria-hidden />
             <div>
               <BrandLogo height={64} className="relative" />
-              <h1 className="relative mt-6 max-w-md font-display text-4xl font-bold leading-tight tracking-tight text-[var(--lp-heading)]">
+              <Heading level={1} size="lg" className="relative mt-6 max-w-md tracking-tight text-[var(--lp-heading)]">
                 Your documents, ready when life asks.
-              </h1>
-              <p className="relative mt-4 max-w-md text-sm leading-6 text-[var(--lp-muted)]">
+              </Heading>
+              <Text as="p" size="md" className="relative mt-4 max-w-md text-[var(--lp-muted)]">
                 Sign in to your private living archive, create an account, or reset your password.
-              </p>
+              </Text>
             </div>
             <div className="relative rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-panel)]/80 p-5">
-              <p className="text-sm leading-6 text-[var(--lp-text)]">
+              <Text as="p" size="md" className="text-[var(--lp-text)]">
                 Private by design. Your connected sources remain read-only and under your control.
-              </p>
+              </Text>
             </div>
           </section>
           <section className="bg-[var(--lp-panel)] p-6 text-[var(--lp-text)] sm:p-10">{children}</section>

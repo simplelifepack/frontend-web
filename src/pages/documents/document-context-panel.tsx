@@ -1,7 +1,9 @@
+import { ModalBackdrop, Text, Heading, DrawerPortal, DrawerBackdrop, ModalPanel, DrawerPanel, Button } from "@/design-system";
+
 import { Clock, Download, FileText, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import { daysUntil } from "@/data/demoData";
 import type { DocumentRecord } from "@/lib/api";
 import { useAppDispatch } from "@/store/hooks";
@@ -66,34 +68,34 @@ export default function DocumentContextPanel({ doc, loading = false, onClose }: 
 
   const fact = (label: string, value: string) => (
     <div className="lp-document-drawer-fact">
-      <span>{label}</span>
-      <strong>{value}</strong>
+      <Text size="md">{label}</Text>
+      <Text as="strong" size="md" weight="semibold">{value}</Text>
     </div>
   );
 
   return (
-    <>
-      <button
+    <DrawerPortal>
+      <DrawerBackdrop
         type="button"
         className="lp-document-drawer-backdrop"
         aria-label="Close document panel"
         onClick={onClose}
       />
-      <aside className="lp-document-drawer" aria-label={`${labelize(doc.documentType)} details`}>
+      <DrawerPanel onDismiss={onClose} className="lp-document-drawer" aria-label={`${labelize(doc.documentType)} details`}>
         <header className="lp-document-drawer-header">
           <span
             className="lp-document-drawer-icon"
-            style={{ background: `${categoryMeta.accent}22`, color: categoryMeta.accent }}
+            style={{ background: `color-mix(in srgb, ${categoryMeta.accent} 13.33%, transparent)`, color: categoryMeta.accent }}
           >
-            <CategoryIcon size={18} strokeWidth={1.9} />
+            <CategoryIcon aria-hidden="true" focusable="false" size="var(--icon-regular)" strokeWidth={1.9} />
           </span>
           <div>
-            <h2>{doc.displayName || labelize(doc.documentType)}</h2>
-            <p>{doc.originalName}</p>
+            <Heading level={2} size="sm">{doc.displayName || labelize(doc.documentType)}</Heading>
+            <Text as="p" size="sm">{doc.originalName}</Text>
           </div>
-          <button type="button" onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
-            <X size={16} />
-          </button>
+          <Button iconOnly variant="tertiary" size="sm" type="button" aria-label="Close document panel" onClick={onClose} >
+            <X aria-hidden="true" focusable="false" size="var(--icon-small)" />
+          </Button>
         </header>
 
         <div className="lp-document-drawer-body">
@@ -102,17 +104,17 @@ export default function DocumentContextPanel({ doc, loading = false, onClose }: 
               className="lp-document-drawer-expiry"
               data-state={expiryDays < 0 ? "expired" : expiryDays < 60 ? "soon" : "valid"}
             >
-              <Clock size={15} />
-              <span>
+              <Clock aria-hidden="true" focusable="false" size={15} />
+              <Text size="md">
                 {expiryDays < 0
                   ? `Expired ${Math.abs(expiryDays)} days ago`
                   : `Valid · expires in ${expiryDays} days`}
-              </span>
+              </Text>
             </div>
           ) : null}
 
-          <span className="lp-document-drawer-label">Details</span>
-          <div>
+          <Text size="sm" weight="semibold" className="lp-document-drawer-label">Details</Text>
+          <Text as="div" size="md">
             {fact("Category", labelize(category))}
             {fact("Source", sourceLabel(doc))}
             {fact(
@@ -124,73 +126,74 @@ export default function DocumentContextPanel({ doc, loading = false, onClose }: 
               }),
             )}
             {fact("Size", `${Math.max(1, Math.round(doc.size / 1024)).toLocaleString()} KB`)}
-          </div>
+          </Text>
 
-          <span className="lp-document-drawer-label">Review fields</span>
+          <Text size="sm" weight="semibold" className="lp-document-drawer-label">Review fields</Text>
           {loading ? (
-            <p className="lp-document-drawer-empty">Loading document details...</p>
+            <Text as="p" size="md" className="lp-document-drawer-empty">Loading document details...</Text>
           ) : null}
           {!loading && approvedFields.length ? (
-            <div>
+            <Text as="div" size="md">
               {approvedFields.map((field, index) => (
                 <div className="lp-document-drawer-fact" key={field.id ?? `${field.key}-${index}`}>
                   <span>{field.label}</span>
                   <strong>{field.value}</strong>
                 </div>
               ))}
-            </div>
+            </Text>
           ) : !loading ? (
-            <p className="lp-document-drawer-empty">No reviewed fields saved for this document.</p>
+            <Text as="p" size="md" className="lp-document-drawer-empty">No reviewed fields saved for this document.</Text>
           ) : null}
 
         </div>
 
         <footer className="lp-document-drawer-footer">
-          <button
+          <Button variant="primary"
             type="button"
             disabled={loading}
             onClick={() => setPreviewOpen((current) => !current)}
-            style={{ ...btnPrimary, flex: 1, justifyContent: "center" }}
+            style={{ flex: 1 }}
           >
-            <FileText size={15} />
+            <FileText aria-hidden="true" focusable="false" size={15} />
             Preview
-          </button>
-          <button type="button" disabled={loading || Boolean(busy)} onClick={() => void downloadDocument()} style={btnGhost}>
-            <Download size={15} /> Download
-          </button>
-          <button type="button" disabled={loading || Boolean(busy)} onClick={() => void removeDocument()} style={btnGhost}>
-            <Trash2 size={15} /> Delete
-          </button>
+          </Button>
+          <Button variant="secondary" type="button" disabled={loading || Boolean(busy)} onClick={() => void downloadDocument()} >
+            <Download aria-hidden="true" focusable="false" size={15} /> Download
+          </Button>
+          <Button tone="danger" variant="secondary" type="button" disabled={loading || Boolean(busy)} onClick={() => void removeDocument()} >
+            <Trash2 aria-hidden="true" focusable="false" size={15} /> Delete
+          </Button>
         </footer>
-      </aside>
+      </DrawerPanel>
       {previewOpen ? (
         <>
-          <button
+          <ModalBackdrop style={{ zIndex: "var(--layer-detailDialog)" }}>
+<DrawerBackdrop
             type="button"
             className="lp-document-preview-backdrop"
             aria-label="Close file preview"
             onClick={() => setPreviewOpen(false)}
           />
-          <section className="lp-document-preview-modal" role="dialog" aria-modal="true">
+          <ModalPanel onDismiss={() => setPreviewOpen(false)} aria-label="Document preview" as="section" flush className="lp-document-preview-modal" role="dialog" aria-modal="true">
             <header>
               <div>
-                <h2>{doc.displayName || labelize(doc.documentType)}</h2>
-                <p>{doc.originalName}</p>
+                <Heading level={2} size="sm">{doc.displayName || labelize(doc.documentType)}</Heading>
+                <Text as="p" size="sm">{doc.originalName}</Text>
               </div>
-              <button
+              <Button iconOnly variant="tertiary" size="sm" aria-label="Close file preview"
                 type="button"
                 onClick={() => setPreviewOpen(false)}
-                style={{ ...btnGhost, padding: 8 }}
               >
-                <X size={16} />
-              </button>
+                <X aria-hidden="true" focusable="false" size="var(--icon-small)" />
+              </Button>
             </header>
             <div className="lp-document-preview-content">
               <FilePreview doc={doc} rawExtractedText={rawExtractedText} />
             </div>
-          </section>
+          </ModalPanel>
+</ModalBackdrop>
         </>
       ) : null}
-    </>
+    </DrawerPortal>
   );
 }

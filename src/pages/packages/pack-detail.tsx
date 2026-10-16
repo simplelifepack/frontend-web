@@ -1,3 +1,4 @@
+import { Text } from "@/design-system";
 import { Lock } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -150,20 +151,20 @@ export default function PackDetail({
   };
 
   return (
-    <div className="lp-pack-drawer-inner">
+    <div   className="lp-pack-drawer-inner">
       {!pack ? (
-        <div style={{ color: T.muted, fontSize: 13 }}>
+        <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
           No packs available yet.
-        </div>
+        </Text>
       ) : (
         <>
           <PackDetailHeader completion={completion} isComplete={isComplete} pack={pack} readyCount={readyCount} totalCount={totalCount} onClose={onClose} />
 
             <div className="lp-pack-drawer-body">
             {isStale(pack) ? (
-              <div className="lp-pack-drawer-message">
+              <Text as="div" size="md" className="lp-pack-drawer-message">
                 Requirements are from {pack.source?.lastCheckedAt ?? "an earlier check"}. Refresh to verify current requirements.
-              </div>
+              </Text>
             ) : null}
             <RequirementSections
               addFor={addFor}
@@ -181,11 +182,11 @@ export default function PackDetail({
               onViewDocument={setViewingDocument}
             />
 
-            <p className="lp-pack-disclaimer">
-              <Lock size={13} />
+            <Text as="p" size="sm" className="lp-pack-disclaimer">
+              <Lock aria-hidden="true" focusable="false" size={13} />
               {typeof pack.searchMetadata?.disclaimer === "string" ? pack.searchMetadata.disclaimer : "Checklist based on stored requirements; completeness and eligibility are not guaranteed."}
               {typeof pack.searchMetadata?.confidence === "string" ? ` Confidence: ${pack.searchMetadata.confidence}.` : ""}
-            </p>
+            </Text>
             <PackDownloadCard
               documents={documents}
               downloadError={downloadError}

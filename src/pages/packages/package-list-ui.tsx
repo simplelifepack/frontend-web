@@ -1,6 +1,7 @@
+import { Text, ChoiceGroup, Choice, Card, Ring } from "@/design-system";
+
 import CustomPackButton from "@/components/CustomPackButton";
-import Card from "@/components/Card";
-import Ring from "@/components/Ring";
+
 import Stamp from "@/components/Stamp";
 import { T } from "@/constants/theme";
 import type { DerivedPackSummary } from "@/readiness/selectors";
@@ -58,13 +59,13 @@ type CategoryPillsProps = {
 export function PackageCategoryPills({ active, categories, packs, onSelect }: CategoryPillsProps) {
   const items = ["All", ...new Set(categories.filter(Boolean)), "My packs"];
   return (
-    <div className="lp-pack-cats">
+    <ChoiceGroup >
       {items.map((item) => (
-        <button type="button" className={active === item ? "active" : ""} key={item} onClick={() => onSelect(item)}>
+        <Choice type="button" aria-pressed={active === item} key={item} onClick={() => onSelect(item)}>
           {item === "My packs" ? `My packs (${packs.filter(isUserPack).length})` : item}
-        </button>
+        </Choice>
       ))}
-    </div>
+    </ChoiceGroup>
   );
 }
 
@@ -96,7 +97,7 @@ export function PackageGrid({
   onOpen,
 }: PackageGridProps) {
   return (
-    <div className="lp-pack-grid">
+    <div   className="lp-pack-grid">
       {(status === "loading" || searchStatus === "loading") && !packs.length
         ? Array.from({ length: 6 }, (_, index) => (
           <div className="lp-pack-result lp-pack-result-skeleton" key={index}><span /><span /><span /></div>
@@ -109,25 +110,25 @@ export function PackageGrid({
           <button type="button" className={`lp-pack-result${complete ? " complete" : ""}`} key={pack.slug} onClick={() => onOpen(pack.slug)}>
             <Ring score={Math.round(pack.completion)} size={54} />
             <span className="lp-pack-result-copy">
-              <strong><Icon size={15} style={{ color }} /> {pack.title}</strong>
+              <strong><Icon aria-hidden="true" focusable="false" size={15} style={{ color }} /> {pack.title}</strong>
               <span>{complete ? "Everything in place" : readinessText(pack)}</span>
               {isUserPack(pack) ? <small className="lp-pack-card-badge">custom</small> : null}
             </span>
-            {complete ? <Stamp /> : <ChevronRight size={18} color={T.muted} />}
+            {complete ? <Stamp /> : <ChevronRight aria-hidden="true" focusable="false" size="var(--icon-regular)" color={T.muted} />}
           </button>
         );
       })}
       {!packs.length && activeQuerySettled ? (
-        <Card style={{ gridColumn: "1 / -1", textAlign: "center", padding: hasSearchQuery ? "56px 34px 52px" : 34 }}>
-          <strong style={{ color: T.white, display: "block", fontSize: hasSearchQuery ? 16 : 14 }}>
+        <Card style={{ gridColumn: "1 / -1", textAlign: "center" }}>
+          <Text as="strong" size="md" weight="semibold" style={{ color: T.white, display: "block" }}>
             {hasSearchQuery ? `No pack covers "${debouncedQuery.trim()}" yet` : "No matching packages"}
-          </strong>
-          <div style={{ color: T.muted, fontSize: hasSearchQuery ? 15 : 13, marginTop: 8 }}>
+          </Text>
+          <Text as="div" size="md" tone="muted" style={{ color: T.muted, marginTop: "var(--space-s8)" }}>
             {hasSearchQuery ? "Describe it and Readiness drafts the checklist for you." : "Try another search or category."}
-          </div>
+          </Text>
           {hasSearchQuery && searchCanGenerate ? (
-            <CustomPackButton quotaReached={quotaReached} className="lp-pack-create-ai" disabled={generationStatus === "loading"} onClick={onGenerate}>
-              {generationStatus === "loading" ? <Loader2 size={17} className="lp-spin" /> : <Plus size={17} />}
+            <CustomPackButton quotaReached={quotaReached} variant="primary" disabled={generationStatus === "loading"} onClick={onGenerate}>
+              {generationStatus === "loading" ? <Loader2 aria-hidden="true" focusable="false" size={17} className="lp-spin" /> : <Plus aria-hidden="true" focusable="false" size={17} />}
               {generationStatus === "loading" ? "Drafting pack..." : "Create a custom pack"}
             </CustomPackButton>
           ) : null}

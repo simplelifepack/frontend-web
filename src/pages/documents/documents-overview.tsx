@@ -1,10 +1,11 @@
-import { Camera, ChevronDown, Search, UploadCloud } from "lucide-react";
+import { Text, Stack, SearchField, ChoiceGroup, Choice, Select, Button, Card } from "@/design-system";
+
+import { Camera, ChevronDown, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import Card from "@/components/Card";
 import SectionHead from "@/components/SectionHead";
-import { btnGhost, btnPrimary, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 import { useAppSelector } from "@/store/hooks";
 import { categories, openUpload } from "./document-utils";
@@ -92,17 +93,18 @@ export default function DocumentsOverview({
         sub={`${documents.length} records in your archive. Search, filter, and open any row for full context.`}
         action={
           <div className="lp-document-add-actions">
-            <button type="button" onClick={openUpload} style={btnPrimary}>
-              <UploadCloud size={16} /> Upload <ChevronDown size={15} />
-            </button>
-            <button type="button" onClick={openUpload} style={btnGhost}>
-              <Camera size={16} /> Scan
-            </button>
+            <Button variant="primary" type="button" onClick={openUpload} >
+              <UploadCloud aria-hidden="true" focusable="false" size="var(--icon-small)" /> Upload <ChevronDown aria-hidden="true" focusable="false" size={15} />
+            </Button>
+            <Button variant="secondary" type="button" onClick={openUpload} >
+              <Camera aria-hidden="true" focusable="false" size="var(--icon-small)" /> Scan
+            </Button>
           </div>
         }
       />
 
-      <div className="lp-doc-quick">
+      <Stack>
+      <ChoiceGroup >
         {(
           [
             ["all", "All"],
@@ -111,29 +113,20 @@ export default function DocumentsOverview({
             ["week", "Added this week"],
           ] as const
         ).map(([key, label]) => (
-          <button
+          <Choice
             key={key}
             type="button"
-            className={quick === key ? "active" : ""}
+            aria-pressed={quick === key}
             onClick={() => setQuick(key)}
           >
             {label} <b>{quickCounts[key]}</b>
-          </button>
+          </Choice>
         ))}
-      </div>
+      </ChoiceGroup>
 
       <div className="lp-doc-toolbar">
-        <label className="lp-doc-search">
-          <Search size={16} color={T.muted} />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search type, file, person, notes…"
-            aria-label="Search documents"
-          />
-        </label>
-        <select
+        <SearchField className="lp-doc-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search type, file, person, notes…" aria-label="Search documents" />
+        <Select
           aria-label="Category"
           value={category}
           onChange={(event) => setCategory(event.target.value)}
@@ -144,8 +137,8 @@ export default function DocumentsOverview({
               {item.name}
             </option>
           ))}
-        </select>
-        <select
+        </Select>
+        <Select
           aria-label="Person"
           value={person}
           onChange={(event) => setPerson(event.target.value)}
@@ -156,8 +149,8 @@ export default function DocumentsOverview({
               {name}
             </option>
           ))}
-        </select>
-        <select
+        </Select>
+        <Select
           aria-label="Source"
           value={source}
           onChange={(event) => setSource(event.target.value)}
@@ -171,8 +164,8 @@ export default function DocumentsOverview({
                 {sourceNames[value] ?? value}
               </option>
             ))}
-        </select>
-        <select
+        </Select>
+        <Select
           aria-label="Sort"
           value={sort}
           onChange={(event) => setSort(event.target.value as DocumentSort)}
@@ -181,29 +174,30 @@ export default function DocumentsOverview({
           <option value="oldest">Oldest first</option>
           <option value="name-asc">Name A–Z</option>
           <option value="name-desc">Name Z–A</option>
-        </select>
+        </Select>
       </div>
 
       {error ? (
-        <div style={{ color: T.coral, fontSize: 13, marginBottom: 14 }}>
+        <Text as="div" size="md" tone="danger" style={{ color: T.coral, marginBottom: "var(--space-s14)" }}>
           {error}
-        </div>
+        </Text>
       ) : null}
       {status === "loading" ? (
         <Card>
-          <div style={{ color: T.muted, fontSize: 13 }}>
+          <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
             Loading documents from backend...
-          </div>
+          </Text>
         </Card>
       ) : visibleDocuments.length ? (
         <DocumentRows documents={visibleDocuments} />
       ) : (
         <Card>
-          <div style={{ color: T.muted, fontSize: 13 }}>
+          <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
             No documents match the selected filters.
-          </div>
+          </Text>
         </Card>
       )}
+      </Stack>
     </div>
   );
 }

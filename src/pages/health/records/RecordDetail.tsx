@@ -1,6 +1,8 @@
+import { Button, Card, SearchField } from "@/design-system";
+
 import { useState } from "react";
-import { FileText, Search, X } from "lucide-react";
-import Card from "@/components/Card";
+import { FileText, X } from "lucide-react";
+
 import type { HealthRecordDetail, TrackedHealthMetric } from "@/lib/api.types";
 import {
   documentTypeLabels,
@@ -48,17 +50,17 @@ function RecordDetail({
           </p>
         </div>
         <div className="lp-health-record-detail-actions">
-          <button type="button" onClick={onViewOriginal}>
-            <FileText size={15} /> View original document
-          </button>
+          <Button size="sm" variant="secondary" type="button" onClick={onViewOriginal}>
+            <FileText aria-hidden="true" focusable="false" size={15} /> View original document
+          </Button>
           {onClose ? (
-            <button
+            <Button size="sm" iconOnly variant="tertiary"
               type="button"
               onClick={onClose}
               aria-label="Close report details"
             >
-              <X size={16} />
-            </button>
+              <X aria-hidden="true" focusable="false" size="var(--icon-small)" />
+            </Button>
           ) : null}
         </div>
       </div>
@@ -92,14 +94,10 @@ function RecordDetail({
         empty="No tracked measurements from this record yet."
       />
       <div className="lp-health-toolbar compact">
-        <label>
-          <Search size={15} />
-          <input
+        <SearchField aria-label="Search measurements"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search measurements..."
-          />
-        </label>
+            placeholder="Search measurements..." />
       </div>
       <MeasurementList
         title="All measurements"

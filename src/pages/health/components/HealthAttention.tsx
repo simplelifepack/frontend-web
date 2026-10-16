@@ -1,3 +1,4 @@
+import { Text } from "@/design-system";
 import { Users } from "lucide-react";
 import type { HealthOverview } from "@/lib/api.types";
 
@@ -10,12 +11,12 @@ function HealthAttention({
     (item) => item.status !== "completed",
   ).length;
   return (
-    <div className="lp-health-attention">
-      <Users size={16} />{" "}
+    <Text as="div" size="md" className="lp-health-attention">
+      <Users aria-hidden="true" focusable="false" size="var(--icon-small)" />{" "}
       {needsAttention
         ? `${needsAttention} ${needsAttention === 1 ? "thing" : "things"} need${needsAttention === 1 ? "s" : ""} attention`
         : "All caught up"}
-    </div>
+    </Text>
   );
 }
 

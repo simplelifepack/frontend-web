@@ -1,8 +1,9 @@
+import { Text, Button, Card } from "@/design-system";
+
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import Card from "@/components/Card";
-import { btnGhost, T } from "@/constants/theme";
+import { T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 // Gmail/Drive integrations are paused for now because their buttons are not exposed.
 // Restore this import when those entry points come back:
@@ -43,7 +44,7 @@ function hasDocumentDetails(document: DocumentRecord | undefined) {
 function DocumentsFallback() {
   return (
     <Card>
-      <div style={{ color: T.muted, fontSize: 13 }}>Loading view...</div>
+      <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>Loading view...</Text>
     </Card>
   );
 }
@@ -112,9 +113,9 @@ export default function DocumentsPage() {
     if (status === "idle" || status === "loading") {
       return (
         <Card>
-          <div style={{ color: T.muted, fontSize: 13 }}>
+          <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
             Loading document...
-          </div>
+          </Text>
         </Card>
       );
     }
@@ -122,9 +123,9 @@ export default function DocumentsPage() {
     if (!hasDocumentDetails(selectedDocument) && detailStatus !== "failed") {
       return (
         <Card>
-          <div style={{ color: T.muted, fontSize: 13 }}>
+          <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
             Loading document...
-          </div>
+          </Text>
         </Card>
       );
     }
@@ -135,16 +136,16 @@ export default function DocumentsPage() {
       </Suspense>
     ) : (
       <Card>
-        <div style={{ color: T.white, fontWeight: 800 }}>
+        <Text as="div" size="md" weight="semibold" style={{ color: T.white }}>
           Document not found
-        </div>
-        <button
+        </Text>
+        <Button variant="secondary"
           type="button"
           onClick={() => navigate("/documents")}
-          style={{ ...btnGhost, marginTop: 12 }}
+          style={{ marginTop: "var(--space-s12)" }}
         >
           Back to Documents
-        </button>
+        </Button>
       </Card>
     );
   }

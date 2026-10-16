@@ -13,7 +13,7 @@ function PackagesVisual() {
 
   return (
     <div className={wrap}>
-      <div className="font-mono text-[11px] tracking-widest text-white/40 uppercase mb-4">
+      <div className="text-[11px] tracking-widest text-white/40 uppercase mb-4">
         Ready package . 82%
       </div>
       {rows.map(([label, ok], index) => (
@@ -25,7 +25,7 @@ function PackagesVisual() {
             className="grid place-items-center rounded-md"
             style={{ width: 20, height: 20, background: ok ? "#1e3a2f" : "#3a2a1e" }}
           >
-            {ok ? <Check size={12} color="#2FB68A" /> : <span className="text-seal text-[12px]">!</span>}
+            {ok ? <Check aria-hidden="true" focusable="false" size={12} color="#2FB68A" /> : <span className="text-seal text-[12px]">!</span>}
           </span>
           <span className="text-white/80 text-[14px]">{label}</span>
         </div>
@@ -43,7 +43,7 @@ function HealthVisual() {
 
   return (
     <div className={wrap}>
-      <div className="font-mono text-[11px] tracking-widest text-white/40 uppercase mb-4">
+      <div className="text-[11px] tracking-widest text-white/40 uppercase mb-4">
         Dad . records timeline
       </div>
       {rows.map(([name, date], index) => (
@@ -53,7 +53,7 @@ function HealthVisual() {
         >
           <span className="w-2 h-2 rounded-full" style={{ background: "#E0508F" }} />
           <span className="text-white/80 text-[14px] flex-1">{name}</span>
-          <span className="font-mono text-white/40 text-[12px]">{date}</span>
+          <span className="text-white/40 text-[12px]">{date}</span>
         </div>
       ))}
       <div className="mt-3 flex items-end gap-1 h-12">
@@ -78,7 +78,7 @@ function ReadyVisual() {
 
   return (
     <div className={wrap}>
-      <div className="font-mono text-[11px] tracking-widest text-white/40 uppercase mb-4">
+      <div className="text-[11px] tracking-widest text-white/40 uppercase mb-4">
         Expiring soon
       </div>
       {rows.map(([name, date, color], index) => (
@@ -87,7 +87,7 @@ function ReadyVisual() {
           className="flex items-center justify-between py-2.5 border-t border-white/5 first:border-0"
         >
           <span className="text-white/80 text-[14px]">{name}</span>
-          <span className="font-mono text-[12px]" style={{ color }}>
+          <span className="text-[12px]" style={{ color }}>
             {date}
           </span>
         </div>
@@ -99,14 +99,14 @@ function ReadyVisual() {
 function DiscoverVisual() {
   return (
     <div className={wrap}>
-      <div className="font-mono text-[11px] tracking-widest text-white/40 uppercase mb-4">
+      <div className="text-[11px] tracking-widest text-white/40 uppercase mb-4">
         Document graph
       </div>
       <div className="grid grid-cols-3 gap-2.5">
         {["Identity", "Finance", "Insurance", "Property", "Medical", "Employment"].map((category, index) => (
           <div key={category} className="rounded-xl bg-white/[0.05] border border-white/5 p-3">
             <div className="text-white/80 text-[12.5px] font-semibold">{category}</div>
-            <div className="font-mono text-[11px] text-seal mt-1">{[4, 4, 3, 3, 2, 4][index]} docs</div>
+            <div className="text-[11px] text-seal mt-1">{[4, 4, 3, 3, 2, 4][index]} docs</div>
           </div>
         ))}
       </div>

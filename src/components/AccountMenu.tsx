@@ -1,3 +1,4 @@
+import { Text } from "@/design-system";
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
@@ -53,19 +54,72 @@ export default function AccountMenu({ user }: { user: AuthUser | null }) {
     navigate("/", { replace: true });
   };
 
+  const menuItems = () =>
+    Array.from(
+      rootRef.current?.querySelectorAll<HTMLButtonElement>(
+        '[role="menuitem"]',
+      ) ?? [],
+    );
+  const focusItem = (index: number) =>
+    requestAnimationFrame(() => {
+      const items = menuItems();
+      items[(index + items.length) % items.length]?.focus();
+    });
   return (
-    <div className="lp-account-menu" ref={rootRef}>
+    <div
+      className="lp-account-menu"
+      ref={rootRef}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          setOpen(false);
+          rootRef.current
+            ?.querySelector<HTMLButtonElement>(".lp-user-menu")
+            ?.focus();
+        }
+        if (!open) return;
+        const items = menuItems();
+        const current = items.indexOf(
+          document.activeElement as HTMLButtonElement,
+        );
+        if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+          event.preventDefault();
+          focusItem(
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? items.length - 1
+                : current + (event.key === "ArrowDown" ? 1 : -1),
+          );
+        }
+        if (event.key === "Tab") {
+          setOpen(false);
+          rootRef.current?.querySelector<HTMLButtonElement>(".lp-user-menu")?.focus();
+        }
+      }}
+    >
       <button
         type="button"
         className="lp-user-menu"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          setOpen((value) => !value);
+          if (!open) focusItem(0);
+        }}
+        aria-haspopup="menu"
+        onKeyDown={(event) => {
+          if (!open && ["ArrowDown", "ArrowUp"].includes(event.key)) {
+            event.preventDefault();
+            setOpen(true);
+            focusItem(event.key === "ArrowUp" ? -1 : 0);
+          }
+        }}
         aria-label="Open account menu"
         aria-expanded={open}
         aria-controls="lp-account-dropdown"
       >
         <b>{initial}</b>
         <span>{name}</span>
-        <ChevronDown size={15} />
+        <ChevronDown aria-hidden="true" focusable="false" size={15} />
       </button>
       {open ? (
         <div
@@ -75,26 +129,39 @@ export default function AccountMenu({ user }: { user: AuthUser | null }) {
           aria-label="Account"
         >
           <div className="lp-account-identity">
-            <b>{initial}</b>
+            <Text as="b" size="md" weight="semibold">
+              {initial}
+            </Text>
             <span>
-              <strong>{name}</strong>
-              <small>{user ? "Signed in" : "Not signed in"}</small>
+              <Text as="strong" size="md" weight="semibold">
+                {name}
+              </Text>
+              <Text as="small" size="sm">
+                {user ? "Signed in" : "Not signed in"}
+              </Text>
             </span>
           </div>
           <div className="lp-account-section">
-            <small>INSTANCE</small>
+            <Text as="small" size="sm">
+              INSTANCE
+            </Text>
             <button
               type="button"
               className="lp-account-instance"
               role="menuitem"
               onClick={() => go("/documents")}
             >
-              <FolderOpen size={19} />
+              <FolderOpen aria-hidden="true" focusable="false" size={19} />
               <span>
                 <strong>My archive</strong>
                 <small>Your real documents</small>
               </span>
-              <Check size={16} className="lp-account-selected" />
+              <Check
+                aria-hidden="true"
+                focusable="false"
+                size="var(--icon-small)"
+                className="lp-account-selected"
+              />
             </button>
           </div>
           <div className="lp-account-actions">
@@ -103,10 +170,20 @@ export default function AccountMenu({ user }: { user: AuthUser | null }) {
               role="menuitem"
               onClick={() => go("/settings")}
             >
-              <Settings size={18} /> Profile and settings
+              <Settings
+                aria-hidden="true"
+                focusable="false"
+                size="var(--icon-regular)"
+              />{" "}
+              Profile and settings
             </button>
             <button type="button" role="menuitem" onClick={() => go("/family")}>
-              <Users size={18} /> Family
+              <Users
+                aria-hidden="true"
+                focusable="false"
+                size="var(--icon-regular)"
+              />{" "}
+              Family
             </button>
             <button
               type="button"
@@ -114,7 +191,12 @@ export default function AccountMenu({ user }: { user: AuthUser | null }) {
               className="lp-account-signout"
               onClick={() => void signOut()}
             >
-              <LogOut size={18} /> Sign out
+              <LogOut
+                aria-hidden="true"
+                focusable="false"
+                size="var(--icon-regular)"
+              />{" "}
+              Sign out
             </button>
           </div>
         </div>

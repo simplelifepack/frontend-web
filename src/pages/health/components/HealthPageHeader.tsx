@@ -1,3 +1,5 @@
+import { Text, Heading, ChoiceGroup, Choice, Button } from "@/design-system";
+
 import {
   CalendarClock,
   FileText,
@@ -9,7 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import SectionHead from "@/components/SectionHead";
-import { btnGhost } from "@/constants/theme";
+
 import type { HealthMember, HealthOverview } from "@/lib/api.types";
 import type { HealthDialogKind } from "../HealthDialog";
 import { initials } from "../healthUtils";
@@ -67,17 +69,17 @@ export default function HealthPageHeader({
           </button>
         ))}
         <button type="button" className="add" onClick={onAddMember}>
-          <Users size={16} />
+          <Users aria-hidden="true" focusable="false" size="var(--icon-small)" />
           <b>Add</b>
         </button>
       </div>
 
       {selectedMember ? (
         <div className="lp-health-profile">
-          <span>{initials(selectedMember.name)}</span>
+          <Text size="md">{initials(selectedMember.name)}</Text>
           <div>
-            <h2>{selectedMember.name}</h2>
-            <p>
+            <Heading level={2} size="sm">{selectedMember.name}</Heading>
+            <Text as="p" size="sm">
               {[
                 selectedMember.relation,
                 selectedMember.bloodGroup &&
@@ -87,72 +89,68 @@ export default function HealthPageHeader({
               ]
                 .filter(Boolean)
                 .join(" · ")}
-            </p>
+            </Text>
           </div>
           <div className="lp-health-profile-actions">
-            <button
+            <Button variant="primary"
               type="button"
-              className="lp-health-action lp-health-action-primary"
-              style={btnGhost}
+
               onClick={onPrepareVisit}
             >
-              <FileText size={15} /> Prepare for a visit
-            </button>
-            <button
+              <FileText aria-hidden="true" focusable="false" size={15} /> Prepare for a visit
+            </Button>
+            <Button variant="secondary"
               type="button"
-              className="lp-health-action"
-              style={btnGhost}
+
               onClick={() => onDialog("reading")}
             >
-              <Plus size={15} /> Log reading
-            </button>
-            <button
+              <Plus aria-hidden="true" focusable="false" size={15} /> Log reading
+            </Button>
+            <Button variant="secondary"
               type="button"
-              className="lp-health-action"
-              style={btnGhost}
+
               onClick={() => onDialog("emergency")}
             >
-              <ShieldAlert size={15} /> In an emergency
-            </button>
-            <button
+              <ShieldAlert aria-hidden="true" focusable="false" size={15} /> In an emergency
+            </Button>
+            <Button variant="secondary"
               type="button"
-              className="lp-health-action"
-              style={btnGhost}
+
               onClick={() => onDialog("insurance")}
             >
-              <ShieldCheck size={15} /> Insurance card
-            </button>
+              <ShieldCheck aria-hidden="true" focusable="false" size={15} /> Insurance card
+            </Button>
           </div>
         </div>
       ) : null}
 
-      <div className="lp-health-tabs">
+      <ChoiceGroup >
         {(
           ["Overview", "Timeline", "Medications", "Records"] as HealthTab[]
         ).map((tab) => (
-          <button
-            className={tab === activeTab ? "active" : ""}
+          <Choice
+            aria-pressed={tab === activeTab}
             key={tab}
             type="button"
             onClick={() => onTab(tab)}
           >
             {tab === "Overview" ? (
-              <HeartPulse size={16} />
+              <HeartPulse aria-hidden="true" focusable="false" size="var(--icon-small)" />
             ) : tab === "Timeline" ? (
-              <CalendarClock size={16} />
+              <CalendarClock aria-hidden="true" focusable="false" size="var(--icon-small)" />
             ) : tab === "Medications" ? (
-              <Stethoscope size={16} />
+              <Stethoscope aria-hidden="true" focusable="false" size="var(--icon-small)" />
             ) : (
-              <FileText size={16} />
+              <FileText aria-hidden="true" focusable="false" size="var(--icon-small)" />
             )}
             {tab}
             {tab === "Medications" && medicationCount ? (
               <span>{medicationCount}</span>
             ) : null}
             {tab === "Records" && recordCount ? <span>{recordCount}</span> : null}
-          </button>
+          </Choice>
         ))}
-      </div>
+      </ChoiceGroup>
     </>
   );
 }

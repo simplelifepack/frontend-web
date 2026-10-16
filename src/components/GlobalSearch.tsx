@@ -1,5 +1,7 @@
+import { Text, SearchField, Button } from "@/design-system";
+
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Search, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { T } from "@/constants/theme";
@@ -75,18 +77,12 @@ export default function GlobalSearch() {
 
   return (
     <div className="lp-global-search-wrap">
-      <label className="lp-global-search">
-        <Search size={15} color={T.muted} />
-        <input
-          value={query}
-          onChange={(event) => {
+      <SearchField className="lp-global-search" value={query} onChange={(event) => {
             setQuery(event.target.value);
             setOpen(true);
-          }}
-          onFocus={() => {
+          }} onFocus={() => {
             if (query.trim()) setOpen(true);
-          }}
-          onKeyDown={(event) => {
+          }} onKeyDown={(event) => {
             if (event.key === "ArrowDown") {
               event.preventDefault();
               setOpen(true);
@@ -102,18 +98,7 @@ export default function GlobalSearch() {
               event.preventDefault();
               close();
             }
-          }}
-          placeholder="Search..."
-          aria-label="Search Readiness"
-          aria-expanded={open}
-          aria-controls="readiness-global-search-results"
-        />
-        {query ? (
-          <button type="button" onClick={clear} aria-label="Clear search">
-            <X size={15} />
-          </button>
-        ) : null}
-      </label>
+          }} placeholder="Search..." aria-label="Search Readiness" aria-expanded={open} aria-controls="readiness-global-search-results" />
       {open && query.trim() ? (
         <GlobalSearchResults
           activeIndex={activeIndex}
@@ -141,13 +126,13 @@ function GlobalSearchResults(props: {
   let resultIndex = 0;
   const hasResults = props.flatResults.length > 0;
   return (
-    <div id="readiness-global-search-results" className="lp-global-search-results" role="listbox">
-      {props.status === "loading" ? <div className="lp-global-search-state">Searching...</div> : null}
-      {props.status === "failed" ? <div className="lp-global-search-state error">{props.error || "Search failed."}</div> : null}
-      {props.status === "succeeded" && !hasResults ? <div className="lp-global-search-state">No results found.</div> : null}
+    <div   id="readiness-global-search-results" className="lp-global-search-results" role="listbox">
+      {props.status === "loading" ? <Text as="div" size="md" className="lp-global-search-state">Searching...</Text> : null}
+      {props.status === "failed" ? <Text as="div" size="md" className="lp-global-search-state error">{props.error || "Search failed."}</Text> : null}
+      {props.status === "succeeded" && !hasResults ? <Text as="div" size="md" className="lp-global-search-state">No results found.</Text> : null}
       {props.groups.map((group) => (
         <div className="lp-global-search-group" key={group.section}>
-          <div className="lp-global-search-heading">{group.label}</div>
+          <Text as="div" size="sm" weight="semibold" className="lp-global-search-heading">{group.label}</Text>
           {group.results.map((result) => {
             const index = resultIndex;
             resultIndex += 1;

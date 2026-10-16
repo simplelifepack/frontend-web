@@ -1,3 +1,5 @@
+import { Text, SearchField, Button, Stack } from "@/design-system";
+
 import CustomPackButton from "@/components/CustomPackButton";
 import type { DerivedPackSummary } from "@/readiness/selectors";
 import { Loader2, Plus, RefreshCw, Search, Sparkles } from "lucide-react";
@@ -31,38 +33,44 @@ export default function PackageSearchPanel({
 }: PackageSearchPanelProps) {
   const hasQuery = Boolean(query.trim());
   return (
-    <>
-      <CustomPackButton
-        quotaReached={false}
-        className="lp-pack-create-top"
-        onClick={onCreateCustom}
-      >
-        <Plus size={16} />
-        Create a custom pack
-      </CustomPackButton>
+    <Stack>
+      <div>
+        <CustomPackButton
+          quotaReached={false}
+          variant="primary"
+          onClick={onCreateCustom}
+        >
+          <Plus aria-hidden="true" focusable="false" size="var(--icon-small)" />
+          Create a custom pack
+        </CustomPackButton>
+      </div>
 
-      <label className="lp-pack-search">
-        <Search size={17} />
-        <input
-          value={query}
-          onChange={(event) => onQueryChange(event.target.value.slice(0, MAX_PACKAGE_QUERY_LENGTH))}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter") return;
-            event.preventDefault();
-            if (suggestions[0]) onOpen(suggestions[0].slug);
-            else onGenerate();
-          }}
-          placeholder="Search packages or describe what you need"
-          aria-label="Search packages"
-          maxLength={MAX_PACKAGE_QUERY_LENGTH}
-        />
-      </label>
+      <SearchField
+        className="lp-pack-search"
+        value={query}
+        onChange={(event) =>
+          onQueryChange(event.target.value.slice(0, MAX_PACKAGE_QUERY_LENGTH))
+        }
+        onKeyDown={(event) => {
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          if (suggestions[0]) onOpen(suggestions[0].slug);
+          else onGenerate();
+        }}
+        placeholder="Search packages or describe what you need"
+        aria-label="Search packages"
+        maxLength={MAX_PACKAGE_QUERY_LENGTH}
+      />
 
       {hasQuery && suggestions.length ? (
         <div className="lp-pack-suggestions">
           {suggestions.map((pack) => (
-            <button type="button" key={pack.slug} onClick={() => onOpen(pack.slug)}>
-              <Search size={13} />
+            <button
+              type="button"
+              key={pack.slug}
+              onClick={() => onOpen(pack.slug)}
+            >
+              <Search aria-hidden="true" focusable="false" size={13} />
               <span>{pack.title}</span>
               <strong>match</strong>
             </button>
@@ -71,26 +79,51 @@ export default function PackageSearchPanel({
       ) : null}
 
       {searchStatus === "loading" && hasQuery ? (
-        <div className="lp-pack-search-state"><Loader2 size={14} className="lp-spin" />Searching packages...</div>
+        <Text as="div" size="md" className="lp-pack-search-state">
+          <Loader2
+            aria-hidden="true"
+            focusable="false"
+            size={14}
+            className="lp-spin"
+          />
+          Searching packages...
+        </Text>
       ) : null}
 
       {generationStatus === "loading" ? (
-        <div className="lp-pack-generation-state">
-          <Loader2 size={15} className="lp-spin" />
-          {streamPreview ? `Verifying ${streamPreview}...` : "Building your package..."}
-        </div>
+        <Text as="div" size="md" className="lp-pack-generation-state">
+          <Loader2
+            aria-hidden="true"
+            focusable="false"
+            size={15}
+            className="lp-spin"
+          />
+          {streamPreview
+            ? `Verifying ${streamPreview}...`
+            : "Building your package..."}
+        </Text>
       ) : null}
 
       {generationStatus === "succeeded" ? (
-        <div className="lp-pack-generation-state"><Sparkles size={15} />Package created and saved.</div>
+        <Text as="div" size="md" className="lp-pack-generation-state">
+          <Sparkles aria-hidden="true" focusable="false" size={15} />
+          Package created and saved.
+        </Text>
       ) : null}
 
       {generationStatus === "failed" && searchError ? (
         <div className="lp-pack-generation-state error">
           {searchError}
-          <button type="button" onClick={onGenerate}><RefreshCw size={13} /> Retry</button>
+          <Button
+            size="sm"
+            variant="tertiary"
+            type="button"
+            onClick={onGenerate}
+          >
+            <RefreshCw aria-hidden="true" focusable="false" size={13} /> Retry
+          </Button>
         </div>
       ) : null}
-    </>
+    </Stack>
   );
 }

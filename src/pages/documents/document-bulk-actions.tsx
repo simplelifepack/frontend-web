@@ -1,7 +1,8 @@
+import { Text, Button } from "@/design-system";
+
 import { useState } from "react";
 import { Download, Trash2 } from "lucide-react";
 
-import { btnGhost, btnPrimary } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 import { useAppDispatch } from "@/store/hooks";
 import { deleteDocuments } from "@/store/slices/documentsSlice";
@@ -31,13 +32,13 @@ export default function DocumentBulkActions({ documents, onDeleted }: Props) {
   };
   return (
     <div className="lp-document-bulk-actions">
-      <span>{count} selected</span>
-      <button type="button" style={btnPrimary} disabled={Boolean(busy)} onClick={() => void runDownload()}>
-        <Download size={15} /> {busy === "download" ? "Downloading..." : "Download"}
-      </button>
-      <button type="button" style={btnGhost} disabled={Boolean(busy)} onClick={() => void runDelete()}>
-        <Trash2 size={15} /> {busy === "delete" ? "Deleting..." : "Delete"}
-      </button>
+      <Text size="sm" weight="semibold">{count} selected</Text>
+      <Button loading={Boolean(busy)} variant="primary" type="button" disabled={Boolean(busy)} onClick={() => void runDownload()}>
+        <Download aria-hidden="true" focusable="false" size={15} /> {busy === "download" ? "Downloading..." : "Download"}
+      </Button>
+      <Button tone="danger" loading={Boolean(busy)} variant="secondary" type="button" disabled={Boolean(busy)} onClick={() => void runDelete()}>
+        <Trash2 aria-hidden="true" focusable="false" size={15} /> {busy === "delete" ? "Deleting..." : "Delete"}
+      </Button>
     </div>
   );
 }

@@ -39,7 +39,7 @@ describe("memory-only browser authentication", () => {
 
   it("treats an expired or revoked refresh session as logged out", async () => {
     const { default: reducer, restoreSession } = await import("./authSlice");
-    const state = reducer(undefined, restoreSession.rejected(new Error("401"), "request"));
+    const state = reducer(undefined, restoreSession.rejected(null, "request", undefined, "anonymous"));
     expect(state.sessionStatus).toBe("anonymous"); expect(state.token).toBeNull();
   });
 
@@ -51,14 +51,13 @@ describe("memory-only browser authentication", () => {
   });
 });
 
-
 it("only restores once when startup dispatches twice", async () => {
   const { configureStore } = await import("@reduxjs/toolkit");
   const { default: reducer, restoreSession } = await import("./authSlice");
   const { api } = await import("@/lib/api");
   const refresh = vi.mocked(api.auth.refresh);
   refresh.mockClear();
-  refresh.mockRejectedValue(new Error("Session expired."));
+  refresh.mockRejectedValue(Object.assign(new Error("Session expired."), { status: 401 }));
   const store = configureStore({ reducer: { auth: reducer } });
   await Promise.all([store.dispatch(restoreSession()), store.dispatch(restoreSession())]);
   await store.dispatch(restoreSession());

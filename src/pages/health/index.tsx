@@ -1,7 +1,8 @@
+import { Text, Card } from "@/design-system";
+
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import Card from "@/components/Card";
 import { api } from "@/lib/api";
 import { preferencesApi } from "@/lib/preferences-api";
 import HealthPageHeader from "./components/HealthPageHeader";
@@ -103,7 +104,7 @@ export default function HealthPage() {
     }
   }, [location.search, members, openHealthRecord, setActiveTab, setSelectedMemberId]);
   return (
-    <div className="lp-route lp-health-route">
+    <div   className="lp-route lp-health-route">
       <HealthPageHeader
         members={members}
         selectedMemberId={selectedMemberId}
@@ -121,7 +122,7 @@ export default function HealthPage() {
 
       {message && activeTab !== "Overview" ? (
         <div className="lp-health-insight">
-          <span>{message}</span>
+          <Text size="md">{message}</Text>
         </div>
       ) : null}
       {loading ? <Card>Loading health records...</Card> : null}

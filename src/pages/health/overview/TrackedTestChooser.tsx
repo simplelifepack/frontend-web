@@ -1,10 +1,12 @@
+import { Heading, Text, ModalBackdrop, ModalPanel, Button } from "@/design-system";
+
 import { useMemo, useState } from "react";
 import { Check, X } from "lucide-react";
 import type {
   HealthAvailableMetric,
   TrackedHealthMetric,
 } from "@/lib/api.types";
-import { btnGhost, btnPrimary } from "@/constants/theme";
+
 import { metricIdentity } from "../healthUtils";
 
 function TrackedTestChooser({
@@ -44,22 +46,22 @@ function TrackedTestChooser({
     }
   };
   return (
-    <div className="lp-modal-backdrop" style={{ zIndex: 90 }}>
-      <div
-        className="lp-modal-panel lp-health-add-dialog lp-health-measurement-dialog"
+    <ModalBackdrop  style={{ zIndex: "var(--layer-nestedDialog)" }}>
+      <ModalPanel onDismiss={onClose}
+        className="lp-health-add-dialog lp-health-measurement-dialog"
         role="dialog"
         aria-modal="true"
       >
         <header className="lp-health-dialog-head">
           <div>
-            <h2>Choose tests</h2>
-            <p>{selected.size} of {available.length} selected</p>
+            <Heading level={2} size="md">Choose tests</Heading>
+            <Text as="p" size="md">{selected.size} of {available.length} selected</Text>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
-        <div className="lp-health-measurement-picker">
+        <div   className="lp-health-measurement-picker">
           {available.map((metric) => {
             const isSelected = selected.has(metricIdentity(metric));
             return (
@@ -70,7 +72,7 @@ function TrackedTestChooser({
                 onClick={() => toggle(metric)}
               >
                 <span>
-                  {isSelected ? <Check size={14} /> : <span className="lp-health-open-circle" />}
+                  {isSelected ? <Check aria-hidden="true" focusable="false" size={14} /> : <span className="lp-health-open-circle" />}
                   <span>
                     <b>{metric.displayName}</b>
                     <small>{metric.historicalReadingCount} readings</small>
@@ -84,17 +86,17 @@ function TrackedTestChooser({
             );
           })}
         </div>
-        {error ? <div className="lp-health-form-error">{error}</div> : null}
+        {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}
         <footer>
-          <button type="button" style={btnGhost} disabled={saving} onClick={onClose}>
+          <Button variant="secondary" type="button" disabled={saving} onClick={onClose}>
             Cancel
-          </button>
-          <button type="button" style={btnPrimary} disabled={saving} onClick={save}>
+          </Button>
+          <Button loading={saving} variant="primary" type="button" disabled={saving} onClick={save}>
             {saving ? "Saving..." : "Apply"}
-          </button>
+          </Button>
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 

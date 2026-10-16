@@ -1,6 +1,7 @@
+import { Heading, Text, ModalBackdrop, ModalPanel, Button } from "@/design-system";
+
 import { useState } from "react";
 import { X } from "lucide-react";
-import { btnGhost } from "@/constants/theme";
 
 function DeleteRecordDialog({
   onClose,
@@ -11,39 +12,37 @@ function DeleteRecordDialog({
 }) {
   const [deleting, setDeleting] = useState(false);
   return (
-    <div
-      className="lp-modal-backdrop"
-      style={{ zIndex: 90 }}
+    <ModalBackdrop
+
+      style={{ zIndex: "var(--layer-nestedDialog)" }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div
-        className="lp-modal-panel lp-health-add-dialog"
+      <ModalPanel onDismiss={onClose}
+        className="lp-health-add-dialog"
         role="dialog"
         aria-modal="true"
       >
         <header className="lp-health-dialog-head">
-          <h2>Delete health record?</h2>
-          <button type="button" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
+          <Heading level={2} size="md">Delete health record?</Heading>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
-        <p>
+        <Text as="p" size="md">
           This will remove this record and the health data extracted from it.
-        </p>
+        </Text>
         <footer>
-          <button
+          <Button variant="secondary"
             type="button"
-            style={btnGhost}
             disabled={deleting}
             onClick={onClose}
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button tone="danger" variant="primary"
             type="button"
-            className="lp-health-danger-button"
             disabled={deleting}
             onClick={async () => {
               setDeleting(true);
@@ -51,10 +50,10 @@ function DeleteRecordDialog({
             }}
           >
             {deleting ? "Deleting..." : "Delete record"}
-          </button>
+          </Button>
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 

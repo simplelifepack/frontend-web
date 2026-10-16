@@ -1,6 +1,8 @@
+import { Heading, Text, ModalBackdrop, ModalPanel, Select, Button } from "@/design-system";
+
 import { useEffect, useRef, useState, type DragEvent } from "react";
 import { FileText, Upload, X } from "lucide-react";
-import { btnGhost, btnPrimary } from "@/constants/theme";
+
 import { isSupportedHealthFile } from "../healthUtils";
 import { healthDocumentTypes, type HealthDocumentType } from "../types/health";
 import { documentTypeLabels } from "../healthUtils";
@@ -81,23 +83,23 @@ function AddRecordDialog({
   };
 
   return (
-    <div
-      className="lp-modal-backdrop"
-      style={{ zIndex: 80 }}
+    <ModalBackdrop
+
+      style={{ zIndex: "var(--layer-drawer)" }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div
-        className="lp-modal-panel lp-health-add-dialog"
+      <ModalPanel onDismiss={onClose}
+        className="lp-health-add-dialog"
         role="dialog"
         aria-modal="true"
       >
         <header className="lp-health-dialog-head">
-          <h2>Add health record</h2>
-          <button type="button" onClick={onClose} aria-label="Close">
-            <X size={18} />
-          </button>
+          <Heading level={2} size="md">Add health record</Heading>
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+            <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
+          </Button>
         </header>
         <input
           ref={inputRef}
@@ -135,17 +137,17 @@ function AddRecordDialog({
               <img src={previewUrl} alt="" />
             ) : (
               <div className="lp-health-pdf-icon">
-                <FileText size={28} />
+                <FileText aria-hidden="true" focusable="false" size={28} />
               </div>
             )}
             <span>
-              <b>{file.name}</b>
-              <small>{file.type === "application/pdf" ? "PDF" : "Image"}</small>
+              <Text as="b" size="md" weight="semibold">{file.name}</Text>
+              <Text as="small" size="sm">{file.type === "application/pdf" ? "PDF" : "Image"}</Text>
             </span>
-            <button type="button" onClick={() => inputRef.current?.click()}>
+            <Button size="sm" variant="tertiary" type="button" onClick={() => inputRef.current?.click()}>
               Change
-            </button>
-            <button
+            </Button>
+            <Button size="sm" iconOnly variant="tertiary"
               type="button"
               aria-label="Remove selected file"
               onClick={() => {
@@ -155,13 +157,13 @@ function AddRecordDialog({
               }}
             >
               ×
-            </button>
+            </Button>
           </div>
         )}
         {!aiProcessingEnabled ? (
-          <label className="lp-health-document-type">
+          <Text as="label" size="sm" weight="semibold" className="lp-health-document-type">
             <span>Document type *</span>
-            <select
+            <Select
               value={type}
               onChange={(event) =>
                 setType(event.target.value as HealthDocumentType)
@@ -172,25 +174,24 @@ function AddRecordDialog({
                   {documentTypeLabels[documentType] ?? documentType}
                 </option>
               ))}
-            </select>
-          </label>
+            </Select>
+          </Text>
         ) : null}
-        {error ? <div className="lp-health-form-error">{error}</div> : null}
+        {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}
         <footer>
-          <button type="button" style={btnGhost} onClick={onClose}>
+          <Button variant="secondary" type="button" onClick={onClose}>
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button loading={processing} variant="primary"
             type="button"
-            style={btnPrimary}
             disabled={!file || (!aiProcessingEnabled && !type) || processing}
             onClick={process}
           >
-            <Upload size={15} /> {processing ? "Processing..." : "Process"}
-          </button>
+            <Upload aria-hidden="true" focusable="false" size={15} /> {processing ? "Processing..." : "Process"}
+          </Button>
         </footer>
-      </div>
-    </div>
+      </ModalPanel>
+    </ModalBackdrop>
   );
 }
 
