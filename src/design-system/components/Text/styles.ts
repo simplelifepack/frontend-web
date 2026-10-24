@@ -9,6 +9,8 @@ export const StyledText = styled.span<{
   @layer components {
     & {
       margin: 0;
+      min-width: 0;
+      overflow-wrap: anywhere;
       font-style: normal;
       font-family: ${({ theme }) => theme.typography.family};
       font-size: ${({ theme, $size }) => theme.typography.text[$size]};
@@ -20,6 +22,7 @@ export const StyledText = styled.span<{
           muted: theme.colors.muted,
           danger: theme.colors.coral,
           success: theme.colors.mint,
+          heading: theme.colors.heading,
         })[$tone]};
       & strong,
       & b {

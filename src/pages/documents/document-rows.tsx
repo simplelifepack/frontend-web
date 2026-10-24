@@ -1,9 +1,18 @@
-import { Text, Card } from "@/design-system";
+import {
+  Text,
+  Card,
+  DataListHeader,
+  DataListRow,
+  Checkbox,
+  Row,
+  Stack,
+  IconBadge,
+  Pill,
+} from "@/design-system";
 
 import { useState } from "react";
-import { Check, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
-import { T } from "@/constants/theme";
 import { daysUntil } from "@/data/demoData";
 import type { DocumentRecord } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -36,9 +45,7 @@ export default function DocumentRows({
   );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openDocument, setOpenDocument] = useState<DocumentRecord | null>(null);
-  const columns = showCategory
-    ? "26px minmax(260px,2fr) minmax(120px,.85fr) minmax(110px,.72fr) minmax(100px,.72fr) 88px 88px 20px"
-    : "26px minmax(280px,2fr) minmax(120px,.9fr) minmax(100px,.75fr) 88px 88px 20px";
+
   const allSelected =
     documents.length > 0 && selected.size === documents.length;
   const selectedDocuments = documents.filter((doc) => selected.has(doc.id));
@@ -56,39 +63,43 @@ export default function DocumentRows({
 
   return (
     <>
-      <DocumentBulkActions documents={selectedDocuments} onDeleted={() => setSelected(new Set())} />
-      <Card flush
-        className="lp-document-table"
-        style={{ overflowX: "auto" }}
-      >
-        <div
-          className="lp-document-head"
-          style={{
-            display: "grid",
-            gridTemplateColumns: columns,
-            minWidth: showCategory ? 1040 : 820,
-          }}
-        >
-          <button
-            type="button"
-            className={`lp-document-check${allSelected ? " is-checked" : ""}`}
+      <DocumentBulkActions
+        documents={selectedDocuments}
+        onDeleted={() => setSelected(new Set())}
+      />
+      <Card flush>
+        <DataListHeader $columns={showCategory ? 8 : 7}>
+          <Checkbox
             aria-label={
               allSelected ? "Deselect all documents" : "Select all documents"
             }
-            onClick={toggleAll}
-          >
-            {allSelected ? <Check aria-hidden="true" focusable="false" size={11} strokeWidth={3} /> : null}
-          </button>
-          <Text as="div" size="md">Document</Text>
-          <Text as="div" size="md">Person</Text>
-          {showCategory ? <Text as="div" size="md">Category</Text> : null}
-          <Text as="div" size="md">Source</Text>
-          <Text as="div" size="md">Added</Text>
-          <Text as="div" size="md">Expiry</Text>
+            checked={allSelected}
+            onChange={toggleAll}
+          />
+          <Text as="div" size="md">
+            Document
+          </Text>
+          <Text as="div" size="md">
+            Person
+          </Text>
+          {showCategory ? (
+            <Text as="div" size="md">
+              Category
+            </Text>
+          ) : null}
+          <Text as="div" size="md">
+            Source
+          </Text>
+          <Text as="div" size="md">
+            Added
+          </Text>
+          <Text as="div" size="md">
+            Expiry
+          </Text>
           <div />
-        </div>
+        </DataListHeader>
 
-        {documents.map((doc, index) => {
+        {documents.map((doc) => {
           const category = safeCategory(doc.category);
           const categoryMeta =
             categories.find((item) => item.key === category) ??
@@ -111,11 +122,11 @@ export default function DocumentRows({
                 });
           })();
           return (
-            <div
+            <DataListRow
               key={doc.id}
               role="button"
               tabIndex={0}
-              className="lp-document-row"
+              $columns={showCategory ? 8 : 7}
               onClick={() => openDetails(doc)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
@@ -123,73 +134,62 @@ export default function DocumentRows({
                   openDetails(doc);
                 }
               }}
-              style={{
-                display: "grid",
-                gridTemplateColumns: columns,
-                minWidth: showCategory ? 1040 : 820,
-                borderTop: index ? `1px solid ${T.border}` : "none",
-              }}
             >
-              <button
-                type="button"
-                className={`lp-document-check${isSelected ? " is-checked" : ""}`}
+              <Checkbox
                 aria-label={`${isSelected ? "Deselect" : "Select"} ${documentTitle(doc)}`}
-                onClick={(event) => {
-                  event.stopPropagation();
+                checked={isSelected}
+                onClick={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+                onChange={() =>
                   setSelected((current) => {
                     const next = new Set(current);
                     if (next.has(doc.id)) next.delete(doc.id);
                     else next.add(doc.id);
                     return next;
-                  });
-                }}
-              >
-                {isSelected ? <Check aria-hidden="true" focusable="false" size={11} strokeWidth={3} /> : null}
-              </button>
-              <div className="lp-document-main">
-                <span
-                  className="lp-document-icon"
-                  style={{
-                    background: `color-mix(in srgb, ${categoryMeta.accent} 12%, transparent)`,
-                    color: categoryMeta.accent,
-                  }}
-                >
-                  <CategoryIcon aria-hidden="true" focusable="false" size="var(--icon-small)" strokeWidth={1.9} />
-                </span>
-                <span className="lp-document-copy">
-                  <Text as="strong" size="md" weight="semibold">
+                  })
+                }
+              />
+              <Row $wrap={false} $gap="s8">
+                <IconBadge>
+                  <CategoryIcon
+                    aria-hidden="true"
+                    color={categoryMeta.accent}
+                  />
+                </IconBadge>
+                <Stack $gap="s4">
+                  <Text weight="semibold" tone="heading">
                     {doc.displayName ||
                       labelize(doc.documentType) ||
                       documentTitle(doc)}
                   </Text>
-                  <Text as="small" size="sm">{doc.originalName}</Text>
-                </span>
-              </div>
-              <div className="lp-document-person">
-                <span style={{ background: categoryMeta.accent }} />
-                <Text size="md">{person}</Text>
-              </div>
-              {showCategory ? (
-                <div>
-                  <Text size="sm" weight="semibold"
-                    className="lp-document-category"
-                    style={{ background: `color-mix(in srgb, ${categoryMeta.accent} 7.84%, transparent)`, borderColor: `color-mix(in srgb, ${categoryMeta.accent} 20.78%, transparent)`, color: categoryMeta.accent }}
-                  >
-                    {labelize(category)}
+                  <Text size="sm" tone="muted">
+                    {doc.originalName}
                   </Text>
-                </div>
+                </Stack>
+              </Row>
+              <Text size="sm" tone="muted">
+                {person}
+              </Text>
+              {showCategory ? (
+                <Row>
+                  <Pill tone="flat">{labelize(category)}</Pill>
+                </Row>
               ) : null}
-              <Text as="div" size="sm" className="lp-document-source">{sourceLabel(doc)}</Text>
-              <Text as="div" size="sm" className="lp-document-date">
+              <Text as="div" size="sm" tone="muted">
+                {sourceLabel(doc)}
+              </Text>
+              <Text as="div" size="sm" tone="muted">
                 {new Date(doc.createdAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "2-digit",
                   year: "2-digit",
                 })}
               </Text>
-              <Text as="div" size="sm" className="lp-document-date">{expiryDisplay}</Text>
-              <ChevronRight aria-hidden="true" focusable="false" className="lp-document-chevron" size={17} />
-            </div>
+              <Text as="div" size="sm" tone="muted">
+                {expiryDisplay}
+              </Text>
+              <ChevronRight aria-hidden="true" focusable="false" size={17} />
+            </DataListRow>
           );
         })}
       </Card>

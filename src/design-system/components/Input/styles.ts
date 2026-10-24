@@ -1,5 +1,6 @@
 import styled, { css } from "styled-components";
 import { theme } from "../../variables/theme";
+import { Button } from "../Button";
 export const fieldStyles = css`
   box-sizing: border-box;
   width: 100%;
@@ -44,7 +45,36 @@ export const fieldStyles = css`
     color: ${({ theme }) => theme.colors.muted};
   }
 `;
-export const StyledInput = styled.input`
+export const StyledInput = styled.input<{ $textAlign?: "center" }>`
   ${fieldStyles}
+  ${({ $textAlign }) => $textAlign && "text-align: center;"}
 `;
 StyledInput.defaultProps = { theme };
+
+export const PasswordFrame = styled.div`
+  position: relative;
+  width: 100%;
+  min-width: 0;
+`;
+export const PasswordControl = styled(StyledInput)`
+  padding-inline-end: ${({ theme }) =>
+    `calc(${theme.spacing.s40} + ${theme.spacing.s8})`};
+`;
+export const PasswordToggle = styled(Button)`
+  position: absolute;
+  inset-inline-end: ${({ theme }) => theme.spacing.s4};
+  top: 0;
+  bottom: 0;
+  margin-block: auto;
+`;
+PasswordFrame.defaultProps =
+  PasswordControl.defaultProps =
+  PasswordToggle.defaultProps =
+    { theme };
+
+/** Collection filters share body typography and quiet surfaces; forms retain their defaults. */
+export const filterControlStyles = css`
+  background: ${({ theme }) => theme.colors.panel};
+  border-color: ${({ theme }) => theme.colors.border};
+  font-weight: ${({ theme }) => theme.typography.weights.regular};
+`;

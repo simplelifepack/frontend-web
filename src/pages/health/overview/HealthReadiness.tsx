@@ -1,4 +1,4 @@
-import { Text, Button, Card } from "@/design-system";
+import { Text, Button, Card, LinearProgress } from "@/design-system";
 
 import { Check, Pencil, ShieldCheck, X } from "lucide-react";
 
@@ -58,26 +58,34 @@ function HealthReadiness({
   return (
     <Card className="lp-health-readiness-card">
       <div className="lp-health-card-title">
-        <ShieldCheck aria-hidden="true" focusable="false" size={17} /> Medical readiness{" "}
+        <ShieldCheck aria-hidden="true" focusable="false" size={17} /> Medical
+        readiness{" "}
         <Button size="sm" variant="secondary" type="button" onClick={onRecords}>
           <Pencil aria-hidden="true" focusable="false" size={14} /> Edit
         </Button>
       </div>
       <div className="lp-health-readiness-score">
-        <Text as="b" size="md" weight="semibold">{percentage}%</Text>
+        <Text as="b" size="md" weight="semibold">
+          {percentage}%
+        </Text>
         <Text size="sm">document completeness, not a health score</Text>
       </div>
-      <div
-        className="lp-health-readiness-progress"
+      <LinearProgress
+        $tone="readiness"
+        value={percentage}
+        max={100}
         aria-label={`${percentage}% medical readiness`}
-      >
-        <i style={{ width: `${percentage}%` }} />
-      </div>
-      <div   className="lp-health-readiness-list">
+      />
+      <div className="lp-health-readiness-list">
         {readinessItems.map((item) => (
           <div key={item.label} className={item.ready ? "ready" : "missing"}>
             <Text size="md">
-              {item.ready ? <Check aria-hidden="true" focusable="false" size={14} /> : <X aria-hidden="true" focusable="false" size={14} />} {item.label}
+              {item.ready ? (
+                <Check aria-hidden="true" focusable="false" size={14} />
+              ) : (
+                <X aria-hidden="true" focusable="false" size={14} />
+              )}{" "}
+              {item.label}
             </Text>
           </div>
         ))}
@@ -85,11 +93,15 @@ function HealthReadiness({
       <div className="lp-health-profile-details">
         <div>
           <Text size="md">Conditions</Text>
-          <Text as="b" size="md" weight="semibold">{member?.conditions || "Not recorded"}</Text>
+          <Text as="b" size="md" weight="semibold">
+            {member?.conditions || "Not recorded"}
+          </Text>
         </div>
         <div>
           <Text size="md">Allergies</Text>
-          <Text as="b" size="md" weight="semibold">{member?.allergies || "Not recorded"}</Text>
+          <Text as="b" size="md" weight="semibold">
+            {member?.allergies || "Not recorded"}
+          </Text>
         </div>
         <div>
           <Text size="md">Emergency</Text>

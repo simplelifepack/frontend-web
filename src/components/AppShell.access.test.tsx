@@ -38,21 +38,23 @@ describe("authenticated navigation without billing state", () => {
     // their mutually exclusive visibility is checked in a real browser.
     for (const label of ["Sidebar", "Primary"]) {
       const navigation = within(
-        screen.getByRole("navigation", { name: label }),
+        screen.getByLabelText(label, { selector: "nav" }),
       );
       expect(
         navigation
-          .getAllByRole("link")
+          .getAllByRole("link", { hidden: true })
           .slice(0, 5)
           .map((link) => link.getAttribute("href")),
       ).toEqual(["/home", "/documents", "/packages", "/health", "/wealth"]);
       expect(
         navigation
-          .getByRole("link", { name: "Health" })
+          .getByLabelText("Health", { selector: "a" })
           .getAttribute("aria-current"),
       ).toBe("page");
       expect(
-        navigation.getByRole("link", { name: "Wealth" }).getAttribute("href"),
+        navigation
+          .getByLabelText("Wealth", { selector: "a" })
+          .getAttribute("href"),
       ).toBe("/wealth");
     }
     expect(

@@ -1,4 +1,4 @@
-import { Heading, Text, SearchField, Input, Select, Textarea, Checkbox, Button } from "@/design-system";
+import { Heading, Text, SearchField, Input, SelectMenu, Textarea, Checkbox, Button } from "@/design-system";
 
 import { useEffect, useMemo, useState } from "react";
 import { Download, FilePlus2, Loader2, Plus, Save, Trash2, Upload, X } from "lucide-react";
@@ -276,11 +276,8 @@ export default function AdminPackagesPage() {
       <div className="lp-admin-grid">
         <aside className="lp-admin-list">
           <div className="lp-admin-tools">
-            <SearchField value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void load(1); }} placeholder="Search packages" />
-            <Select value={category} onChange={(event) => setCategory(event.target.value)}>
-              <option value="">All categories</option>
-              {categories.map((item) => <option key={item} value={item}>{item}</option>)}
-            </Select>
+            <SearchField appearance="filter" aria-label="Search packages" value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void load(1); }} placeholder="Search packages" />
+            <SelectMenu aria-label="Package category" value={category || "all"} onValueChange={(value) => setCategory(value === "all" ? "" : value)} options={[{value:"all",label:"All categories"}, ...categories.map(item => ({value:item,label:item}))]} />
             <Button variant="primary" type="button" onClick={() => void load(1)}>Apply</Button>
           </div>
           {loading ? <Text as="div" size="md" className="lp-admin-state"><Loader2 aria-hidden="true" focusable="false" className="lp-spin" size="var(--icon-small)" />Loading packages</Text> : null}

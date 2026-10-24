@@ -144,7 +144,7 @@ function MismatchWarning({ assignmentError, busy, changing, warningDocument, onA
     <>
       <div className="lp-pack-change-head"><div><Heading level={2} size="sm">This document may not match this requirement</Heading><Text as="p" size="md">{changing.title}</Text></div></div>
       <Text as="div" size="md" className="lp-pack-warning-copy">
-        Readiness detected this document as <b>{warningDocument.normalizedType || warningDocument.documentType || "Unknown"}</b>, which doesn't appear to satisfy <b>{changing.title}</b>.
+        Readines detected this document as <b>{warningDocument.normalizedType || warningDocument.documentType || "Unknown"}</b>, which doesn't appear to satisfy <b>{changing.title}</b>.
       </Text>
       {assignmentError ? <Text as="div" size="sm" className="lp-pack-assignment-error">{assignmentError}</Text> : null}
       <div className="lp-pack-change-actions">

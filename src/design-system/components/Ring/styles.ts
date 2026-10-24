@@ -2,10 +2,16 @@ import styled from "styled-components";
 import { theme } from "../../variables/theme";
 export const Frame = styled.div<{ $size: number }>`
   position: relative;
+  flex-shrink: 0;
   width: ${({ $size }) => $size}px;
   height: ${({ $size }) => $size}px;
 `;
 export const Graphic = styled.svg`
+  && {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
   transform: rotate(-90deg);
 `;
 export const Progress = styled.circle`
@@ -27,3 +33,28 @@ export const Value = styled.div<{ $large: boolean }>`
   font-weight: ${({ theme }) => theme.typography.weights.bold};
 `;
 Progress.defaultProps = Value.defaultProps = { theme };
+
+/** Native, non-animated linear progress for summaries and checklists. */
+export const LinearProgress = styled.progress<{
+  $tone?: "success" | "action" | "readiness";
+}>`
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: ${({ theme }) => theme.spacing.s8};
+  overflow: hidden;
+  border: none;
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.raised};
+  color: ${({ theme, $tone = "action" }) => theme.colors[$tone]};
+  &::-webkit-progress-bar {
+    background: ${({ theme }) => theme.colors.raised};
+  }
+  &::-webkit-progress-value {
+    background: ${({ theme, $tone = "action" }) => theme.colors[$tone]};
+  }
+  &::-moz-progress-bar {
+    background: ${({ theme, $tone = "action" }) => theme.colors[$tone]};
+  }
+`;
+LinearProgress.defaultProps = { theme };

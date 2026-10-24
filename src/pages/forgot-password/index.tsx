@@ -1,4 +1,5 @@
-import { Field, Heading, Text, Input, Button } from "@/design-system";
+import { spacing } from "@/design-system";
+import { Field, Heading, Text, Input, Button, Stack } from "@/design-system";
 
 import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent } from "react";
@@ -41,19 +42,17 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md">
-      <div className="lg:hidden">
-        <BrandLogo height={64} />
-      </div>
-      <Heading level={2} size="md" className="mt-4 text-[var(--lp-heading)]">
+    <Stack $gap="s16">
+      <BrandLogo height={Number.parseInt(spacing.s40)} />
+      <Heading level={2} size="md">
         Forgot password
       </Heading>
-      <Text as="p" size="md" className="mt-2 text-[var(--lp-muted)]">
+      <Text as="p" size="md" tone="muted">
         Enter your email and we will send reset instructions if the account
         exists.
       </Text>
 
-      <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+      <Stack as="form" $gap="s16" onSubmit={handleSubmit}>
         <Field label="Email">
           <Input
             type="email"
@@ -70,12 +69,7 @@ export default function ForgotPasswordPage() {
           </Text>
         ) : null}
         {successMessage ? (
-          <Text
-            as="p"
-            size="md"
-            role="status"
-            style={{ color: "var(--lp-mint)" }}
-          >
+          <Text as="p" size="md" role="status" tone="success">
             {successMessage}
           </Text>
         ) : null}
@@ -89,9 +83,9 @@ export default function ForgotPasswordPage() {
         >
           {isSubmitting ? "Submitting..." : "Submit"}
         </Button>
-      </form>
+      </Stack>
 
-      <div className="mt-6 text-sm">
+      <Stack>
         <Button
           size="sm"
           variant="tertiary"
@@ -100,7 +94,7 @@ export default function ForgotPasswordPage() {
         >
           Go to login
         </Button>
-      </div>
-    </div>
+      </Stack>
+    </Stack>
   );
 }

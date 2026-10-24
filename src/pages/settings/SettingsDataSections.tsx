@@ -29,7 +29,7 @@ export function AccountDataSection() {
     setExporting(true);
     try {
       const job = await api.account.requestExport();
-      toast.info("Preparing your Readiness export.");
+      toast.info("Preparing your Readines export.");
       for (let attempt = 0; attempt < 20; attempt += 1) {
         const latest = await api.account.exportStatus(job.id);
         if (latest.status === "READY") {
@@ -55,14 +55,14 @@ export function AccountDataSection() {
       <Row
         icon={Download}
         label={exporting ? "Preparing export..." : "Export all data"}
-        sub="Download a copy of your Readiness data, including your documents, records, and analytics."
+        sub="Download a copy of your Readines data, including your documents, records, and analytics."
         onClick={() => setExportOpen(true)}
         first
       />
       {exportOpen ? (
         <Overlay title="Export all data" onClose={() => setExportOpen(false)}>
           <Text as="p" size="md" style={{ color: T.text, margin: 0 }}>
-            Readiness will prepare a ZIP with your user-owned data and uploaded files. The export may take a little while to assemble.
+            Readines will prepare a ZIP with your user-owned data and uploaded files. The export may take a little while to assemble.
           </Text>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-s10)", marginTop: "var(--space-s18)" }}>
             <Button variant="secondary" type="button" onClick={() => setExportOpen(false)} >Cancel</Button>
@@ -103,9 +103,9 @@ export function DeleteAccountSection() {
       {step === "warning" ? (
         <Overlay title="Delete your account?" onClose={() => setStep(null)}>
           <Text as="p" size="md" style={copyStyle}>Your account will be scheduled for permanent deletion in 30 days.</Text>
-          <Text as="p" size="md" style={copyStyle}>If you sign in again during those 30 days, the deletion request will be cancelled and you can continue using Readiness.</Text>
+          <Text as="p" size="md" style={copyStyle}>If you sign in again during those 30 days, the deletion request will be cancelled and you can continue using Readines.</Text>
           <Text as="p" size="md" style={copyStyle}>If you don't return, your account and all associated data will be hard deleted permanently after 30 days.</Text>
-          <Text as="p" size="md" style={copyStyle}>This includes your documents, Health and Wealth records, family information, analytics, preferences, uploaded files, and other Readiness data.</Text>
+          <Text as="p" size="md" style={copyStyle}>This includes your documents, Health and Wealth records, family information, analytics, preferences, uploaded files, and other Readines data.</Text>
           <Text as="p" size="md" style={copyStyle}>There will be no application backup, recovery copy, or way to restore your account or data after deletion.</Text>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-s10)", marginTop: "var(--space-s18)" }}>
             <Button variant="secondary" type="button" onClick={() => setStep(null)} >Cancel</Button>

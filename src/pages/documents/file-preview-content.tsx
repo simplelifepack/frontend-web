@@ -1,9 +1,14 @@
-import { Text, Card } from "@/design-system";
-
+import {
+  Text,
+  Heading,
+  Card,
+  Stack,
+  MediaViewport,
+  EmbeddedPreview,
+  Preformatted,
+  ScrollRegion,
+} from "@/design-system";
 import type { ReactNode } from "react";
-
-import { T } from "@/constants/theme";
-
 type FilePreviewContentProps = {
   alt: string;
   header: ReactNode;
@@ -12,7 +17,6 @@ type FilePreviewContentProps = {
   previewUrl: string | null;
   rawExtractedText: string;
 };
-
 export default function FilePreviewContent({
   alt,
   header,
@@ -21,43 +25,43 @@ export default function FilePreviewContent({
   previewUrl,
   rawExtractedText,
 }: FilePreviewContentProps) {
-  if (mimeType.startsWith("image/")) {
+  if (mimeType.startsWith("image/"))
     return (
-      <Card flush style={{ overflow: "hidden" }}>
+      <Card flush>
         {header}
-        <Text as="div" size="md" style={{ background: T.navy, display: "grid", placeItems: "center", maxHeight: 620, overflow: "auto" }}>
-          {previewStatus ?? <img src={previewUrl!} alt={alt} decoding="async" style={{ maxWidth: "100%", height: "auto", display: "block" }} />}
-        </Text>
+        <MediaViewport>
+          {previewStatus ?? (
+            <img src={previewUrl!} alt={alt} decoding="async" />
+          )}
+        </MediaViewport>
       </Card>
     );
-  }
-
-  if (mimeType === "application/pdf") {
+  if (mimeType === "application/pdf")
     return (
-      <Card flush style={{ overflow: "hidden" }}>
+      <Card flush>
         {header}
-        {previewStatus ?? <iframe src={previewUrl!} title={alt} style={{ width: "100%", height: 640, border: "none", background: T.raised }} />}
+        {previewStatus ?? <EmbeddedPreview src={previewUrl!} title={alt} />}
       </Card>
     );
-  }
-
-  if (mimeType.startsWith("text/") || mimeType.includes("rtf")) {
-    return (
-      <Card>
-        <Text as="div" size="md" weight="semibold" style={{ color: T.white, marginBottom: "var(--space-s12)" }}>File preview</Text>
-        <Text as="pre" size="sm" style={{ margin: 0, maxHeight: 460, overflow: "auto", whiteSpace: "pre-wrap", color: T.text, background: T.raised, border: `1px solid ${T.border}`, borderRadius: "var(--radius-s10)", padding: "var(--space-s12)" }}>
-          {rawExtractedText || "No text preview available."}
-        </Text>
-      </Card>
-    );
-  }
-
   return (
     <Card>
-      <Text as="div" size="md" weight="semibold" style={{ color: T.white, marginBottom: "var(--space-s8)" }}>File preview</Text>
-      <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
-        Inline preview is not available for this file type. Use Download to open the original file.
-      </Text>
+      <Stack $gap="s12">
+        <Heading level={2} size="sm">
+          File preview
+        </Heading>
+        {mimeType.startsWith("text/") || mimeType.includes("rtf") ? (
+          <ScrollRegion $vertical>
+            <Preformatted>
+              {rawExtractedText || "No text preview available."}
+            </Preformatted>
+          </ScrollRegion>
+        ) : (
+          <Text tone="muted">
+            Inline preview is not available for this file type. Use Download to
+            open the original file.
+          </Text>
+        )}
+      </Stack>
     </Card>
   );
 }

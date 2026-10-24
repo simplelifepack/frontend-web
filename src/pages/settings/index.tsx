@@ -1,4 +1,4 @@
-import { Text, Input } from "@/design-system";
+import { Text, Input, Stack, Grid, ListRow, IconBadge } from "@/design-system";
 
 import { useEffect, useState } from "react";
 import {
@@ -19,12 +19,15 @@ import { useNavigate } from "react-router-dom";
 import SectionHead from "@/components/SectionHead";
 import { storageText } from "@/components/AccountUsage";
 import { api } from "@/lib/api";
-import { T } from "@/constants/theme";
-import { Overlay, Row, Section, settingsInputStyle, TextBlock } from "./settings-ui";
+import { Overlay, Row, Section, TextBlock } from "./settings-ui";
 import AccountChangeModal from "./AccountChangeModals";
 import PinChangeModal from "./PinChangeModal";
+import BillingSection from "./BillingSection";
 import PreferencesSection from "./PreferencesSection";
-import { AccountDataSection, DeleteAccountSection } from "./SettingsDataSections";
+import {
+  AccountDataSection,
+  DeleteAccountSection,
+} from "./SettingsDataSections";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 import { refreshUsage } from "@/store/slices/usageSlice";
@@ -33,15 +36,33 @@ type ModalKind = "whatsnew" | "faq" | "feedback" | "about" | null;
 type AccountModalKind = "email" | "password" | null;
 
 const changelog = [
-  ["Landing auth", "Sign in and sign up now live directly on the landing page."],
-  ["Document archive", "Cleaner archive states and safer missing-file handling."],
-  ["Health readiness", "Health profiles and visit packs are now part of the app shell."],
+  [
+    "Landing auth",
+    "Sign in and sign up now live directly on the landing page.",
+  ],
+  [
+    "Document archive",
+    "Cleaner archive states and safer missing-file handling.",
+  ],
+  [
+    "Health readiness",
+    "Health profiles and visit packs are now part of the app shell.",
+  ],
 ];
 
 const faqs = [
-  ["Where are my documents stored?", "Your documents are stored in your Readiness cloud archive and protected by your account."],
-  ["Can I export my data?", "Use Export all data in Settings to prepare a ZIP with your Readiness data and uploaded files."],
-  ["How do I reset my password?", "Use forgot password from the sign-in screen to reset access by email."],
+  [
+    "Where are my documents stored?",
+    "Your documents are stored in your Readines cloud archive and protected by your account.",
+  ],
+  [
+    "Can I export my data?",
+    "Use Export all data in Settings to prepare a ZIP with your Readines data and uploaded files.",
+  ],
+  [
+    "How do I reset my password?",
+    "Use forgot password from the sign-in screen to reset access by email.",
+  ],
 ];
 
 export default function SettingsPage() {
@@ -53,7 +74,10 @@ export default function SettingsPage() {
   const [accountModal, setAccountModal] = useState<AccountModalKind>(null);
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const initial = (account?.name || account?.email || "?").trim().charAt(0).toUpperCase();
+  const initial = (account?.name || account?.email || "?")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
   useEffect(() => {
     void dispatch(refreshUsage());
@@ -70,73 +94,157 @@ export default function SettingsPage() {
 
   return (
     <div className="lp-route">
-      <SectionHead title="Settings" sub="Your account, your family, and how Readiness behaves." action={null} />
-      <div className="lp-cols2">
+      <SectionHead
+        title="Settings"
+        sub="Your account, your family, and how Readines behaves."
+        action={null}
+      />
+      <Grid $align="start">
         <div>
           <Section label="Account">
-            <div style={{ display: "flex", alignItems: "center", gap: 13, padding: "var(--space-s16)" }}>
-              <Text size="lg" weight="semibold" style={{ display: "grid", placeItems: "center", width: 44, height: 44, borderRadius: 13, background: "color-mix(in srgb, var(--lp-action) 14%, transparent)", color: T.action }}>
-                {initial}
-              </Text>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <Input style={settingsInputStyle} value={account?.name || "Account"} readOnly aria-label="Account name" />
-                <Text as="div" size="sm" tone="muted" style={{ color: T.muted, marginTop: 5 }}>{account?.email || "Not signed in"}</Text>
-              </div>
-            </div>
-            <Row icon={Users} label="Family and Access" sub="Members, access levels, emergency contacts and SOS handoff" onClick={() => navigate("/family")} />
-            <Row icon={Lock} label="Change Email" sub="Request a change to your email address" onClick={() => setAccountModal("email")} />
-            <Row icon={ShieldCheck} label="Change Password" sub="Update your account password" onClick={() => setAccountModal("password")} />
-            <Row icon={KeyRound} label="Change R-pin" sub="Update the R-pin used for quick sign-in" onClick={() => setPinModalOpen(true)} />
+            <ListRow>
+              <IconBadge>{initial}</IconBadge>
+              <Stack $grow $gap="s4">
+                <Input
+                  value={account?.name || "Account"}
+                  readOnly
+                  aria-label="Account name"
+                />
+                <Text size="sm" tone="muted">
+                  {account?.email || "Not signed in"}
+                </Text>
+              </Stack>
+            </ListRow>
+            <Row
+              icon={Users}
+              label="Family and Access"
+              sub="Members, access levels, emergency contacts and SOS handoff"
+              onClick={() => navigate("/family")}
+            />
+            <Row
+              icon={Lock}
+              label="Change Email"
+              sub="Request a change to your email address"
+              onClick={() => setAccountModal("email")}
+            />
+            <Row
+              icon={ShieldCheck}
+              label="Change Password"
+              sub="Update your account password"
+              onClick={() => setAccountModal("password")}
+            />
+            <Row
+              icon={KeyRound}
+              label="Change R-pin"
+              sub="Update the R-pin used for quick sign-in"
+              onClick={() => setPinModalOpen(true)}
+            />
           </Section>
+          <BillingSection />
           <PreferencesSection />
           <Section label="Storage">
-            <Row icon={HardDrive} label="Storage used" value={usage ? storageText(usage.storage) : "Loading..."} first />
+            <Row
+              icon={HardDrive}
+              label="Storage used"
+              value={usage ? storageText(usage.storage) : "Loading..."}
+              first
+            />
           </Section>
           <AccountDataSection />
         </div>
         <div>
           <Section label="Support">
-            <Row icon={Sparkles} label="What's new" value="v0.9" sub="Latest changes in Readiness" onClick={() => setModal("whatsnew")} first />
-            <Row icon={HelpCircle} label="Help and FAQs" sub="Straight answers, including the uncomfortable ones" onClick={() => setModal("faq")} />
-            <Row icon={MessageSquare} label="Send feedback" sub="Tell us what is broken or missing" onClick={() => setModal("feedback")} />
-            <Row icon={Info} label="About Readiness" onClick={() => setModal("about")} />
+            <Row
+              icon={Sparkles}
+              label="What's new"
+              value="v0.9"
+              sub="Latest changes in Readines"
+              onClick={() => setModal("whatsnew")}
+              first
+            />
+            <Row
+              icon={HelpCircle}
+              label="Help and FAQs"
+              sub="Straight answers, including the uncomfortable ones"
+              onClick={() => setModal("faq")}
+            />
+            <Row
+              icon={MessageSquare}
+              label="Send feedback"
+              sub="Tell us what is broken or missing"
+              onClick={() => setModal("feedback")}
+            />
+            <Row
+              icon={Info}
+              label="About Readines"
+              onClick={() => setModal("about")}
+            />
           </Section>
           <Section label="Session">
-            <Row icon={LogOut} label={signingOut ? "Signing out..." : "Sign out"} sub="Your archive stays in your account" onClick={() => void signOut()} first />
+            <Row
+              icon={LogOut}
+              label={signingOut ? "Signing out..." : "Sign out"}
+              sub="Your archive stays in your account"
+              onClick={() => void signOut()}
+              first
+            />
           </Section>
           <DeleteAccountSection />
         </div>
-      </div>
+      </Grid>
       {modal === "whatsnew" ? (
         <Overlay title="What's new" onClose={() => setModal(null)}>
-          {changelog.map(([title, body], index) => <TextBlock key={title} title={title} body={body} divided={index > 0} />)}
+          {changelog.map(([title, body], index) => (
+            <TextBlock
+              key={title}
+              title={title}
+              body={body}
+              divided={index > 0}
+            />
+          ))}
         </Overlay>
       ) : null}
       {modal === "faq" ? (
         <Overlay title="Help and FAQs" onClose={() => setModal(null)}>
-          {faqs.map(([title, body], index) => <TextBlock key={title} title={title} body={body} divided={index > 0} />)}
+          {faqs.map(([title, body], index) => (
+            <TextBlock
+              key={title}
+              title={title}
+              body={body}
+              divided={index > 0}
+            />
+          ))}
         </Overlay>
       ) : null}
       {modal === "feedback" ? (
         <Overlay title="Send feedback" onClose={() => setModal(null)}>
-          <Text as="p" size="md" style={{ color: T.text, margin: 0 }}>
-            Feedback collection is not connected yet. For now, send issues to support@readiness.com.
+          <Text as="p" size="md">
+            Feedback collection is not connected yet. For now, send issues to
+            support@readiness.com.
           </Text>
         </Overlay>
       ) : null}
       {modal === "about" ? (
-        <Overlay title="About Readiness" onClose={() => setModal(null)}>
-          <Text as="p" size="md" style={{ color: T.text, margin: 0 }}>
-            Readiness keeps your family ready for important moments by organizing documents, readiness packs, health
-            context, wealth records, and trusted access in one private account.
+        <Overlay title="About Readines" onClose={() => setModal(null)}>
+          <Text as="p" size="md">
+            Readines keeps your family ready for important moments by
+            organizing documents, readiness packs, health context, wealth
+            records, and trusted access in one private account.
           </Text>
         </Overlay>
       ) : null}
       {accountModal && account?.email ? (
-        <AccountChangeModal kind={accountModal} currentEmail={account.email} onClose={() => setAccountModal(null)} />
+        <AccountChangeModal
+          kind={accountModal}
+          currentEmail={account.email}
+          onClose={() => setAccountModal(null)}
+        />
       ) : null}
       {pinModalOpen && account?.email ? (
-        <PinChangeModal currentEmail={account.email} onClose={() => setPinModalOpen(false)} />
+        <PinChangeModal
+          currentEmail={account.email}
+          onClose={() => setPinModalOpen(false)}
+        />
       ) : null}
     </div>
   );

@@ -20,11 +20,11 @@ function oauthErrorMessage(payload: OAuthPopupMessage) {
     invalid_state: "The Google Drive connection expired. Please start again.",
     access_denied: "Google Drive authorization was denied.",
     token_exchange_failed: "Google could not complete the Google Drive connection. Please try again.",
-    account_lookup_failed: "Readiness could not read the selected Google account. Please try another account.",
-    missing_refresh_token: "Google did not return offline access. Remove Readiness from Google Account connections, then reconnect.",
+    account_lookup_failed: "Readines could not read the selected Google account. Please try another account.",
+    missing_refresh_token: "Google did not return offline access. Remove Readines from Google Account connections, then reconnect.",
     missing_scope: "Google Drive read-only permission was not granted. Please reconnect and allow it.",
-    database_error: "Readiness could not save the Google Drive connection. Please try again.",
-    token_storage_failed: "Readiness could not securely store the Google Drive connection. Please try again.",
+    database_error: "Readines could not save the Google Drive connection. Please try again.",
+    token_storage_failed: "Readines could not securely store the Google Drive connection. Please try again.",
   }[payload.reason ?? ""] ?? "Google Drive connection was not completed. Please try again.");
 }
 
@@ -131,7 +131,7 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
     }
   };
   const disconnect = async () => {
-    if (!confirm("Disconnect Google Drive? Indexed metadata will remain in Readiness.")) return;
+    if (!confirm("Disconnect Google Drive? Indexed metadata will remain in Readines.")) return;
     setBusy("disconnect");
     try { await api.drive.disconnect(); updateStatus(emptyStatus); setMessage("Google Drive disconnected."); }
     catch { setMessage("Unable to disconnect Google Drive."); }
@@ -147,7 +147,7 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
         </div>
         {!status.connected ? (
           <div style={{ padding: 16, background: T.raised, borderRadius: 12 }}>
-            <div style={{ display: "flex", gap: 12 }}><Cloud aria-hidden="true" focusable="false" color={T.action} /><div><b style={{ color: T.white }}>Google Drive is not connected</b><p style={{ color: T.text, fontSize: "var(--text-md)", lineHeight: "var(--line-body)" }}>Readiness requests only Drive read-only access, searches only for PDFs, and stores metadata—not PDF copies.</p></div></div>
+            <div style={{ display: "flex", gap: 12 }}><Cloud aria-hidden="true" focusable="false" color={T.action} /><div><b style={{ color: T.white }}>Google Drive is not connected</b><p style={{ color: T.text, fontSize: "var(--text-md)", lineHeight: "var(--line-body)" }}>Readines requests only Drive read-only access, searches only for PDFs, and stores metadata—not PDF copies.</p></div></div>
             <Button loading={Boolean(busy)} variant="primary" type="button" style={{ marginTop: 14 }} disabled={Boolean(busy)} onClick={() => void connect()}>{busy === "connect" ? "Opening Google…" : "Connect Google Drive"}</Button>
           </div>
         ) : (

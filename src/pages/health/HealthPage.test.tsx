@@ -297,7 +297,7 @@ describe("Health page orchestration", () => {
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Close document viewer" }),
     );
-    fireEvent.click(screen.getByRole("button", { name: /JordanChild/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Jordan Example.*Child/ }));
     expect(
       await screen.findByRole("heading", { name: "Jordan Example" }),
     ).toBeTruthy();
@@ -362,7 +362,7 @@ describe("Health page orchestration", () => {
 
     renderHealthPage();
     await screen.findByRole("heading", { name: "Alex Example" });
-    const remindersCard = screen.getByText("Reminders").closest(".lp-health-reminders-card")!;
+    const remindersCard = screen.getByRole("region", { name: "Reminders" });
     fireEvent.click(within(remindersCard as HTMLElement).getByRole("button", { name: "Add" }));
     const reminderDialog = await screen.findByRole("dialog", { name: "Add reminder" });
     expect(within(reminderDialog).getByRole<HTMLButtonElement>("button", { name: "Add reminder" }).disabled).toBe(true);

@@ -35,7 +35,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
       const failed = event instanceof CustomEvent ? Boolean(event.detail) : true;
       setScriptFailed(failed);
       if (failed) {
-        onError("Google sign-in could not load. Open Readiness at http://localhost:5173 and disable any blocker for accounts.google.com.");
+        onError("Google sign-in could not load. Open Readines at http://localhost:5173 and disable any blocker for accounts.google.com.");
       }
     };
     window.addEventListener("readiness:google-script-error", handleScriptError);
@@ -65,7 +65,7 @@ export default function GoogleSignInButton({ disabled, onCredential, onError }: 
         </Button>
         <Text as="p" size="md" className="mt-2 text-center text-[var(--lp-muted)]">
           {isLoopbackIp
-            ? "Open Readiness at http://localhost:5173 to use Google sign-in."
+            ? "Open Readines at http://localhost:5173 to use Google sign-in."
             : "Google sign-in could not load. Disable blockers for accounts.google.com and try again."}
         </Text>
       </div>

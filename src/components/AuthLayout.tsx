@@ -1,36 +1,36 @@
-import { Heading, Text } from "@/design-system";
+import { spacing } from "@/design-system";
+import {
+  AuthFrame,
+  AuthSurface,
+  Heading,
+  Text,
+  Stack,
+  Card,
+} from "@/design-system";
 import BrandLogo from "./BrandLogo";
 import type { ReactNode } from "react";
-
-type AuthLayoutProps = {
-  children: ReactNode;
-};
-
-export default function AuthLayout({ children }: AuthLayoutProps) {
+export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="lp-auth min-h-screen px-6 py-10">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-5xl items-center justify-center">
-        <div className="grid w-full overflow-hidden rounded-[24px] border border-[var(--lp-border)] bg-[var(--lp-panel)] shadow-[0_30px_70px_color-mix(in srgb, var(--lp-navy) 22%, transparent)] lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="relative hidden overflow-hidden border-r border-[var(--lp-border)] bg-[var(--lp-raised)] p-10 lg:flex lg:flex-col lg:justify-between">
-            <div className="lp-auth-radar" aria-hidden />
-            <div>
-              <BrandLogo height={64} className="relative" />
-              <Heading level={1} size="lg" className="relative mt-6 max-w-md tracking-tight text-[var(--lp-heading)]">
-                Your documents, ready when life asks.
-              </Heading>
-              <Text as="p" size="md" className="relative mt-4 max-w-md text-[var(--lp-muted)]">
-                Sign in to your private living archive, create an account, or reset your password.
-              </Text>
-            </div>
-            <div className="relative rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-panel)]/80 p-5">
-              <Text as="p" size="md" className="text-[var(--lp-text)]">
-                Private by design. Your connected sources remain read-only and under your control.
-              </Text>
-            </div>
-          </section>
-          <section className="bg-[var(--lp-panel)] p-6 text-[var(--lp-text)] sm:p-10">{children}</section>
-        </div>
-      </div>
-    </div>
+    <AuthFrame>
+      <AuthSurface>
+        <Stack as="aside" $gap="s32">
+          <BrandLogo height={Number.parseInt(spacing.s60)} />
+          <Heading level={1} size="lg">
+            Your documents, ready when life asks.
+          </Heading>
+          <Text tone="muted">
+            Sign in to your private living archive, create an account, or reset
+            your password.
+          </Text>
+          <Card>
+            <Text>
+              Private by design. Your connected sources remain read-only and
+              under your control.
+            </Text>
+          </Card>
+        </Stack>
+        <section>{children}</section>
+      </AuthSurface>
+    </AuthFrame>
   );
 }

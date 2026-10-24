@@ -145,6 +145,7 @@ export default function HealthPage() {
           onSearch={setSearch}
           onTrack={trackMetric}
           onUntrack={untrackMetric}
+          onApplyTracked={applyTrackedMetrics}
         />
       ) : null}
       {!loading && selectedMember && activeTab === "Timeline" ? (

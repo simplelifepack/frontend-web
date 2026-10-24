@@ -10,7 +10,7 @@ import { dedupeRequest } from "./request-deduper";
 export const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
 if (import.meta.env.PROD && new URL(API_URL, window.location.origin).protocol !== "https:") {
-  throw new Error("Readiness requires an HTTPS API URL in production.");
+  throw new Error("Readines requires an HTTPS API URL in production.");
 }
 
 type RequestOptions = {

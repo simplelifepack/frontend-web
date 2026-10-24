@@ -1,3 +1,6 @@
+import DomainAccessGuard from "./components/DomainAccessGuard";
+import Landing from "./components/Landing";
+import BillingCheckoutController from "./components/BillingCheckoutController";
 import SettingsPage from "./pages/settings";
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
@@ -42,6 +45,17 @@ function LandingRoute() {
   const authMode = state?.authMode === "signup" ? "signup" : state?.authMode === "signin" ? "signin" : null;
   const destination = state?.from?.pathname ?? "/home";
 
+  // Explicit login/signup navigation is a one-time action, not persistent
+  // landing-page state that should reopen the dialog on refresh or Back.
+  useEffect(() => {
+    if (!authMode || (token && user)) return;
+    const { authMode: consumed, ...remaining } = state ?? {};
+    navigate(`${location.pathname}${location.search}${location.hash}`, {
+      replace: true,
+      state: remaining,
+    });
+  }, [authMode, location.hash, location.pathname, location.search, navigate, state, token, user]);
+
   if (token && user) {
     return <Navigate to={destination} replace />;
   }
@@ -49,7 +63,7 @@ function LandingRoute() {
   return <LandingPage initialAuthMode={authMode} onAuthed={() => navigate(destination, { replace: true })} />;
 }
 
-export default function App() {
+function FullApplication() {
   const dispatch = useAppDispatch();
   const { token, user, initialized, initializationStatus, sessionStatus } = useAppSelector((state) => state.auth);
   const documentStatus = useAppSelector((state) => state.documents.status);
@@ -90,6 +104,7 @@ export default function App() {
 
   return (
     <Suspense fallback={null}>
+      <BillingCheckoutController />
       <Routes>
         <Route path="/" element={<SessionGate><LandingRoute /></SessionGate>} />
         <Route path="/landing" element={<SessionGate><LandingRoute /></SessionGate>} />
@@ -125,6 +140,7 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/home" element={<HomePage />} />
+            <Route path="/dashboard" element={<Navigate to="/home" replace />} />
             <Route path="/packages" element={<PackagesPage />} />
             <Route path="/coffee/packages" element={<CoffeePackagesPage />} />
             <Route path="/documents" element={<DocumentsPage />} />
@@ -145,4 +161,11 @@ export default function App() {
       </Routes>
     </Suspense>
   );
+}
+
+// Resolve the host before mounting anything that restores a session or starts checkout.
+export default function App() {
+  return <DomainAccessGuard landing={<Landing earlyAccess onAuthed={() => {}} />}>
+    <FullApplication />
+  </DomainAccessGuard>;
 }

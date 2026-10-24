@@ -46,6 +46,7 @@ export default function PackageSearchPanel({
       </div>
 
       <SearchField
+        appearance="filter"
         className="lp-pack-search"
         value={query}
         onChange={(event) =>

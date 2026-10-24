@@ -1,3 +1,4 @@
+import { Text, Stack, ListAction } from "@/design-system";
 import { SwitchIndicator } from "@/design-system";
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
@@ -7,10 +8,20 @@ import type { PushSubscriptionPayload } from "@/lib/api.types";
 import { notificationApi } from "@/lib/notification-api";
 import { T } from "@/constants/theme";
 
-type NotificationState = "checking" | "off" | "on" | "blocked" | "unsupported" | "unconfigured";
+type NotificationState =
+  | "checking"
+  | "off"
+  | "on"
+  | "blocked"
+  | "unsupported"
+  | "unconfigured";
 
 function supported() {
-  return "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
+  return (
+    "Notification" in window &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window
+  );
 }
 
 function permission() {
@@ -26,21 +37,25 @@ function urlBase64ToUint8Array(value: string) {
 
 function asPayload(subscription: PushSubscription): PushSubscriptionPayload {
   const json = subscription.toJSON();
-  const endpoint = typeof json.endpoint === "string" ? json.endpoint : subscription.endpoint;
+  const endpoint =
+    typeof json.endpoint === "string" ? json.endpoint : subscription.endpoint;
   const keys = json.keys ?? {};
-  if (!endpoint || !keys.p256dh || !keys.auth) throw new Error("Browser push subscription is incomplete.");
+  if (!endpoint || !keys.p256dh || !keys.auth)
+    throw new Error("Browser push subscription is incomplete.");
   return { endpoint, keys: { p256dh: keys.p256dh, auth: keys.auth } };
 }
 
 async function currentSubscription() {
   if (!supported()) return null;
-  const registration = await navigator.serviceWorker.getRegistration("/readiness-sw.js")
-    ?? await navigator.serviceWorker.getRegistration();
+  const registration =
+    (await navigator.serviceWorker.getRegistration("/readiness-sw.js")) ??
+    (await navigator.serviceWorker.getRegistration());
   return registration?.pushManager.getSubscription() ?? null;
 }
 
 async function ensureSubscription(publicKey: string) {
-  const registration = await navigator.serviceWorker.register("/readiness-sw.js");
+  const registration =
+    await navigator.serviceWorker.register("/readiness-sw.js");
   const existing = await registration.pushManager.getSubscription();
   if (existing) return existing;
   return registration.pushManager.subscribe({
@@ -66,12 +81,17 @@ export default function NotificationSettingsRow() {
         if (!alive) return;
         if (!status.configured) setState("unconfigured");
         else if (permission() === "denied") setState("blocked");
-        else setState(status.deviceEnabled && permission() === "granted" ? "on" : "off");
+        else
+          setState(
+            status.deviceEnabled && permission() === "granted" ? "on" : "off",
+          );
       } catch {
         if (alive) setState("off");
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const enable = async () => {
@@ -87,10 +107,13 @@ export default function NotificationSettingsRow() {
       return;
     }
     let nextPermission = permission();
-    if (nextPermission === "default") nextPermission = await Notification.requestPermission();
+    if (nextPermission === "default")
+      nextPermission = await Notification.requestPermission();
     if (nextPermission === "denied") {
       setState("blocked");
-      toast.error("Browser notifications are blocked. Enable them in site permissions for Readiness.");
+      toast.error(
+        "Browser notifications are blocked. Enable them in site permissions for Readines.",
+      );
       return;
     }
     if (nextPermission !== "granted") {
@@ -109,7 +132,9 @@ export default function NotificationSettingsRow() {
     const subscription = await currentSubscription();
     if (!subscription) return;
     await notificationApi.disable(asPayload(subscription)).catch(() => {
-      toast.error("This device was turned off locally, but the server could not be updated.");
+      toast.error(
+        "This device was turned off locally, but the server could not be updated.",
+      );
     });
     await subscription.unsubscribe().catch(() => undefined);
     toast.success("Notifications disabled on this device.");
@@ -123,42 +148,46 @@ export default function NotificationSettingsRow() {
       else await enable();
     } catch (error) {
       setState("off");
-      toast.error(error instanceof Error ? error.message : "Notifications could not be updated.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Notifications could not be updated.",
+      );
     } finally {
       setBusy(false);
     }
   };
 
   const label = state === "on" ? "On" : "Off";
-  const sub = state === "blocked"
-    ? "Blocked in browser site permissions"
-    : state === "unsupported"
-      ? "Not supported in this browser"
-      : state === "unconfigured"
-        ? "Server push is not configured"
-        : "Reminder alerts on this device";
+  const sub =
+    state === "blocked"
+      ? "Blocked in browser site permissions"
+      : state === "unsupported"
+        ? "Not supported in this browser"
+        : state === "unconfigured"
+          ? "Server push is not configured"
+          : "Reminder alerts on this device";
   const enabled = state === "on";
 
   return (
-    <button type="button" role="switch" aria-checked={enabled} aria-label="Notifications" onClick={() => void toggle()} disabled={busy || state === "checking"} style={{
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-      gap: "var(--space-s12)",
-      padding: "13px var(--space-s16)",
-      border: 0,
-      borderTop: `1px solid ${T.border}`,
-      background: "none",
-      cursor: busy || state === "checking" ? "wait" : "pointer",
-      textAlign: "left",
-    }}>
-      <Bell aria-hidden="true" focusable="false" size="var(--icon-small)" color={T.muted} />
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: "var(--text-md)", fontWeight: "var(--weight-semibold)", color: T.text }}>Notifications</span>
-        <span style={{ display: "block", fontSize: "var(--text-sm)", color: T.muted, marginTop: 1 }}>{sub}</span>
-      </span>
-      <span style={{ fontSize: "var(--text-md)", color: T.muted }}>{label}</span>
+    <ListAction
+      variant="tertiary"
+      $divided
+      role="switch"
+      aria-checked={enabled}
+      aria-label="Notifications"
+      onClick={() => void toggle()}
+      disabled={busy || state === "checking"}
+    >
+      <Bell aria-hidden="true" />
+      <Stack $grow $gap="s4">
+        <Text weight="semibold">Notifications</Text>
+        <Text size="sm" tone="muted">
+          {sub}
+        </Text>
+      </Stack>
+      <Text tone="muted">{label}</Text>
       <SwitchIndicator checked={enabled} />
-    </button>
+    </ListAction>
   );
 }

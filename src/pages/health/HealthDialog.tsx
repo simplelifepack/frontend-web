@@ -588,7 +588,7 @@ function ReadingDialog({
           </div>
           <Text as="p" size="md" weight="medium">
             Copy the test name, value, unit, and reference range from your report.
-            ReadiNes supplies none of them, so a reading with no range is recorded
+            Readines supplies none of them, so a reading with no range is recorded
             without a status.
           </Text>
           {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}
@@ -641,7 +641,7 @@ function EmergencyCardDialog({
         ? insuranceDoc.title || insuranceDoc.originalName
         : member.insuranceProvider || "NOT ANSWERED",
     ],
-    ["Medical documents", `${records.length} on file in ReadiNes`],
+    ["Medical documents", `${records.length} on file in Readines`],
   ];
   return (
     <ModalBackdrop className="lp-card-preview-backdrop">
@@ -663,7 +663,7 @@ function EmergencyCardDialog({
         <section className="lp-emergency-card-paper">
           <div className="lp-emergency-card-band">
             <Text as="b" size="md" weight="semibold">Emergency info</Text>
-            <Text size="sm" weight="semibold">ReadiNes</Text>
+            <Text size="sm" weight="semibold">Readines</Text>
           </div>
           <dl>
             {rows.map(([label, value]) => (
@@ -1119,7 +1119,7 @@ function VisitPackDialog({
                   Cover sheet included: allergies, conditions, medicines, and
                   latest readings.
                 </Text>
-                <Button size="sm" variant="tertiary" type="button">Preview</Button>
+                <Button size="sm" variant="tertiary" type="button" disabled title="Cover-sheet preview is not connected yet.">Preview</Button>
               </div>
               <Button loading={downloading} variant="primary"
                 type="button"
@@ -1286,7 +1286,7 @@ function buildEmergencyCardHtml(rows: string[][], generatedDate: string) {
 </head>
 <body>
   <section class="paper">
-    <div class="band"><b>Emergency info</b><span>ReadiNes</span></div>
+    <div class="band"><b>Emergency info</b><span>Readines</span></div>
     <dl>${rowHtml}</dl>
     <footer><span>Assembled facts only · no diagnosis.</span><span>Generated ${escapeHtml(generatedDate)}</span></footer>
   </section>

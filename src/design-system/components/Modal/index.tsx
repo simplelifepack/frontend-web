@@ -11,7 +11,7 @@ export const ModalBackdrop = forwardRef<HTMLDivElement, ModalBackdropProps>(
     ),
 );
 export const ModalPanel = forwardRef<HTMLDivElement, ModalPanelProps>(
-  ({ flush = false, onDismiss, ...props }, ref) => {
+  ({ flush = false, size = "default", onDismiss, ...props }, ref) => {
     const panel = useRef<HTMLDivElement>(null);
     useImperativeHandle(ref, () => panel.current!);
     useDialogFocus(panel, onDismiss);
@@ -22,6 +22,7 @@ export const ModalPanel = forwardRef<HTMLDivElement, ModalPanelProps>(
         aria-modal="true"
         tabIndex={-1}
         $flush={flush}
+        $size={size}
         {...props}
         ref={panel}
       />
@@ -30,3 +31,16 @@ export const ModalPanel = forwardRef<HTMLDivElement, ModalPanelProps>(
 );
 ModalBackdrop.displayName = "ModalBackdrop";
 ModalPanel.displayName = "ModalPanel";
+
+export {
+  ModalColumns,
+  ModalContent,
+  ModalAside,
+  ModalHeader,
+  ModalOptions,
+  ModalForm,
+  ModalActions,
+  ModalDetailRow,
+  ModalBullet,
+  ModalBulletIcon,
+} from "./styles";

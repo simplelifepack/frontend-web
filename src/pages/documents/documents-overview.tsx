@@ -1,11 +1,21 @@
-import { Text, Stack, SearchField, ChoiceGroup, Choice, Select, Button, Card } from "@/design-system";
+import {
+  Text,
+  Stack,
+  Row,
+  FilterBar,
+  SearchField,
+  ChoiceGroup,
+  Choice,
+  SelectMenu,
+  Button,
+  Card,
+} from "@/design-system";
 
 import { Camera, ChevronDown, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import SectionHead from "@/components/SectionHead";
-import { T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
 import { useAppSelector } from "@/store/hooks";
 import { categories, openUpload } from "./document-utils";
@@ -92,111 +102,129 @@ export default function DocumentsOverview({
         title="Documents"
         sub={`${documents.length} records in your archive. Search, filter, and open any row for full context.`}
         action={
-          <div className="lp-document-add-actions">
-            <Button variant="primary" type="button" onClick={openUpload} >
-              <UploadCloud aria-hidden="true" focusable="false" size="var(--icon-small)" /> Upload <ChevronDown aria-hidden="true" focusable="false" size={15} />
+          <Row $gap="s8">
+            <Button variant="primary" type="button" onClick={openUpload}>
+              <UploadCloud
+                aria-hidden="true"
+                focusable="false"
+                size="var(--icon-small)"
+              />{" "}
+              Upload{" "}
+              <ChevronDown aria-hidden="true" focusable="false" size={15} />
             </Button>
-            <Button variant="secondary" type="button" onClick={openUpload} >
-              <Camera aria-hidden="true" focusable="false" size="var(--icon-small)" /> Scan
+            <Button variant="secondary" type="button" onClick={openUpload}>
+              <Camera
+                aria-hidden="true"
+                focusable="false"
+                size="var(--icon-small)"
+              />{" "}
+              Scan
             </Button>
-          </div>
+          </Row>
         }
       />
 
       <Stack>
-      <ChoiceGroup >
-        {(
-          [
-            ["all", "All"],
-            ["soon", "Expiring soon"],
-            ["expired", "Expired"],
-            ["week", "Added this week"],
-          ] as const
-        ).map(([key, label]) => (
-          <Choice
-            key={key}
-            type="button"
-            aria-pressed={quick === key}
-            onClick={() => setQuick(key)}
-          >
-            {label} <b>{quickCounts[key]}</b>
-          </Choice>
-        ))}
-      </ChoiceGroup>
-
-      <div className="lp-doc-toolbar">
-        <SearchField className="lp-doc-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search type, file, person, notes…" aria-label="Search documents" />
-        <Select
-          aria-label="Category"
-          value={category}
-          onChange={(event) => setCategory(event.target.value)}
-        >
-          <option value="all">All</option>
-          {categories.map((item) => (
-            <option key={item.key} value={item.key}>
-              {item.name}
-            </option>
+        <ChoiceGroup>
+          {(
+            [
+              ["all", "All"],
+              ["soon", "Expiring soon"],
+              ["expired", "Expired"],
+              ["week", "Added this week"],
+            ] as const
+          ).map(([key, label]) => (
+            <Choice
+              appearance="filter"
+              count={quickCounts[key]}
+              key={key}
+              type="button"
+              aria-pressed={quick === key}
+              onClick={() => setQuick(key)}
+            >
+              {label}
+            </Choice>
           ))}
-        </Select>
-        <Select
-          aria-label="Person"
-          value={person}
-          onChange={(event) => setPerson(event.target.value)}
-        >
-          <option value="all">Everyone</option>
-          {people.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </Select>
-        <Select
-          aria-label="Source"
-          value={source}
-          onChange={(event) => setSource(event.target.value)}
-        >
-          <option value="all">All</option>
-          <option value="uploaded">Uploaded</option>
-          {sources
-            .filter((value) => value !== "uploaded")
-            .map((value) => (
-              <option key={value} value={value}>
-                {sourceNames[value] ?? value}
-              </option>
-            ))}
-        </Select>
-        <Select
-          aria-label="Sort"
-          value={sort}
-          onChange={(event) => setSort(event.target.value as DocumentSort)}
-        >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="name-asc">Name A–Z</option>
-          <option value="name-desc">Name Z–A</option>
-        </Select>
-      </div>
+        </ChoiceGroup>
 
-      {error ? (
-        <Text as="div" size="md" tone="danger" style={{ color: T.coral, marginBottom: "var(--space-s14)" }}>
-          {error}
-        </Text>
-      ) : null}
-      {status === "loading" ? (
-        <Card>
-          <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
-            Loading documents from backend...
+        <FilterBar $search>
+          <SearchField
+            appearance="filter"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search documents"
+            aria-label="Search documents"
+          />
+          <SelectMenu
+            aria-label="Category"
+            value={category}
+            onValueChange={setCategory}
+            options={[
+              { value: "all", label: "All categories" },
+              ...categories.map((item) => ({
+                value: item.key,
+                label: item.name,
+              })),
+            ]}
+          />
+          <SelectMenu
+            aria-label="Person"
+            value={person}
+            onValueChange={setPerson}
+            options={[
+              { value: "all", label: "Everyone" },
+              ...people.map((name) => ({ value: name, label: name })),
+            ]}
+          />
+          <SelectMenu
+            aria-label="Source"
+            value={source}
+            onValueChange={setSource}
+            options={[
+              { value: "all", label: "All sources" },
+              { value: "uploaded", label: "Uploaded" },
+              ...sources
+                .filter((value) => value !== "uploaded")
+                .map((value) => ({
+                  value,
+                  label: sourceNames[value] ?? value,
+                })),
+            ]}
+          />
+          <SelectMenu
+            aria-label="Sort"
+            value={sort}
+            onValueChange={(value) => setSort(value as DocumentSort)}
+            options={[
+              { value: "newest", label: "Newest first" },
+              { value: "oldest", label: "Oldest first" },
+              { value: "name-asc", label: "Name A–Z" },
+              { value: "name-desc", label: "Name Z–A" },
+            ]}
+          />
+        </FilterBar>
+
+        {error ? (
+          <Text as="div" size="md" tone="danger">
+            {error}
           </Text>
-        </Card>
-      ) : visibleDocuments.length ? (
-        <DocumentRows documents={visibleDocuments} />
-      ) : (
-        <Card>
-          <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>
-            No documents match the selected filters.
-          </Text>
-        </Card>
-      )}
+        ) : null}
+        {status === "loading" ? (
+          <Card>
+            <Text as="div" size="md" tone="muted">
+              Loading documents from backend...
+            </Text>
+          </Card>
+        ) : visibleDocuments.length ? (
+          <DocumentRows documents={visibleDocuments} />
+        ) : (
+          <Card>
+            <Text as="div" size="md" tone="muted">
+              No documents match the selected filters.
+            </Text>
+          </Card>
+        )}
       </Stack>
     </div>
   );

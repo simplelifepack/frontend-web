@@ -46,7 +46,7 @@ describe("GoogleSignInButton", () => {
     window.dispatchEvent(new CustomEvent("readiness:google-script-error", { detail: true }));
     await expect(screen.findByText(/Google sign-in could not load/)).resolves.toBeInTheDocument();
     expect(onError).toHaveBeenCalledWith(
-      "Google sign-in could not load. Open Readiness at http://localhost:5173 and disable any blocker for accounts.google.com.",
+      "Google sign-in could not load. Open Readines at http://localhost:5173 and disable any blocker for accounts.google.com.",
     );
   });
 

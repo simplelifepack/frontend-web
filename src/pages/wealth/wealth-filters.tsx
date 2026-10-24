@@ -10,9 +10,10 @@ export function CategoryFilters({
 }) {
   return (
     <div className="lp-wealth-filter-wrap" aria-label="Wealth categories">
-      <ChoiceGroup >
+      <ChoiceGroup>
         {wealthCategories.map((item) => (
           <Choice
+            appearance="filter"
             key={item.key}
             type="button"
             aria-pressed={value === item.key}

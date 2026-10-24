@@ -90,8 +90,10 @@ export const StyledButton = styled.button<{
   $size: ButtonSize;
   $tone: ButtonTone;
   $iconOnly: boolean;
+  $fullWidth: boolean;
 }>`
   box-sizing: border-box;
+  ${({ $fullWidth }) => $fullWidth && "width: 100%;"}
   display: inline-flex;
   align-items: center;
   justify-content: center;

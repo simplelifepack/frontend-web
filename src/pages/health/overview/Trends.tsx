@@ -1,4 +1,15 @@
-import { Text, Heading, SearchField, Button, Pill, Card } from "@/design-system";
+import { useState } from "react";
+import TrackedTestChooser from "./TrackedTestChooser";
+import {
+  Text,
+  Heading,
+  SearchField,
+  Button,
+  Pill,
+  Card,
+  Row,
+  Stack,
+} from "@/design-system";
 
 import { Plus } from "lucide-react";
 
@@ -21,6 +32,7 @@ function Trends({
   onSearch,
   onTrack,
   onUntrack,
+  onApplyTracked,
 }: {
   tracked: HealthOverview["trackedMetrics"];
   available: HealthAvailableMetric[];
@@ -28,18 +40,28 @@ function Trends({
   onSearch: (value: string) => void;
   onTrack: (metric: HealthAvailableMetric) => void;
   onUntrack: (metric: TrackedHealthMetric) => void;
+  onApplyTracked: (metrics: HealthAvailableMetric[]) => Promise<void>;
 }) {
+  const [choosing, setChoosing] = useState(false);
   return (
-    <>
-      <div className="lp-health-toolbar">
-        <SearchField aria-label="Search measurements"
-            value={search}
-            onChange={(event) => onSearch(event.target.value)}
-            placeholder="Search measurements..." />
-        <Button variant="primary" type="button" >
-          <Plus aria-hidden="true" focusable="false" size={15} /> Track measurement
+    <Stack $gap="s16">
+      <Row>
+        <SearchField
+          appearance="filter"
+          aria-label="Search measurements"
+          value={search}
+          onChange={(event) => onSearch(event.target.value)}
+          placeholder="Search measurements..."
+        />
+        <Button
+          variant="primary"
+          type="button"
+          onClick={() => setChoosing(true)}
+        >
+          <Plus aria-hidden="true" focusable="false" size={15} /> Track
+          measurement
         </Button>
-      </div>
+      </Row>
       {tracked.length ? (
         tracked.map((metric) => (
           <MetricDetail
@@ -49,10 +71,10 @@ function Trends({
           />
         ))
       ) : (
-        <EmptyTracked onTrack={() => undefined} />
+        <EmptyTracked onTrack={() => setChoosing(true)} />
       )}
       <HealthBlock title="Available from records">
-        <div   className="lp-health-search-results">
+        <div className="lp-health-search-results">
           {available.map((metric) => (
             <button
               key={metric.metricKey}
@@ -73,7 +95,15 @@ function Trends({
           ))}
         </div>
       </HealthBlock>
-    </>
+      {choosing && (
+        <TrackedTestChooser
+          available={available}
+          tracked={tracked}
+          onApply={onApplyTracked}
+          onClose={() => setChoosing(false)}
+        />
+      )}
+    </Stack>
   );
 }
 
@@ -89,7 +119,9 @@ function MetricDetail({
     <Card className="lp-health-trend-card">
       <div className="lp-health-trend-head">
         <div>
-          <Heading level={3} size="sm">{metric.displayName}</Heading>
+          <Heading level={3} size="sm">
+            {metric.displayName}
+          </Heading>
           {latest ? (
             <Text size="sm">
               Latest · {valueWithUnit(latest)} · {formatDate(latest.measuredAt)}
@@ -105,14 +137,16 @@ function MetricDetail({
       {latest ? (
         <>
           <MiniChart measurements={metric.measurements} large />
-          <div   className="lp-health-history">
+          <div className="lp-health-history">
             {metric.measurements
               .slice()
               .reverse()
               .map((item) => (
                 <div key={item.id}>
                   <Text size="md">{formatDate(item.measuredAt)}</Text>
-                  <Text as="b" size="md" weight="semibold">{valueWithUnit(item)}</Text>
+                  <Text as="b" size="md" weight="semibold">
+                    {valueWithUnit(item)}
+                  </Text>
                   <Text as="small" size="sm">
                     {documentTypeLabels[item.sourceType] ?? item.sourceType}
                   </Text>

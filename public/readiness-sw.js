@@ -5,8 +5,8 @@ self.addEventListener("push", (event) => {
   } catch {
     data = {};
   }
-  const title = typeof data.title === "string" ? data.title : "Readiness";
-  const body = typeof data.body === "string" ? data.body : "Open Readiness for details.";
+  const title = typeof data.title === "string" ? data.title : "Readines";
+  const body = typeof data.body === "string" ? data.body : "Open Readines for details.";
   const rawUrl = typeof data.url === "string" ? data.url : "/";
   const url = rawUrl.startsWith("/") && !rawUrl.startsWith("//") ? rawUrl : "/";
   event.waitUntil(self.registration.showNotification(title, {

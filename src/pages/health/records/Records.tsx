@@ -38,7 +38,7 @@ function Records({
           </Button>
         </div>
         <Text as="p" size="md" weight="medium" className="lp-health-records-copy">
-          Upload anything. ReadiNes reads the record on your device to file it,
+          Upload anything. Readines reads the record on your device to file it,
           pull out the values and the ranges printed beside them, and note the
           doctor, hospital, and specialisation so a visit kit can be assembled.
           It records what the document says and never adds an opinion. A copy

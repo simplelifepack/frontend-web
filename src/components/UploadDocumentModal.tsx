@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { analyzeDocument, clearPendingAnalysis, saveDocument } from "@/store/slices/documentsSlice";
 import { categories as documentCategories } from "@/pages/documents/document-utils";
 import type { DocumentRecord } from "@/lib/api";
+import { preferencesApi } from "@/lib/preferences-api";
 import { validateImageUploadBatch } from "@/lib/document-file-validation";
 
 const categories = documentCategories.map((item) => item.name);
@@ -18,11 +19,23 @@ export default function UploadDocumentModal({ open, onClose, onSaved, zIndex = v
   const [category, setCategory] = useState(""); const [documentType, setDocumentType] = useState("");
   const [uniqueNumber, setUniqueNumber] = useState(""); const [name, setName] = useState(""); const [expiryDate, setExpiryDate] = useState(""); const [title, setTitle] = useState("");
   const [inlineError, setInlineError] = useState("");
+  const [aiAvailable, setAiAvailable] = useState(false);
+  const [aiConsent, setAiConsent] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setAiAvailable(false);
+    setAiConsent(false);
+    void preferencesApi.get().then(preferences => {
+      if (!cancelled) setAiAvailable(preferences.aiProcessingEnabled);
+    }).catch(() => { /* Manual entry remains available if preferences cannot load. */ });
+    return () => { cancelled = true; };
+  }, [open]);
   const previews = useMemo(() => files.map((file) => ({ file, url: URL.createObjectURL(file) })), [files]);
   useEffect(() => () => previews.forEach((item) => URL.revokeObjectURL(item.url)), [previews]);
   const aiDisabled = pendingAnalysis?.warnings.some((warning) => warning.code === "AI_PROCESSING_DISABLED") ?? false;
   const aiFailed = pendingAnalysis?.warnings.some((warning) => ["AI_ANALYSIS_UNAVAILABLE", "OPENAI_API_KEY_MISSING", "OPENAI_API_AUTH_FAILED", "OPENAI_QUOTA_EXCEEDED"].includes(warning.code)) ?? false;
-  const manualReview = aiDisabled || aiFailed;
+  const manualReview = !aiConsent || !aiAvailable || aiDisabled || aiFailed;
   useEffect(() => { if (!pendingAnalysis) return; const item = pendingAnalysis.document; setCategory(manualReview ? "" : item.category); setDocumentType(manualReview ? "" : item.documentType); setUniqueNumber(manualReview ? "" : item.uniqueNumber ?? ""); setName(manualReview ? "" : item.nameOnDocument ?? ""); setExpiryDate(manualReview ? "" : item.expiryDate ?? ""); setTitle(manualReview ? "" : item.nameOnDocument || item.title); setInlineError(""); }, [pendingAnalysis, manualReview]);
   if (!open) return null;
   const close = () => { dispatch(clearPendingAnalysis()); setFiles([]); setInlineError(""); onClose(); };
@@ -75,13 +88,14 @@ export default function UploadDocumentModal({ open, onClose, onSaved, zIndex = v
       <Button variant="secondary" type="button" onClick={chooseFiles} >
         {files.length ? "Add more document pages" : "Choose images or PDFs"}
       </Button>
-      <Text as="div" size="sm" tone="muted" style={{ color: T.muted, marginTop: "var(--space-s8)" }}>JPG, PNG, WebP, or PDF · image pages up to 10 MB per upload batch</Text>
+      <Text as="div" size="sm" tone="muted" style={{ color: T.muted, marginTop: "var(--space-s8)" }}>JPG, PNG, WebP, or PDF · up to 50 pages and 10 MB combined per upload batch</Text>
       <div   style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: "var(--space-s10)", marginTop: "var(--space-s14)" }}>{previews.map(({ file, url }, index) => <div key={`${file.name}-${file.size}-${index}`} style={{ display: "grid", gap: "var(--space-s8)" }}><Text as="div" size="sm" weight="semibold" tone="muted" style={{ color: T.muted }}>Page {index + 1}</Text>{isPdf(file) ? <Text as="div" size="md" weight="semibold" style={{ height: 100, display: "grid", placeItems: "center", padding: "var(--space-s10)", border: `1px solid ${T.border}`, borderRadius: "var(--radius-compact)", background: T.raised, color: T.white, textAlign: "center", wordBreak: "break-word" }}>PDF<br /><small style={{ color: T.muted, fontWeight: "var(--weight-semibold)" }}>{file.name}</small></Text> : <img src={url} alt={`Page ${index + 1}`} style={{ width: "100%", height: 100, objectFit: "contain", background: T.raised }} />}<div style={{ display: "flex", gap: "var(--space-s6)", flexWrap: "wrap" }}><Button variant="secondary" type="button" disabled={index === 0} onClick={() => moveFile(index, -1)}>Up</Button><Button variant="secondary" type="button" disabled={index === files.length - 1} onClick={() => moveFile(index, 1)}>Down</Button><Button tone="danger" variant="secondary" type="button" onClick={() => setFiles((items) => items.filter((_, i) => i !== index))}>Remove</Button></div></div>)}</div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "var(--space-s16)" }}><Button loading={analyzeStatus === "loading"} variant="primary" type="button" disabled={!files.length || analyzeStatus === "loading"} onClick={() => void dispatch(analyzeDocument({ files, aiAnalysisConsent: true }))}>{analyzeStatus === "loading" ? "Preparing pages…" : files.length ? `Continue with ${files.length} page${files.length === 1 ? "" : "s"}` : "Select document images"}</Button></div>
+      {aiAvailable ? <Text as="label" size="sm"><input type="checkbox" checked={aiConsent} onChange={event => setAiConsent(event.target.checked)} /> Send these document pages to OpenAI to extract details. You can leave this off and enter details manually.</Text> : <Text as="div" size="sm" tone="muted">AI processing is off or unavailable. Enter document details manually.</Text>}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "var(--space-s16)" }}><Button loading={analyzeStatus === "loading"} variant="primary" type="button" disabled={!files.length || analyzeStatus === "loading"} onClick={() => void dispatch(analyzeDocument({ files, aiAnalysisConsent: aiAvailable && aiConsent }))}>{analyzeStatus === "loading" ? "Preparing pages…" : files.length ? `Continue with ${files.length} page${files.length === 1 ? "" : "s"}` : "Select document images"}</Button></div>
     </div> : <div style={{ display: "grid", gap: "var(--space-s12)" }}><Text as="div" size="md" style={{ color: T.text }}>Pages: {pendingAnalysis.files.map((file) => file.originalName).join(", ")}</Text>
       {aiDisabled ? <Text as="div" size="md" tone="muted" style={{ color: T.muted }}>AI processing is off. Your file was uploaded for review; enter the details manually.</Text> : null}
       {aiFailed ? <Text as="div" size="md" tone="muted">AI could not read this document. Enter the details manually or retry analysis.</Text> : null}
-      {aiFailed && files.length > 0 ? <Button variant="secondary" type="button" disabled={analyzeStatus === "loading"} onClick={() => void dispatch(analyzeDocument({ files, aiAnalysisConsent: true }))}>Retry AI analysis</Button> : null}
+      {aiAvailable && aiConsent && aiFailed && files.length > 0 ? <Button variant="secondary" type="button" disabled={analyzeStatus === "loading"} onClick={() => void dispatch(analyzeDocument({ files, aiAnalysisConsent: aiAvailable && aiConsent }))}>Retry AI analysis</Button> : null}
       <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Title<Input value={title} onChange={(e) => setTitle(e.target.value)} style={inputStyle} /></Text>
       <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Category<Select value={category} onChange={(e) => { setCategory(e.target.value); setInlineError(""); }} style={inputStyle}><option value="">Select a category</option>{categories.map((item) => <option key={item}>{item}</option>)}</Select></Text>
       <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Document type<Input value={documentType} onChange={(e) => setDocumentType(e.target.value)} style={inputStyle} /></Text>

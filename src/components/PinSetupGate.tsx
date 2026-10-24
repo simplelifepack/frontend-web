@@ -1,4 +1,14 @@
-import { Heading, Text, Input, Button } from "@/design-system";
+import { spacing } from "@/design-system";
+import {
+  Heading,
+  Text,
+  Input,
+  Button,
+  Field,
+  Stack,
+  AuthFrame,
+  AuthSurface,
+} from "@/design-system";
 
 import BrandLogo from "@/components/BrandLogo";
 import { useState, type FormEvent } from "react";
@@ -48,55 +58,79 @@ export default function PinSetupGate() {
   };
 
   return (
-    <div className="min-h-dvh bg-[var(--lp-bg)] px-5 py-10 text-[var(--lp-text)]">
-      <div className="mx-auto max-w-sm">
-        <BrandLogo height={64} />
-        <Heading level={1} size="lg" className="mt-8 text-[var(--lp-heading)]">Create your R-pin</Heading>
-        <Text as="p" size="md" className="mt-2 text-[var(--lp-muted)]">
-          Add a 6-digit R-pin for {user?.email ?? "your account"} before continuing.
-        </Text>
-        <form className="mt-8 space-y-4" onSubmit={submit}>
-          <Text as="label" size="md" className="block">
-            <span className="mb-2 block text-sm text-[var(--lp-text)]">R-pin</span>
-            <Input
-              type="text"
-              inputMode="numeric"
-              autoComplete="new-password"
-              value={pin}
-              onChange={(event) => setPin(cleanPin(event.target.value))}
-              className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
-              placeholder="000000"
-              required
-            />
+    <AuthFrame>
+      <AuthSurface>
+        <section>
+          <Stack $gap="s24">
+            <BrandLogo height={Number.parseInt(spacing.s60)} />
+            <Heading level={1} size="lg">
+              Create your R-pin
+            </Heading>
+            <Text tone="muted">
+              Add a 6-digit R-pin for {user?.email ?? "your account"} before
+              continuing.
+            </Text>
+            <Stack as="form" $gap="s16" onSubmit={submit}>
+              <Field label="R-pin">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="new-password"
+                  value={pin}
+                  onChange={(event) => setPin(cleanPin(event.target.value))}
+                  placeholder="000000"
+                  required
+                />
+              </Field>
+              <Field label="Confirm R-pin">
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="new-password"
+                  value={confirmPin}
+                  onChange={(event) =>
+                    setConfirmPin(cleanPin(event.target.value))
+                  }
+                  placeholder="000000"
+                  required
+                />
+              </Field>
+              {error ? (
+                <Text tone="danger" role="alert">
+                  {error}
+                </Text>
+              ) : null}
+              <Button
+                size="lg"
+                fullWidth
+                loading={busy}
+                variant="primary"
+                type="submit"
+                disabled={busy}
+              >
+                {busy ? "Saving..." : "Continue"}
+              </Button>
+            </Stack>
+            <Button
+              size="sm"
+              variant="tertiary"
+              type="button"
+              onClick={() => void signOut()}
+            >
+              Sign out
+            </Button>
+          </Stack>
+        </section>
+        <Stack as="aside" $gap="s16">
+          <Heading level={2} size="md">
+            Your private living archive
+          </Heading>
+          <Text tone="muted">
+            Keep your R-pin private. Use it for quick sign-in to your Readines
+            account.
           </Text>
-          <Text as="label" size="md" className="block">
-            <span className="mb-2 block text-sm text-[var(--lp-text)]">Confirm R-pin</span>
-            <Input
-              type="text"
-              inputMode="numeric"
-              autoComplete="new-password"
-              value={confirmPin}
-              onChange={(event) => setConfirmPin(cleanPin(event.target.value))}
-              className="w-full rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-raised)] px-4 py-3 text-sm text-[var(--lp-heading)] outline-none transition focus:border-[var(--lp-action)]"
-              placeholder="000000"
-              required
-            />
-          </Text>
-          {error ? <Text as="p" size="md" className="text-[var(--lp-coral)]">{error}</Text> : null}
-          <Button size="lg" loading={Boolean(busy)} variant="primary"
-            type="submit"
-            disabled={busy}
-          >
-            {busy ? "Saving..." : "Continue"}
-          </Button>
-        </form>
-        <Button size="sm" variant="tertiary"
-          type="button"
-          onClick={() => void signOut()}
-         style={{ marginTop: "var(--space-s20)" }}>
-          Sign out
-        </Button>
-      </div>
-    </div>
+        </Stack>
+      </AuthSurface>
+    </AuthFrame>
   );
 }

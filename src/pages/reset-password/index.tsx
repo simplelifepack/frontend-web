@@ -1,4 +1,12 @@
-import { Field, Heading, Text, Input, Button } from "@/design-system";
+import { spacing } from "@/design-system";
+import {
+  Field,
+  Heading,
+  Text,
+  PasswordInput,
+  Button,
+  Stack,
+} from "@/design-system";
 
 import BrandLogo from "@/components/BrandLogo";
 import { useEffect, useState, type FormEvent } from "react";
@@ -73,21 +81,18 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md">
-      <div className="lg:hidden">
-        <BrandLogo height={64} />
-      </div>
-      <Heading level={2} size="md" className="mt-4 text-[var(--lp-heading)]">
+    <Stack $gap="s16">
+      <BrandLogo height={Number.parseInt(spacing.s40)} />
+      <Heading level={2} size="md">
         Reset password
       </Heading>
-      <Text as="p" size="md" className="mt-2 text-[var(--lp-muted)]">
-        Create a new password for your Readiness account.
+      <Text as="p" size="md" tone="muted">
+        Create a new password for your Readines account.
       </Text>
 
-      <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
+      <Stack as="form" $gap="s16" onSubmit={handleSubmit}>
         <Field label="New password">
-          <Input
-            type="password"
+          <PasswordInput
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             minLength={8}
@@ -96,8 +101,7 @@ export default function ResetPasswordPage() {
         </Field>
 
         <Field label="Confirm password">
-          <Input
-            type="password"
+          <PasswordInput
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
             minLength={8}
@@ -111,12 +115,7 @@ export default function ResetPasswordPage() {
           </Text>
         ) : null}
         {successMessage ? (
-          <Text
-            as="p"
-            size="md"
-            role="status"
-            style={{ color: "var(--lp-mint)" }}
-          >
+          <Text as="p" size="md" role="status" tone="success">
             {successMessage}
           </Text>
         ) : null}
@@ -130,9 +129,9 @@ export default function ResetPasswordPage() {
         >
           {isSubmitting ? "Resetting..." : "Reset password"}
         </Button>
-      </form>
+      </Stack>
 
-      <div className="mt-6 text-sm">
+      <Stack>
         <Button
           size="sm"
           variant="tertiary"
@@ -141,7 +140,7 @@ export default function ResetPasswordPage() {
         >
           Go to login
         </Button>
-      </div>
-    </div>
+      </Stack>
+    </Stack>
   );
 }

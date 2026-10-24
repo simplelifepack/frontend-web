@@ -24,7 +24,7 @@ export function Ring({ score, size = 64, color }: RingProps) {
   }, [targetOffset]);
 
   return (
-    <Frame $size={size} role="img" aria-label={`Readiness ${value}%`}>
+    <Frame $size={size} role="img" aria-label={`Readines ${value}%`}>
       <Graphic aria-hidden="true" focusable="false" width={size} height={size}>
         <circle
           cx={size / 2}
@@ -51,3 +51,5 @@ export function Ring({ score, size = 64, color }: RingProps) {
     </Frame>
   );
 }
+
+export { LinearProgress } from "./styles";

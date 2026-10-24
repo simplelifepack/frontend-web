@@ -111,8 +111,8 @@ function HealthRecordDocumentViewer({
   const statusLabel = documentRecord
     ? documentRecord.source === "GOOGLE_DRIVE"
       ? "Secured from Google Drive"
-      : `Encrypted in Readiness · ${sourceLabel}`
-    : "Encrypted in Readiness";
+      : `Encrypted in Readines · ${sourceLabel}`
+    : "Encrypted in Readines";
 
   return (
     <>

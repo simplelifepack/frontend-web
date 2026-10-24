@@ -1,4 +1,4 @@
-import { Text, Button, Card } from "@/design-system";
+import { Text, Button, Card, Stack, Grid, Row } from "@/design-system";
 
 import { useEffect, useMemo, useState } from "react";
 import { CalendarClock } from "lucide-react";
@@ -49,13 +49,20 @@ function Overview({
   const visibleMetrics = showAll ? allMetrics.cards : allMetrics.trackedCards;
   const total = allMetrics.available.length || tracked.length;
   return (
-    <>
+    <Stack $gap="s16">
       {upcoming[0] ? (
-        <Card style={{ marginBottom: "var(--space-s16)" }}>
+        <Card>
           <div className="lp-health-event">
-            <CalendarClock aria-hidden="true" focusable="false" size="var(--icon-regular)" color={T.action} />
+            <CalendarClock
+              aria-hidden="true"
+              focusable="false"
+              size="var(--icon-regular)"
+              color={T.action}
+            />
             <div>
-              <Text as="b" size="md" weight="semibold">{upcoming[0].title}</Text>
+              <Text as="b" size="md" weight="semibold">
+                {upcoming[0].title}
+              </Text>
               <Text as="small" size="sm">
                 {formatDate(upcoming[0].dueDate)} ·{" "}
                 {relativeDate(upcoming[0].dueDate)}
@@ -66,19 +73,29 @@ function Overview({
       ) : null}
       {total ? (
         <>
-          <div className="lp-health-tracked-bar">
+          <Row $justify="space-between">
             <Text size="md" weight="semibold">
               Showing {visibleMetrics.length} of {total} tracked tests
             </Text>
-            <div>
-              <Button size="sm" variant="secondary" type="button" onClick={() => setChoosing(true)}>
+            <Row>
+              <Button
+                size="sm"
+                variant="secondary"
+                type="button"
+                onClick={() => setChoosing(true)}
+              >
                 Choose tests
               </Button>
-              <Button size="sm" variant="secondary" type="button" onClick={() => setShowAll(true)}>
+              <Button
+                size="sm"
+                variant="secondary"
+                type="button"
+                onClick={() => setShowAll(true)}
+              >
                 Show all
               </Button>
-            </div>
-          </div>
+            </Row>
+          </Row>
           <MetricCards tracked={visibleMetrics} />
         </>
       ) : (
@@ -95,15 +112,15 @@ function Overview({
           onClose={() => setChoosing(false)}
         />
       ) : null}
-      <div className="lp-two-col lp-health-overview-bottom">
+      <Grid $align="start">
         <ReminderPanel reminders={upcoming} onAdd={onReminder} />
         <HealthReadiness
           member={overview?.member}
           records={records}
           onRecords={onEdit}
         />
-      </div>
-    </>
+      </Grid>
+    </Stack>
   );
 }
 

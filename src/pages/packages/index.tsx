@@ -152,7 +152,7 @@ export default function PackagesPage() {
     <div className="lp-route lp-packages-route">
       <SectionHead
         title="Packages"
-        sub={`${visiblePackageTotal} real-world situations. Readiness matches your archive against each one and shows how ready you already are.`}
+        sub={`${visiblePackageTotal} real-world situations. Readines matches your archive against each one and shows how ready you already are.`}
         action={null}
       />
 

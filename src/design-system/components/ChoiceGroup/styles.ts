@@ -1,13 +1,18 @@
 import styled from "styled-components";
 import { theme } from "../../variables/theme";
-export const Group = styled.div`
+export const Group = styled.div<{ $fullWidth: boolean }>`
   min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.s8};
+  ${({ $fullWidth }) =>
+    $fullWidth &&
+    "width: 100%; & > [data-ds-control] { flex: 1; min-width: 0; }"}
 `;
-export const Option = styled.button`
+export const Option = styled.button<{
+  $appearance: "default" | "filter" | "profile";
+}>`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -24,6 +29,20 @@ export const Option = styled.button`
     ${({ theme }) => theme.typography.text.md} /
     ${({ theme }) => theme.typography.lineHeights.body}
     ${({ theme }) => theme.typography.family};
+  ${({ theme, $appearance }) =>
+    $appearance === "filter" &&
+    `border-radius: ${theme.radii.pill}; font-weight: ${theme.typography.weights.medium}; min-height: ${theme.spacing.s40}; padding-inline: ${theme.spacing.s14};`}
+  ${({ theme, $appearance }) =>
+    $appearance === "profile" &&
+    `
+    min-width: calc(${theme.spacing.s40} * 4);
+    max-width: min(100%, ${theme.vars.sizes.tooltip});
+    justify-content: flex-start;
+    text-align: left;
+    padding: ${theme.spacing.s12};
+    gap: ${theme.spacing.s12};
+    border-radius: ${theme.radii.panel};
+  `}
   cursor: pointer;
   &[aria-pressed="true"] {
     background: ${({ theme }) => theme.colors.actionSoft};
@@ -50,3 +69,17 @@ export const Option = styled.button`
   }
 `;
 Group.defaultProps = Option.defaultProps = { theme };
+
+export const Count = styled.span`
+  display: inline-grid;
+  place-items: center;
+  min-width: ${({ theme }) => theme.spacing.s20};
+  min-height: ${({ theme }) => theme.spacing.s20};
+  padding-inline: ${({ theme }) => theme.spacing.s4};
+  border-radius: ${({ theme }) => theme.radii.pill};
+  background: ${({ theme }) => theme.colors.mutedSoft};
+  font-size: ${({ theme }) => theme.typography.text.sm};
+  font-weight: ${({ theme }) => theme.typography.weights.medium};
+  line-height: ${({ theme }) => theme.typography.lineHeights.compact};
+`;
+Count.defaultProps = { theme };

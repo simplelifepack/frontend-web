@@ -1,4 +1,4 @@
-import { Text } from "@/design-system";
+import { Text, AccountTrigger, AccountInitial } from "@/design-system";
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
@@ -74,7 +74,7 @@ export default function AccountMenu({ user }: { user: AuthUser | null }) {
           event.preventDefault();
           setOpen(false);
           rootRef.current
-            ?.querySelector<HTMLButtonElement>(".lp-user-menu")
+            ?.querySelector<HTMLButtonElement>("[data-account-trigger]")
             ?.focus();
         }
         if (!open) return;
@@ -94,13 +94,16 @@ export default function AccountMenu({ user }: { user: AuthUser | null }) {
         }
         if (event.key === "Tab") {
           setOpen(false);
-          rootRef.current?.querySelector<HTMLButtonElement>(".lp-user-menu")?.focus();
+          rootRef.current
+            ?.querySelector<HTMLButtonElement>("[data-account-trigger]")
+            ?.focus();
         }
       }}
     >
-      <button
+      <AccountTrigger
+        variant="default"
         type="button"
-        className="lp-user-menu"
+        data-account-trigger=""
         onClick={() => {
           setOpen((value) => !value);
           if (!open) focusItem(0);
@@ -117,10 +120,10 @@ export default function AccountMenu({ user }: { user: AuthUser | null }) {
         aria-expanded={open}
         aria-controls="lp-account-dropdown"
       >
-        <b>{initial}</b>
-        <span>{name}</span>
+        <AccountInitial>{initial}</AccountInitial>
+        <span data-account-name="">{name}</span>
         <ChevronDown aria-hidden="true" focusable="false" size={15} />
-      </button>
+      </AccountTrigger>
       {open ? (
         <div
           id="lp-account-dropdown"

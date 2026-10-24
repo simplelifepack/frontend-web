@@ -98,7 +98,7 @@ export default function GlobalSearch() {
               event.preventDefault();
               close();
             }
-          }} placeholder="Search..." aria-label="Search Readiness" aria-expanded={open} aria-controls="readiness-global-search-results" />
+          }} placeholder="Search..." aria-label="Search Readines" aria-expanded={open} aria-controls="readiness-global-search-results" />
       {open && query.trim() ? (
         <GlobalSearchResults
           activeIndex={activeIndex}

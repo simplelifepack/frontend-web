@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Text, ModalBackdrop, ModalPanel, Checkbox, Button } from "@/design-system";
 
 import { useEffect, useMemo, useState } from "react";
@@ -8,6 +9,7 @@ import { api, type WealthHandoffRecipient, type WealthHandoffSummary } from "@/l
 const css = { panel: "var(--lp-panel)", raised: "var(--lp-raised)", border: "var(--lp-border)", text: "var(--lp-text)", muted: "var(--lp-muted)", heading: "var(--lp-heading)", coral: "var(--lp-coral)", mint: "var(--lp-mint)", info: "var(--lp-info)" };
 
 export default function WealthHandoffDialog({ onClose }: { onClose: () => void }) {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState<WealthHandoffSummary | null>(null);
   const [chosen, setChosen] = useState<Set<string>>(new Set());
   const [ack, setAck] = useState(false);
@@ -63,7 +65,7 @@ export default function WealthHandoffDialog({ onClose }: { onClose: () => void }
           <>
             <Text as="p" size="md" tone="muted" style={{ color: css.muted, margin: "0 0 var(--space-s14)" }}>For a real emergency. Releases {docs} wealth documents and every access instruction to the people below, so nothing is locked away when it matters.</Text>
             <SectionTitle>Who steps in</SectionTitle>
-            {recipients.length ? recipients.map((recipient) => <RecipientRow key={recipient.id} recipient={recipient} checked={chosen.has(recipient.id)} onToggle={() => toggle(recipient.id)} />) : <EmptyTrust />}
+            {recipients.length ? recipients.map((recipient) => <RecipientRow key={recipient.id} recipient={recipient} checked={chosen.has(recipient.id)} onToggle={() => toggle(recipient.id)} />) : <EmptyTrust onManage={() => { onClose(); navigate("/family"); }} />}
             <div style={{ marginTop: "var(--space-s14)", borderRadius: 11, border: `1px solid ${css.border}`, background: css.raised, padding: "11px 13px", fontSize: "var(--text-md)", lineHeight: "var(--line-body)" }}>
               <Text as="div" size="md" weight="semibold" style={{ color: css.text, marginBottom: "var(--space-s4)" }}>They receive</Text>
               <Text as="div" size="md" tone="success" style={{ color: css.mint }}>✓ {docs} wealth documents (deeds, policies, statements)</Text>
@@ -95,8 +97,8 @@ function RecipientRow({ recipient, checked, onToggle }: { recipient: WealthHando
   return <Text as="label" size="md" className="lp-wealth-sos-recipient" style={{ display: "flex", alignItems: "center", gap: 11, padding: "9px 0", borderTop: `1px solid ${css.border}`, cursor: recipient.canReceiveHandoff ? "pointer" : "not-allowed", opacity: recipient.canReceiveHandoff ? 1 : 0.58 }}><Checkbox type="checkbox" disabled={!recipient.canReceiveHandoff} checked={checked} onChange={onToggle} /><span style={{ display: "grid", placeItems: "center", width: 30, height: 30, borderRadius: "var(--radius-compact)", background: `color-mix(in srgb, ${tone} 18%, transparent)`, color: tone, fontWeight: "var(--weight-bold)", fontSize: "var(--text-md)" }}>{recipient.name[0]}</span><span className="lp-wealth-sos-person" style={{ flex: 1, fontSize: "var(--text-md)", color: css.text }}>{recipient.name}<span style={{ color: css.muted }}> · {recipient.relationship} · {recipient.accessTypeLabel}</span><small style={{ display: "block", color: css.muted, marginTop: 2 }}>{recipient.email}{recipient.canReceiveHandoff ? "" : " · not enabled for SOS handoff"}</small></span><span style={{ border: `1px solid color-mix(in srgb, ${tone} 38%, transparent)`, borderRadius: "var(--radius-pill)", padding: "var(--space-s4) var(--space-s8)", color: tone, fontSize: "var(--text-sm)", fontWeight: "var(--weight-bold)" }}>{recipient.type}</span></Text>;
 }
 
-function EmptyTrust() {
-  return <div><Text as="p" size="md" tone="muted" style={{ color: css.muted, margin: "0 0 var(--space-s12)" }}>Nobody can step in yet. Give someone Emergency or Wealth download access and they will appear here.</Text><Button variant="secondary" type="button" ><ShieldCheck aria-hidden="true" focusable="false" size={15} /> Manage trusted people</Button></div>;
+function EmptyTrust({ onManage }: { onManage: () => void }) {
+  return <div><Text as="p" size="md" tone="muted" style={{ color: css.muted, margin: "0 0 var(--space-s12)" }}>Nobody can step in yet. Give someone Emergency or Wealth download access and they will appear here.</Text><Button variant="secondary" type="button" onClick={onManage}><ShieldCheck aria-hidden="true" focusable="false" size={15} /> Manage trusted people</Button></div>;
 }
 
 function Done({ result }: { result: Awaited<ReturnType<typeof api.wealth.sendHandoff>> }) {

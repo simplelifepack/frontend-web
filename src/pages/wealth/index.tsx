@@ -1,4 +1,4 @@
-import { Heading, Text, Button } from "@/design-system";
+import { Heading, Text, Button, SearchField, Stack } from "@/design-system";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Search } from "lucide-react";
@@ -37,6 +37,7 @@ export default function WealthPage() {
   const [editingHolding, setEditingHolding] = useState<WealthRecord | null>(null);
   const [action, setAction] = useState<{ mode: "edit" | "note" | "attach" | "delete"; record: WealthRecord } | null>(null);
   const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [showMath, setShowMath] = useState(false);
   const [category, setCategory] = useState<WealthCategory>("all");
   const [homeCurrency, setHomeCurrency] = useState(getStoredHomeCurrency);
@@ -140,7 +141,7 @@ export default function WealthPage() {
           >
             <Plus aria-hidden="true" focusable="false" size="var(--icon-regular)" />
           </Button>
-          <Button size="sm" iconOnly variant="tertiary" type="button" aria-label="Search Wealth">
+          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={() => setSearchOpen(value => !value)} aria-expanded={searchOpen} aria-label="Search Wealth">
             <Search aria-hidden="true" focusable="false" size={17} />
           </Button>
           <Text size="md" weight="semibold">{user?.name?.charAt(0).toUpperCase() || "A"}</Text>
@@ -151,6 +152,7 @@ export default function WealthPage() {
         sub="Not a balance sheet: whether your family could access all of it if something happened to you."
         action={null}
       />
+      {searchOpen && <Stack $spaceAfter="s16"><SearchField appearance="filter" autoFocus aria-label="Search Wealth records" placeholder="Search Wealth records" value={query} onChange={event => setQuery(event.target.value)} /></Stack>}
       <WealthDesktopActions onHolding={() => setCaptureOpen("asset")} onProof={() => setCaptureOpen("proof")} onMoney={() => setCaptureOpen("money")} onSos={() => setHandoffOpen(true)} />
       {actionSheetOpen ? (
         <WealthActionSheet

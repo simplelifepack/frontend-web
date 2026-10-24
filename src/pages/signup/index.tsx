@@ -76,7 +76,7 @@ export default function SignupPage() {
     <div className="mx-auto max-w-md">
       <div className="lg:hidden"><BrandLogo height={64} /></div>
       <h2 className="mt-4 text-3xl font-semibold text-[var(--lp-heading)]">Create account</h2>
-      <p className="mt-2 text-sm text-[var(--lp-muted)]">Set up your Readiness login.</p>
+      <p className="mt-2 text-sm text-[var(--lp-muted)]">Set up your Readines login.</p>
 
       <div className="mt-8">
         <GoogleSignInButton disabled={isSubmitting} onCredential={handleGoogleCredential} onError={setError} />

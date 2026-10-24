@@ -21,7 +21,7 @@ export default function ProtectedRoute() {
   if (token && initializationStatus === "failed") {
     return (
       <div role="alert">
-        {initializationError ?? "Unable to initialize Readiness."}{" "}
+        {initializationError ?? "Unable to initialize Readines."}{" "}
         <Button variant="secondary" type="button" onClick={() => void dispatch(initializeApp())}>
           Retry
         </Button>
@@ -30,7 +30,7 @@ export default function ProtectedRoute() {
   }
 
   if (!token || !user) {
-    return <Navigate to="/" replace state={{ authMode: "signin", from: location }} />;
+    return <Navigate to="/" replace state={{ from: location }} />;
   }
 
   return <Outlet />;
