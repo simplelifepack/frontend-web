@@ -23,6 +23,16 @@ describe("waitlist modal", () => {
     expect((await screen.findByRole("status")).textContent).toBe("Registered");
     expect(register).toHaveBeenLastCalledWith({ email: "person@example.com", website: "", challenge: "signed", solution: "123" });
   });
+  it("shows the friendly already-registered message from the server", async () => {
+    register.mockResolvedValueOnce({ alreadyRegistered: true, message: "You’re already registered for early access. Thanks for your interest!" });
+    render(<WaitlistModal onClose={vi.fn()} />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Email address" }), { target: { value: "person@example.com" } });
+    const submit = screen.getByRole("button", { name: "Register for Early Access" }) as HTMLButtonElement;
+    await waitFor(() => expect(submit.disabled).toBe(false));
+    fireEvent.click(submit);
+    expect((await screen.findByRole("status")).textContent).toBe("You’re already registered for early access. Thanks for your interest!");
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
   it("never unsubscribes on mount and confirms with an explicit action", async () => {
     render(<WaitlistModal unsubscribeToken="opaque-token" onClose={vi.fn()} />);
     expect(unsubscribe).not.toHaveBeenCalled();
