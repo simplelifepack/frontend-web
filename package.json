@@ -19,7 +19,7 @@
     "test:documents-readiness": "vitest run src/store/slices/documentsSlice.readiness.test.ts",
     "test:document-encryption": "vitest run src/lib/document-hybrid-encryption.test.ts",
     "format": "prettier --write .",
-    "prepare": "git config core.hooksPath .githooks",
+    "prepare": "node scripts/prepare-git-hooks.mjs",
     "test:usage": "vitest run src/components/AccountUsage.test.tsx src/lib/http-client.stream.test.ts src/lib/client-secrets.test.ts src/lib/public-document-labels.test.ts"
   },
   "dependencies": {
