@@ -12,6 +12,8 @@ export default function DigiLockerDialog() {
   const dispatch = useAppDispatch();
   const importGeneration = useRef(0);
   const callback = new URLSearchParams(window.location.hash.slice(1));
+  const [invalidReturn, setInvalidReturn] = useState(() => callback.has("digilocker_error") ||
+    (callback.has("digilocker") && callback.get("digilocker") !== sessionStorage.getItem(SESSION_KEY)));
   const [open, setOpen] = useState(() => callback.has("digilocker") || callback.has("digilocker_error"));
   const [id, setId] = useState(() => sessionStorage.getItem(SESSION_KEY) ?? "");
   const [session, setSession] = useState<LockerSession | null>(null);
@@ -40,7 +42,7 @@ export default function DigiLockerDialog() {
       if (!active) return;
       setConfigured(status.configured);
       if (!status.configured) { setMessage(status.message ?? "DigiLocker is not configured."); return; }
-      if (id) {
+      if (id && !invalidReturn) {
         const current = await digilocker.session(id);
         if (!active) return;
         setSession(current);
@@ -48,14 +50,16 @@ export default function DigiLockerDialog() {
           const result = await digilocker.documents(id);
           if (active) setDocuments(result.documents);
         } else {
+          setDocuments([]);
+          setSelection([]);
           setMessage(({ PENDING: "Authorization was not completed. Connect again or cancel.", CONSENT_DENIED: "DigiLocker consent was declined. You can start a new connection.", EXPIRED: "Your DigiLocker session expired. Connect again.", CANCELLED: "DigiLocker connection was cancelled.", FAILED: "DigiLocker authentication failed. Please reconnect." } as Record<string, string>)[current.status] ?? "Please reconnect DigiLocker.");
         }
       }
-    })().catch(error => { if (active) setMessage(errorMessage(error)); }).finally(() => { if (active) setBusy(false); });
+    })().catch(error => { if (active) { setSession(null); setDocuments([]); setSelection([]); setMessage(errorMessage(error)); } }).finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
-  }, [open, id]);
+  }, [open, id, invalidReturn]);
   useEffect(() => {
-    if (!open || !id || (!importing && session?.status !== "IMPORTING")) return;
+    if (!open || !id || (!importing && !["IMPORTING", "PENDING"].includes(session?.status ?? ""))) return;
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
     const generation = importGeneration.current;
@@ -63,10 +67,22 @@ export default function DigiLockerDialog() {
       try {
         const next = await digilocker.session(id);
         if (active && generation === importGeneration.current && (!importing || next.status === "IMPORTING")) {
+          if (session?.status === "PENDING" && next.status === "AUTHENTICATED") {
+            const result = await digilocker.documents(id);
+            if (!active) return;
+            setDocuments(result.documents); setMessage("");
+          }
           setSession(next);
-          if (next.status !== "IMPORTING") void dispatch(fetchDocuments());
+          setSelection(previous => previous.filter(reference => !next.progress.some(p => p.reference === reference && p.phase === "Completed")));
+          if (["EXPIRED", "CANCELLED", "CONSENT_DENIED", "FAILED"].includes(next.status)) {
+            setDocuments([]); setSelection([]);
+            setMessage("DigiLocker authorization ended or expired. Connect again to continue.");
+          }
+          if (session?.status === "IMPORTING" && next.status !== "IMPORTING") void dispatch(fetchDocuments());
         }
-      } catch { /* The import request reports actionable errors; polling can retry. */ }
+      } catch {
+        if (active && !importing) setMessage("Unable to refresh DigiLocker progress. Retrying automatically.");
+      }
       if (active) timer = setTimeout(() => void poll(), 1500);
     };
     void poll();
@@ -76,7 +92,10 @@ export default function DigiLockerDialog() {
   const connect = async () => {
     setBusy(true); setMessage("");
     try {
-      if (id && session?.status !== "IMPORTING") await digilocker.cancel(id);
+      if (id && session?.status !== "IMPORTING") {
+        try { await digilocker.cancel(id); }
+        catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
+      }
       const next = await digilocker.start();
       sessionStorage.setItem(SESSION_KEY, next.id);
       window.location.assign(next.authorizationUrl);
@@ -86,14 +105,18 @@ export default function DigiLockerDialog() {
     if (importing || session?.status === "IMPORTING") return;
     setBusy(true);
     try {
-      if (id) await digilocker.cancel(id);
+      if (id) {
+        try { await digilocker.cancel(id); }
+        catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
+      }
       sessionStorage.removeItem(SESSION_KEY);
-      setId(""); setSession(null); setDocuments([]); setSelection([]); setConfirm(false); setMessage(""); setOpen(false);
+      setInvalidReturn(false); setId(""); setSession(null); setDocuments([]); setSelection([]); setConfirm(false); setMessage(""); setOpen(false);
     } catch (error) { setMessage(errorMessage(error)); }
     finally { setBusy(false); }
   };
   const runImport = async () => {
     // This is the sole import entry point and is reachable only from Allow & Import.
+    if (importing || !selection.length || session?.status !== "AUTHENTICATED") return;
     importGeneration.current++;
     setConfirm(false); setImporting(true); setMessage("");
     try {

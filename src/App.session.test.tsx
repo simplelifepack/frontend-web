@@ -12,6 +12,7 @@ import { request } from "./lib/http-client";
 
 vi.mock("@/pages/settings", () => ({ default: () => null }));
 vi.mock("@/pages/landing", () => ({ default: () => <div>Public landing</div> }));
+vi.mock("@/pages/documents", () => ({ default: () => <div>Documents return</div> }));
 vi.mock("@/pages/home", () => ({ default: () => <div>Signed in home</div> }));
 vi.mock("@/components/AppShell", () => ({ default: () => <Outlet /> }));
 vi.mock("@/components/BootstrapSkeleton", () => ({ default: () => <div>Initializing session</div> }));
@@ -33,7 +34,7 @@ function json(body: unknown, status = 200) {
 function LocationProbe() {
   const location = useLocation();
   const navigate = useNavigate();
-  return <><div data-testid="path">{location.pathname}</div><button onClick={() => navigate("/")}>Open root</button></>;
+  return <><div data-testid="path">{location.pathname}</div><div data-testid="full-path">{location.pathname}{location.search}{location.hash}</div><button onClick={() => navigate("/")}>Open root</button></>;
 }
 
 function openPage(path: string) {
@@ -120,6 +121,16 @@ describe("session restoration and entry routing", () => {
     await act(async () => { resolveRefresh(json(authResult)); });
     await screen.findByText("Signed in home");
     expect(screen.getByTestId("path").textContent).toBe("/home");
+  });
+
+  it("retains the DigiLocker callback through sign-in after a refresh session expires", async () => {
+    validRefreshSession = false;
+    const destination = "/documents?view=all#digilocker=session-a&result=AUTHENTICATED";
+    const store = openPage(destination);
+    await screen.findByText("Public landing");
+    await act(async () => { await store.dispatch(login({ email: user.email, password: "password" })); });
+    await screen.findByText("Documents return");
+    expect(screen.getByTestId("full-path").textContent).toBe(destination);
   });
 
   it("refreshes an expired access token and retries the authenticated request", async () => {

@@ -34,7 +34,7 @@ const WealthPage = lazy(() => import("@/pages/wealth"));
 
 type LandingLocationState = {
   authMode?: "signin" | "signup";
-  from?: { pathname?: string };
+  from?: { pathname?: string; search?: string; hash?: string };
 };
 
 function LandingRoute() {
@@ -43,7 +43,10 @@ function LandingRoute() {
   const { token, user } = useAppSelector((state) => state.auth);
   const state = location.state as LandingLocationState | null;
   const authMode = state?.authMode === "signup" ? "signup" : state?.authMode === "signin" ? "signin" : null;
-  const destination = state?.from?.pathname ?? "/home";
+  const returnLocation = state?.from;
+  const destination = returnLocation?.pathname?.startsWith("/") && !returnLocation.pathname.startsWith("//")
+    ? `${returnLocation.pathname}${returnLocation.search ?? ""}${returnLocation.hash ?? ""}`
+    : "/home";
 
   // Explicit login/signup navigation is a one-time action, not persistent
   // landing-page state that should reopen the dialog on refresh or Back.

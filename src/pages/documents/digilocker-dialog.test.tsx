@@ -63,3 +63,68 @@ it("denied authorization is shown and closing cancels the server session", async
   fireEvent.click(screen.getByText("Cancel"));
   await waitFor(() => expect(digilocker.cancel).toHaveBeenCalledWith("session-a"));
 });
+it("rejects a mismatched callback without reading either session's documents", async () => {
+  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  window.history.replaceState(null, "", "/documents#digilocker=other-session&result=AUTHENTICATED");
+  render(<DigiLockerDialog />);
+  await screen.findByText(/authorization could not be verified/);
+  await waitFor(() => expect((screen.getByText("Connect DigiLocker") as HTMLButtonElement).disabled).toBe(false));
+  expect(digilocker.session).not.toHaveBeenCalled();
+  expect(digilocker.documents).not.toHaveBeenCalled();
+  expect(window.location.hash).toBe("");
+});
+it("expired sessions allow reconnecting and never list or import documents", async () => {
+  vi.mocked(digilocker.session).mockResolvedValue({ id: "session-a", status: "EXPIRED", expiresAt: null, progress: [] });
+  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  window.history.replaceState(null, "", "/documents#digilocker=session-a");
+  render(<DigiLockerDialog />);
+  await screen.findByText("Your DigiLocker session expired. Connect again.");
+  expect(digilocker.documents).not.toHaveBeenCalled();
+  expect(digilocker.import).not.toHaveBeenCalled();
+});
+it("Deselect All disables import and an empty provider list is explained", async () => {
+  await connected();
+  fireEvent.click(screen.getByText("Select All"));
+  fireEvent.click(screen.getByText("Deselect All"));
+  expect((screen.getByText("Import Selected") as HTMLButtonElement).disabled).toBe(true);
+});
+it("an empty provider list is not replaced with fabricated documents", async () => {
+  vi.mocked(digilocker.documents).mockResolvedValue({ documents: [], session: { id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] } });
+  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  window.history.replaceState(null, "", "/documents#digilocker=session-a");
+  render(<DigiLockerDialog />);
+  await screen.findByText(/DigiLocker returned no issued documents/);
+  expect((screen.getByText("Import Selected") as HTMLButtonElement).disabled).toBe(true);
+});
+it("missing sessions do not trap the user in an uncloseable dialog", async () => {
+  vi.mocked(digilocker.session).mockRejectedValue(Object.assign(new Error("Session not found"), { status: 404 }));
+  vi.mocked(digilocker.cancel).mockRejectedValue(Object.assign(new Error("Session not found"), { status: 404 }));
+  sessionStorage.setItem("readines.digilocker.session", "deleted-session");
+  render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
+  await screen.findByText("Session not found");
+  fireEvent.click(screen.getByText("Cancel"));
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  expect(sessionStorage.getItem("readines.digilocker.session")).toBeNull();
+});
+it("recovers a pending authorization and loads its documents when the backend completes consent", async () => {
+  vi.mocked(digilocker.session)
+    .mockResolvedValueOnce({ id: "session-a", status: "PENDING", expiresAt: null, progress: [] })
+    .mockResolvedValue({ id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] });
+  let finishListing!: (value: Awaited<ReturnType<typeof digilocker.documents>>) => void;
+  vi.mocked(digilocker.documents).mockImplementation(() => new Promise(resolve => { finishListing = resolve; }));
+  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
+  await waitFor(() => expect(digilocker.documents).toHaveBeenCalledWith("session-a"));
+  finishListing({ documents: docs, session: { id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] } });
+  await screen.findByLabelText("Select Certificate one");
+  expect(screen.queryByText(/Authorization was not completed/)).toBeNull();
+});
+it("resumes a running import and refreshes the normal Documents library on completion", async () => {
+  vi.mocked(digilocker.session)
+    .mockResolvedValueOnce({ id: "session-a", status: "IMPORTING", expiresAt: null, progress: [{ reference: "cert-1", phase: "Encrypting" }] })
+    .mockResolvedValue({ id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [{ reference: "cert-1", phase: "Completed", documentId: "saved-document" }] });
+  await connected();
+  await screen.findByText("Completed");
+  expect(dispatch).toHaveBeenCalledWith({ type: "refresh" });
+  expect((screen.getByLabelText("Select Certificate one") as HTMLInputElement).disabled).toBe(true);
+});
