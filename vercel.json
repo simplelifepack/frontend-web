@@ -31,29 +31,5 @@
       "source": "/(.*)",
       "destination": "/"
     }
-  ],
-  "redirects": [
-    {
-      "source": "/:path((?!assets/|icons/|readiness-logo\\.png$|readiness-sw\\.js$|manifest\\.webmanifest$|favicon\\.ico$|robots\\.txt$).+)",
-      "has": [
-        {
-          "type": "host",
-          "value": "readines.com"
-        }
-      ],
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/:path((?!assets/|icons/|readiness-logo\\.png$|readiness-sw\\.js$|manifest\\.webmanifest$|favicon\\.ico$|robots\\.txt$).+)",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.readines.com"
-        }
-      ],
-      "destination": "/",
-      "permanent": false
-    }
   ]
 }
