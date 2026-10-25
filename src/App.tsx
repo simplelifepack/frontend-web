@@ -7,6 +7,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 
 import AppShell from "@/components/AppShell";
 import AuthLayout from "@/components/AuthLayout";
+import DigiLockerReturnGate from "@/components/DigiLockerReturnGate";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SessionGate from "@/components/SessionGate";
 import { preferencesApi } from "@/lib/preferences-api";
@@ -169,6 +170,6 @@ function FullApplication() {
 // Resolve the host before mounting anything that restores a session or starts checkout.
 export default function App() {
   return <DomainAccessGuard landing={<Landing earlyAccess onAuthed={() => {}} />}>
-    <FullApplication />
+    <DigiLockerReturnGate><FullApplication /></DigiLockerReturnGate>
   </DomainAccessGuard>;
 }
