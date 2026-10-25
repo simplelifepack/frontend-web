@@ -22,3 +22,15 @@ it("searches extra documents and selects them for download", () => {
   fireEvent.change(screen.getByRole("searchbox"), { target: { value: "unrelated" } });
   expect(screen.queryByRole("checkbox")).toBeNull();
 });
+
+it("always offers adding another document when no package requirements are ready", () => {
+  const add = vi.fn();
+  const view = (found: DerivedRequirement[], selectedCount: number) => <PackDownloadCard documents={[document]} found={found} selectedCount={selectedCount} downloadIds={new Set()} downloading={false} downloadError={null} onToggle={vi.fn()} onAddAnother={add} onDownload={vi.fn()} />;
+  const { rerender } = render(view([], 0));
+  expect((screen.getByRole("button", { name: "Download" }) as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Add another document" }));
+  expect(add).toHaveBeenCalledOnce();
+  rerender(view([{ ...slot, id: "extra-doc" }], 1));
+  expect(screen.getByRole("checkbox")).toBeTruthy();
+  expect((screen.getByRole("button", { name: "Download" }) as HTMLButtonElement).disabled).toBe(false);
+});

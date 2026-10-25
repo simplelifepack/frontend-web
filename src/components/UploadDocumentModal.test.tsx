@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import {
   cleanup,
   fireEvent,
@@ -15,6 +16,7 @@ let pendingAnalysis: AnalyzeDocumentResponse | null = null;
 const dispatch = vi.fn((action: { kind: string }) =>
   action.kind === "save" ? { unwrap: async () => ({}) } : {},
 );
+vi.mock("@/lib/preferences-api", () => ({ preferencesApi: { get: async () => ({ aiProcessingEnabled: true }) } }));
 vi.mock("@/store/hooks", () => ({
   useAppDispatch: () => dispatch,
   useAppSelector: (select: (state: unknown) => unknown) =>
@@ -81,6 +83,11 @@ function renderModal(route: string) {
   };
 }
 
+async function selectAI() {
+  await waitFor(() => expect(screen.getByRole("checkbox")).toBeTruthy());
+  fireEvent.click(screen.getByRole("checkbox"));
+}
+
 afterEach(() => {
   cleanup();
   pendingAnalysis = null;
@@ -90,6 +97,7 @@ afterEach(() => {
 describe("manual document upload review", () => {
   it("retains original-file AI text and structured fields when confirming a successful analysis", async () => {
     const view = renderModal("/documents");
+    await selectAI();
     view.showReview({ ...analysis, document: { ...analysis.document, extractedText: "Synthetic extracted page content", fields: { issuer: "Synthetic issuer" } } });
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Save" }));
     await waitFor(() => expect(view.onClose).toHaveBeenCalledOnce());
@@ -106,8 +114,9 @@ describe("manual document upload review", () => {
     expect(payload.analysisSource).toBe("manual"); expect(payload.rawExtractedText).toBe(""); expect(payload.fields.issuer).toBeUndefined();
   });
 
-  it("allows selecting and dropping PDF files alongside images", () => {
+  it("allows selecting and dropping PDF files alongside images", async () => {
     const view = renderModal("/documents");
+    await selectAI();
     const input = view.baseElement.querySelector('input[type="file"]') as HTMLInputElement;
     expect(input.accept).toContain("application/pdf");
     expect(input.accept).toContain(".pdf");
@@ -177,8 +186,10 @@ describe("manual document upload review", () => {
       "ABCDE1234F",
     );
     manual.unmount();
-    pendingAnalysis = analysis;
+    pendingAnalysis = null;
     const ai = renderModal("/documents");
+    await selectAI();
+    ai.showReview(analysis);
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Save" }));
     await waitFor(() => expect(ai.onClose).toHaveBeenCalledOnce());
     expect(vi.mocked(saveDocument).mock.calls[1]![0]).toMatchObject({

@@ -26,7 +26,6 @@ export function PackDownloadCard({
   onAddAnother,
   onToggle,
 }: DownloadCardProps) {
-  if (!found.length) return null;
   return (
     <div className="lp-pack-download-section">
       <section className="lp-pack-download-card">
@@ -36,6 +35,7 @@ export function PackDownloadCard({
           </Text>
           <Text size="md">{selectedCount}</Text>
         </div>
+        {!found.length ? <Text as="p" size="sm" tone="muted" style={{ padding: "0 16px 14px", margin: 0 }}>Add any document from your vault to include it in this download.</Text> : null}
         {found
           .filter(
             (slot, index) =>
@@ -95,11 +95,7 @@ export function PackDownloadCard({
         ) : (
           <Download aria-hidden="true" focusable="false" size={15} />
         )}
-        {downloading
-          ? "Downloading..."
-          : selectedCount
-            ? "Download"
-            : "Nothing selected"}
+        {downloading ? "Downloading..." : "Download"}
       </Button>
     </div>
   );

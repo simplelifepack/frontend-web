@@ -231,7 +231,7 @@ export default function PackDetail({
               onWarningClear={() => setWarningDocument(null)}
             />
           ) : null}
-          {extraOpen ? <PackExtraDocuments documents={documents.filter(document => !found.some(slot => slot.matchedDocument?.id === document.id))} selected={extraIds} onChange={id => setExtraIds(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next; })} onClose={() => setExtraOpen(false)} /> : null}
+          {extraOpen ? <PackExtraDocuments documents={documents.filter(document => !found.some(slot => slot.matchedDocument?.id === document.id))} selected={extraIds} onUploaded={document => { setExtraIds(current => new Set(current).add(document.id)); setDownloadIds(current => { const next = new Set(current); next.delete(document.id); return next; }); setExtraOpen(false); }} onChange={id => setExtraIds(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next; })} onClose={() => setExtraOpen(false)} /> : null}
           {viewingDocument ? (
             <PackageDocumentPreview document={viewingDocument} onClose={() => setViewingDocument(null)} />
           ) : null}

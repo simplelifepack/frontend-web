@@ -35,16 +35,16 @@ describe("existing package refresh control", () => {
     expect(button.disabled).toBe(false);
   });
   it("shows the no-change result without closing the panel", async () => {
-    refresh.mockResolvedValue({ package: pack, changed: false, message: "Checked — no changes found" });
+    refresh.mockResolvedValue({ package: pack, changed: false, message: "Refreshed — no changes in this package." });
     render(header()); fireEvent.click(screen.getByRole("button", { name: "Check again now" }));
-    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Checked — no changes found"));
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Refreshed — no changes in this package."));
     expect(screen.getByRole("heading", { name: "Process" })).toBeTruthy();
   });
-  it("shows an incomplete verification result without claiming a successful check", async () => {
-    refresh.mockResolvedValue({ package: pack, changed: false, verified: false, message: "Complete checklist could not be verified. Saved checklist retained." });
+  it("shows an AI refresh as successful while sources remain for admin review", async () => {
+    refresh.mockResolvedValue({ package: { ...pack, verificationStatus: "needs_review" }, changed: false, refreshed: true, message: "Refreshed — no changes in this package." });
     render(header()); fireEvent.click(screen.getByRole("button", { name: "Check again now" }));
-    await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("Saved checklist retained"));
-    expect(screen.getByText("Last checked Oct 4, 2026")).toBeTruthy();
+    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Refreshed"));
+    expect(screen.queryByRole("alert")).toBeNull();
   });
   it("leaves requirements/cache unchanged on research failure", async () => {
     refresh.mockRejectedValue(new Error("Sources could not be validated"));
