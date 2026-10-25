@@ -29,6 +29,7 @@ import {
   type QuickFilter,
 } from "./document-filters";
 import DocumentRows from "./document-rows";
+import DigiLockerDialog from "./digilocker-dialog";
 
 type DocumentsOverviewProps = {
   documents: DocumentRecord[];
@@ -115,6 +116,7 @@ export default function DocumentsOverview({
               Upload{" "}
               <ChevronDown aria-hidden="true" focusable="false" size={15} />
             </Button>
+            <DigiLockerDialog />
             <Button variant="secondary" type="button" onClick={openUpload}>
               <Camera
                 aria-hidden="true"
