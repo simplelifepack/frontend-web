@@ -22,7 +22,7 @@ export function usePackageRefresh(slug: string) {
       await clearPackageCatalogueCache().catch(() => undefined);
       dispatch(invalidatePackagePages());
       dispatch(updateRefreshedPackage(result.package));
-      setFeedback({ slug, message: result.message, error: false });
+      setFeedback({ slug, message: result.message, error: result.verified === false });
     } catch (error) {
       setFeedback({ slug, message: error instanceof Error ? error.message : "Unable to check this package. Please try again.", error: true });
     } finally {

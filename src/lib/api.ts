@@ -176,7 +176,7 @@ export const api = {
     get: (slug: string) =>
       request<PackSummary>(`/api/packages/${encodeURIComponent(slug)}`, { requiresAuth: true }),
     refresh: (slug: string) =>
-      request<{ package: PackSummary; changed: boolean; message: string }>(`/api/packages/${encodeURIComponent(slug)}/refresh`, { method: "POST", requiresAuth: true }),
+      request<{ package: PackSummary; changed: boolean; message: string; verified?: boolean }>(`/api/packages/${encodeURIComponent(slug)}/refresh`, { method: "POST", requiresAuth: true }),
     streamSearchOrGenerate: (packageType: string, documentLabels: string[], onDelta: (text: string) => void, signal?: AbortSignal) =>
       streamRequest<PackageSearchOrGenerateResponse>("/api/packages/search-or-generate", { packageType, documentLabels }, onDelta, signal),
     searchOrGenerate: (packageType: string, documentLabels: string[]) =>

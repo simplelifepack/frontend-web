@@ -1,7 +1,5 @@
 import {
   Text,
-  ChoiceGroup,
-  Choice,
   Card,
   Ring,
   Grid,
@@ -35,25 +33,15 @@ import {
   Users,
 } from "lucide-react";
 
-export function isUserPack(pack: { createdBy?: string }) {
-  return Boolean(
-    pack.createdBy && pack.createdBy !== "seed" && pack.createdBy !== "ai",
-  );
-}
-
-export function matchesPackageCategory(
-  pack: { category: string; createdBy?: string },
-  selectedCategory: string,
-) {
-  if (selectedCategory === "All") return true;
-  if (selectedCategory === "My packs") return isUserPack(pack);
-  return (
-    pack.category.trim().toLowerCase() === selectedCategory.trim().toLowerCase()
-  );
-}
+export {
+  isUserPack,
+  matchesPackageCategory,
+} from "@/packages/packageCategories";
+import { isUserPack } from "@/packages/packageCategories";
 
 export function packageMeta(pack: {
   searchMetadata?: DerivedPackSummary["searchMetadata"];
+  category?: string;
 }) {
   const metadata = pack.searchMetadata;
   const icon = metadata?.uiIcon;
@@ -86,7 +74,25 @@ export function packageMeta(pack: {
     return { Icon: ShieldCheck, color: color ?? T.purple };
   if (icon === "Plane") return { Icon: Plane, color: color ?? T.info };
   if (icon === "Users") return { Icon: Users, color: color ?? T.purple };
-  return { Icon: FileText, color: color ?? T.info };
+  const category = pack.category?.toLowerCase() ?? "";
+  const Icon = /travel|immigration/.test(category)
+    ? Plane
+    : /education/.test(category)
+      ? GraduationCap
+      : /identity|civic/.test(category)
+        ? IdCard
+        : /money|tax|finance/.test(category)
+          ? Landmark
+          : /health/.test(category)
+            ? HeartPulse
+            : /family|life/.test(category)
+              ? Users
+              : /home|property/.test(category)
+                ? Home
+                : /jobs|employment/.test(category)
+                  ? Briefcase
+                  : FileText;
+  return { Icon, color: color ?? T.action };
 }
 
 function readinessText(pack: {
@@ -98,40 +104,10 @@ function readinessText(pack: {
   return `${ready} of ${total} ready`;
 }
 
-type CategoryPillsProps = {
-  active: string;
-  categories: string[];
-  packs: Array<{ createdBy?: string }>;
-  onSelect: (category: string) => void;
-};
-
-export function PackageCategoryPills({
-  active,
-  categories,
-  packs,
-  onSelect,
-}: CategoryPillsProps) {
-  const items = ["All", ...new Set(categories.filter(Boolean)), "My packs"];
-  return (
-    <ChoiceGroup>
-      {items.map((item) => (
-        <Choice
-          appearance="filter"
-          type="button"
-          aria-pressed={active === item}
-          key={item}
-          onClick={() => onSelect(item)}
-        >
-          {item === "My packs"
-            ? `My packs (${packs.filter(isUserPack).length})`
-            : item}
-        </Choice>
-      ))}
-    </ChoiceGroup>
-  );
-}
+export { PackageCategoryPills } from "./package-category-pills";
 
 type PackageGridProps = {
+  selectedSlug?: string;
   activeQuerySettled: boolean;
   debouncedQuery: string;
   generationStatus: "idle" | "loading" | "succeeded" | "failed";
@@ -146,6 +122,7 @@ type PackageGridProps = {
 };
 
 export function PackageGrid({
+  selectedSlug,
   activeQuerySettled,
   debouncedQuery,
   generationStatus,
@@ -160,7 +137,7 @@ export function PackageGrid({
 }: PackageGridProps) {
   return (
     <Stack $gap="s24">
-      <Grid $columns={3}>
+      <Grid className="packages-card-grid" $columns={3}>
         {(status === "loading" || searchStatus === "loading") && !packs.length
           ? Array.from({ length: 6 }, (_, index) => (
               <div
@@ -174,24 +151,36 @@ export function PackageGrid({
             ))
           : null}
         {packs.map((pack) => {
-          const { Icon, color } = packageMeta(pack);
+          const { Icon } = packageMeta(pack);
           const complete = pack.completion >= 100;
           return (
             <TileAction
+              className="packages-card"
+              aria-expanded={selectedSlug === pack.slug}
               $horizontal
               variant="tertiary"
               type="button"
               key={pack.slug}
               onClick={() => onOpen(pack.slug)}
             >
-              <Ring score={Math.round(pack.completion)} size={54} />
-              <Stack $grow $gap="s4">
+              <Ring
+                score={Math.round(pack.completion)}
+                size={54}
+                color={
+                  complete
+                    ? T.mint
+                    : pack.completion >= 50
+                      ? "var(--packages-progress)"
+                      : "var(--packages-danger)"
+                }
+              />
+              <Stack className="packages-card-copy" $grow $gap="s4">
                 <Row $gap="s8">
                   <Icon
                     aria-hidden="true"
                     focusable="false"
                     size="var(--icon-regular)"
-                    color={color}
+                    color={T.action}
                   />
                   <Text weight="semibold" tone="heading">
                     {pack.title}

@@ -1,0 +1,209 @@
+.document-context {
+  --context-bg: #f7f7fb;
+  --context-raised: #efedf5;
+  --context-border: #e5e4ed;
+  --context-text: #302b3c;
+  --context-muted: #777185;
+  --context-purple: var(--lp-action);
+  width: min(430px, 100vw);
+  min-height: 0;
+  background: var(--context-bg);
+  border-color: var(--context-border);
+  color: var(--context-text);
+  box-shadow: -15px 0 40px #28233220;
+}
+.dark .document-context {
+  --context-bg: var(--lp-navy);
+  --context-raised: var(--lp-raised);
+  --context-border: var(--lp-border);
+  --context-text: var(--lp-text);
+  --context-muted: var(--lp-muted);
+  --context-purple: var(--lp-action);
+}
+.document-context,
+.document-context * {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+.document-context-backdrop {
+  background: #24223270;
+}
+.document-context .lp-document-drawer-header {
+  flex: 0 0 auto;
+  min-height: 84px;
+  gap: 12px;
+  padding: 18px 20px;
+  border-color: var(--context-border);
+  background: var(--context-bg);
+}
+.document-context .lp-document-drawer-icon {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--context-purple) 13%, transparent);
+  color: var(--context-purple);
+}
+.document-context .lp-document-drawer-header h2 {
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--context-text);
+}
+.document-context .lp-document-drawer-header p {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--context-muted);
+}
+.document-context .lp-document-drawer-header > button {
+  width: 34px;
+  min-width: 34px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--context-border);
+  border-radius: 12px;
+  background: var(--context-raised);
+  color: var(--context-text);
+}
+.document-context .lp-document-drawer-body {
+  min-height: 0;
+  padding: 4px 20px 26px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.document-context .lp-document-drawer-expiry {
+  min-height: 48px;
+  margin-top: 16px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  color: #1c974d;
+  border-color: #a9d1b8;
+  background: #22954c12;
+  gap: 12px;
+}
+.document-context .lp-document-drawer-expiry[data-state="soon"] {
+  color: #a47400;
+  border-color: #d9c89d;
+  background: #a4740010;
+}
+.document-context .lp-document-drawer-expiry[data-state="expired"] {
+  color: #cf3040;
+  border-color: #e4a9b1;
+  background: #cf304010;
+}
+.document-context .lp-document-drawer-expiry > span {
+  font-size: 14px;
+  color: var(--context-text);
+}
+.document-context-section {
+  margin-top: 20px;
+}
+.document-context-section h3,
+.document-context-section label {
+  display: block;
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--context-text);
+}
+.document-context-section > div:has(> label) {
+  gap: 0;
+}
+.document-context .lp-document-drawer-fact {
+  min-height: 35px;
+  padding: 8px 0;
+  border-color: var(--context-border);
+  font-size: 12px;
+}
+.document-context .lp-document-drawer-fact > span {
+  color: #686174;
+  font-size: 12px;
+}
+.document-context .lp-document-drawer-fact > strong {
+  color: var(--context-text);
+  font-size: 12px;
+  font-weight: 400;
+}
+.document-context-section input,
+.document-context-section textarea,
+.document-context-section button[role="combobox"] {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid var(--context-border);
+  border-radius: 12px;
+  background: var(--context-raised);
+  color: var(--context-text);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.document-context-section input[type="date"] {
+  min-height: 40px;
+  color-scheme: light;
+}
+.dark .document-context-section input[type="date"] {
+  color-scheme: dark;
+}
+.document-context-section textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+.document-context-section textarea::placeholder {
+  color: #928c9c;
+}
+.document-context-package {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  min-height: 45px;
+  border-top: 1px solid var(--context-border);
+  color: var(--context-purple);
+  text-decoration: none;
+}
+.document-context-package > [data-ds-text] {
+  flex: 1;
+  font-size: 14px;
+  color: var(--context-text);
+}
+.document-context-package > span:last-child {
+  padding: 4px 12px;
+  border: 1px solid #c6c2ce;
+  background: #e5e3eb;
+  color: #625b6e;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.dark .document-context-package > span:last-child {
+  background: var(--context-raised);
+  color: var(--context-muted);
+}
+.document-context .lp-document-drawer-footer {
+  flex: 0 0 auto;
+  gap: 12px;
+  padding: 16px 20px;
+  min-height: 78px;
+  border-color: var(--context-border);
+  background: var(--context-bg);
+}
+.document-context .lp-document-drawer-footer > button {
+  min-height: 46px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.document-context .lp-document-drawer-footer > button:first-child {
+  flex: 1;
+  background: var(--lp-action);
+  border-color: var(--lp-action);
+  color: var(--lp-action-text);
+}
+.document-context .lp-document-drawer-footer > button:last-child {
+  width: 48px;
+  border-color: #edb0b8;
+  color: #dc3648;
+  background: transparent;
+}

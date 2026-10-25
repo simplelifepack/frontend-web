@@ -1,5 +1,7 @@
 import { Text, Button, Stack } from "@/design-system";
 
+import { packagePageCacheKey } from "@/packages/packageCatalogueCache";
+import "./packages-overview.css";
 import AccountUsage from "@/components/AccountUsage";
 import { refreshUsage } from "@/store/slices/usageSlice";
 import { useEffect, useMemo, useState } from "react";
@@ -40,7 +42,9 @@ export default function PackagesPage() {
   const documents = useAppSelector((state) => state.documents.items);
   const packs = useAppSelector(selectPackageCards);
   const cataloguePacks = useAppSelector((state) => state.packages.catalogueItems);
-  const categoryPills = categories;
+  const categoryPills = [...categories, ...cataloguePacks.map(pack => pack.category)];
+  const customPackCount = useAppSelector(state => state.packages.paginationByKey[packagePageCacheKey({ category: "My packs", limit: PACKS_PER_PAGE, page: 1, sort: "newest" })]?.total);
+  const catalogueTotal = useAppSelector(state => state.packages.paginationByKey[packagePageCacheKey({ limit: PACKS_PER_PAGE, page: 1, sort: "category" })]?.total);
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const [detailOpen, setDetailOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -95,7 +99,7 @@ export default function PackagesPage() {
   const hasSearchQuery = Boolean(debouncedQuery.trim());
   const activeQuerySettled = loaded && Boolean(pagination) && searchStatus !== "loading" && status !== "loading";
   const hasEmptySearch = hasSearchQuery && !displayedPacks.length && activeQuerySettled;
-  const visiblePackageTotal = pagination?.total ?? packs.length;
+  const visiblePackageTotal = catalogueTotal ?? pagination?.total ?? packs.length;
 
   const totalPages = Math.max(
     1,
@@ -156,7 +160,6 @@ export default function PackagesPage() {
         action={null}
       />
 
-      {usage && <AccountUsage usage={usage} only="ai" />}
       {error ? (
         <Text as="div" size="md" tone="danger" style={{ color: T.coral, marginBottom: "var(--space-s12)" }}>
           {error}
@@ -182,14 +185,15 @@ export default function PackagesPage() {
         }}
       />
 
-      <PackageCategoryPills active={category} categories={categoryPills} packs={cataloguePacks.length ? cataloguePacks : packs} onSelect={(item) => { setCategory(item); setCurrentPage(1); }} />
+      <PackageCategoryPills customPackCount={customPackCount} active={category} categories={categoryPills} packs={cataloguePacks.length ? cataloguePacks : packs} onSelect={(item) => { setCategory(item); setCurrentPage(1); }} />
 
       {!hasEmptySearch ? (
-        <Text as="div" size="md" weight="semibold" className="lp-pack-section-label">
-          {hasSearchQuery ? "Search results" : "All packages"}
+        <Text as="div" size="md" weight="semibold" className="lp-pack-section-label packages-results-label">
+          {hasSearchQuery ? "Search results" : category === "All" ? "All packages" : category}
         </Text>
       ) : null}
       <PackageGrid
+        selectedSlug={detailOpen ? selectedSlug : undefined}
         activeQuerySettled={activeQuerySettled}
         debouncedQuery={debouncedQuery}
         generationStatus={generationStatus}
@@ -211,6 +215,7 @@ export default function PackagesPage() {
         </nav>
       ) : null}
 
+      {usage && <div className="packages-usage"><AccountUsage usage={usage} only="ai" /></div>}
       </Stack>
       <PackageDetailDrawer
         completion={completion}

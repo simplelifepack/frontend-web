@@ -11,6 +11,11 @@ type Props = {
   options: Option[];
   "aria-label": string;
   disabled?: boolean;
+  placeholder?: string;
+  container?: HTMLElement | null;
+  id?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
 };
 const Trigger = styled(Primitive.Trigger)`
   ${fieldStyles}
@@ -91,7 +96,10 @@ export function SelectMenu({
   onValueChange,
   options,
   disabled,
+  placeholder,
+  container,
   "aria-label": label,
+  ...triggerProps
 }: Props) {
   return (
     <Primitive.Root
@@ -99,13 +107,13 @@ export function SelectMenu({
       onValueChange={onValueChange}
       disabled={disabled}
     >
-      <Trigger aria-label={label} data-ds-control="">
-        <Primitive.Value />
+      <Trigger {...triggerProps} aria-label={label} data-ds-control="">
+        <Primitive.Value placeholder={placeholder} />
         <Primitive.Icon asChild>
           <ChevronDown aria-hidden="true" />
         </Primitive.Icon>
       </Trigger>
-      <Primitive.Portal>
+      <Primitive.Portal container={container ?? undefined}>
         <Menu
           position="popper"
           sideOffset={Number.parseInt(theme.spacing.s6)}

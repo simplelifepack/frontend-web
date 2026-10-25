@@ -38,7 +38,7 @@ it("a refreshed checklist immediately recalculates readiness and READY on the op
   expect(screen.queryByRole("link", { name: "Previous office" })).toBeNull();
   expect(screen.getByRole("status").textContent).toBe("Updated with the latest requirements");
   expect(refresh).toHaveBeenCalledExactlyOnceWith("process");
-  expect(screen.getByText("Checked Oct 5, 2026")).toBeTruthy();
+  expect(screen.getByText("Last checked Oct 5, 2026")).toBeTruthy();
   expect(app.getState().packages.items[0]!.requirements).toHaveLength(1);
   expect(app.getState().packages.catalogueItems[0]!.requirements).toHaveLength(1);
   expect(app.getState().packages.detailsBySlug.process.verificationSources).toEqual([

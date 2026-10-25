@@ -23,13 +23,38 @@ export type Source = {
 };
 
 export const categories = [
-  { key: "identity", name: "Identity", accent: "var(--lp-info)", icon: Fingerprint },
-  { key: "employment", name: "Employment", accent: "var(--lp-purple)", icon: Briefcase },
+  {
+    key: "identity",
+    name: "Identity",
+    accent: "var(--lp-info)",
+    icon: Fingerprint,
+  },
+  {
+    key: "employment",
+    name: "Employment",
+    accent: "var(--lp-purple)",
+    icon: Briefcase,
+  },
   { key: "finance", name: "Finance", accent: "var(--lp-teal)", icon: Wallet },
-  { key: "insurance", name: "Insurance", accent: "var(--lp-teal)", icon: ShieldCheck },
+  {
+    key: "insurance",
+    name: "Insurance",
+    accent: "var(--lp-teal)",
+    icon: ShieldCheck,
+  },
   { key: "property", name: "Property", accent: "var(--lp-pink)", icon: Home },
-  { key: "medical", name: "Medical", accent: "var(--lp-mint)", icon: HeartPulse },
-  { key: "education", name: "Education", accent: "var(--lp-purple)", icon: BookOpen },
+  {
+    key: "medical",
+    name: "Medical",
+    accent: "var(--lp-mint)",
+    icon: HeartPulse,
+  },
+  {
+    key: "education",
+    name: "Education",
+    accent: "var(--lp-purple)",
+    icon: BookOpen,
+  },
   { key: "travel", name: "Travel", accent: "var(--lp-info)", icon: Plane },
   { key: "vehicle", name: "Vehicle", accent: "var(--lp-mint)", icon: Car },
   { key: "legal", name: "Legal", accent: "var(--lp-pink)", icon: Gavel },
@@ -88,6 +113,10 @@ export function fieldByKeys(doc: DocumentRecord, keys: string[]) {
 
 export function expiryValue(doc: DocumentRecord) {
   const fields = fieldsObject(doc);
+  if (Object.hasOwn(fields, "userExpiry"))
+    return typeof fields.userExpiry === "string"
+      ? fields.userExpiry
+      : undefined;
   const approvedFields = reviewFields(doc);
   const direct = [
     "dateOfExpiry",
@@ -97,7 +126,9 @@ export function expiryValue(doc: DocumentRecord) {
     "endDate",
   ]
     .map((key) => fields[key])
-    .find((value): value is string => typeof value === "string" && Boolean(value));
+    .find(
+      (value): value is string => typeof value === "string" && Boolean(value),
+    );
   if (direct) return direct;
 
   return approvedFields.find((field) =>
@@ -124,7 +155,8 @@ export function importantDetail(doc: DocumentRecord) {
 export function sourceLabel(doc: DocumentRecord) {
   if (doc.source === "GOOGLE_DRIVE") return "Google Drive";
   if (doc.source === "GMAIL") return "Gmail";
-  if (String(doc.source) === "SCAN" || doc.sourceProvider === "SCAN") return "Scanned";
+  if (String(doc.source) === "SCAN" || doc.sourceProvider === "SCAN")
+    return "Scanned";
   return "Manual Upload";
 }
 

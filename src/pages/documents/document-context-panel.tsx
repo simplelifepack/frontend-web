@@ -1,199 +1,249 @@
-import { ModalBackdrop, Text, Heading, DrawerPortal, DrawerBackdrop, ModalPanel, DrawerPanel, Button } from "@/design-system";
-
-import { Clock, Download, FileText, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
-
-import { T } from "@/constants/theme";
+import {
+  Text,
+  Heading,
+  DrawerPortal,
+  DrawerBackdrop,
+  DrawerPanel,
+  Button,
+  SelectMenu,
+  Input,
+  Textarea,
+  Field,
+} from "@/design-system";
+import { Clock, FileText, Trash2, X } from "lucide-react";
+import { useState } from "react";
 import { daysUntil } from "@/data/demoData";
 import type { DocumentRecord } from "@/lib/api";
-import { useAppDispatch } from "@/store/hooks";
-import { deleteDocument } from "@/store/slices/documentsSlice";
+import { useAppSelector } from "@/store/hooks";
 import {
   categories,
   expiryValue,
   fieldsObject,
   labelize,
-  reviewFields,
   safeCategory,
   sourceLabel,
 } from "./document-utils";
-import { confirmDeleteDocuments, downloadDocuments } from "./document-actions";
-import FilePreview from "./file-preview";
+import { documentPerson } from "./document-filters";
+import { useDocumentContextEditor } from "./use-document-context-editor";
+import { useDocumentContext } from "./use-document-context";
+import DocumentContextPackages from "./document-context-packages";
+import DocumentPreviewDialog from "./document-preview-dialog";
+import "./document-context-panel.css";
 
-type Props = {
-  doc: DocumentRecord;
-  loading?: boolean;
-  onClose: () => void;
-};
-
-export default function DocumentContextPanel({ doc, loading = false, onClose }: Props) {
-  const dispatch = useAppDispatch();
+type Props = { doc: DocumentRecord; loading?: boolean; onClose: () => void };
+export default function DocumentContextPanel({
+  doc,
+  loading = false,
+  onClose,
+}: Props) {
+  const currentUserName = useAppSelector((state) => state.auth.user?.name);
+  const [panel, setPanel] = useState<HTMLElement | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [busy, setBusy] = useState<"download" | "delete" | null>(null);
   const category = safeCategory(doc.category);
   const categoryMeta =
-    categories.find((item) => item.key === category) ?? categories[categories.length - 1];
+    categories.find((item) => item.key === category) ??
+    categories[categories.length - 1];
   const CategoryIcon = categoryMeta.icon;
   const fields = fieldsObject(doc);
-  const approvedFields = reviewFields(doc);
+  const {
+    savedNotes,
+    notes,
+    setNotes,
+    busy,
+    error,
+    persistDetails,
+    assignPerson,
+    removeDocument,
+  } = useDocumentContextEditor(doc, onClose);
   const expiry = expiryValue(doc);
-  const expiryDays =
-    expiry && /^\d{4}-\d{2}-\d{2}$/.test(expiry) ? daysUntil(expiry) : null;
-  const rawExtractedText =
-    doc.rawText ||
-    (typeof fields.rawExtractedText === "string" ? fields.rawExtractedText : "");
-
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      if (previewOpen) setPreviewOpen(false);
-      else onClose();
-    };
-    document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [onClose, previewOpen]);
-
-  const downloadDocument = async () => {
-    setBusy("download");
-    try { await downloadDocuments([doc]); } finally { setBusy(null); }
-  };
-  const removeDocument = async () => {
-    if (!confirmDeleteDocuments(1)) return;
-    setBusy("delete");
-    try {
-      await dispatch(deleteDocument(doc.id)).unwrap();
-      onClose();
-    } finally { setBusy(null); }
-  };
-
+  const dateValue = expiry && /^\d{4}-\d{2}-\d{2}$/.test(expiry) ? expiry : "";
+  const expiryDays = dateValue ? daysUntil(dateValue) : null;
+  const { people, peopleError, usedIn, packagesLoading, packagesError } =
+    useDocumentContext(doc);
+  const person = documentPerson(doc, currentUserName);
+  const assigned = fields.assignedPerson as { id?: string } | undefined;
+  const assignedId =
+    assigned?.id && people.some((item) => item.id === assigned.id)
+      ? assigned.id
+      : (people.find((item) => item.name === person)?.id ?? "");
+  const disabled = loading || Boolean(busy);
   const fact = (label: string, value: string) => (
     <div className="lp-document-drawer-fact">
-      <Text size="md">{label}</Text>
-      <Text as="strong" size="md" weight="semibold">{value}</Text>
+      <Text>{label}</Text>
+      <Text as="strong" weight="regular">
+        {value}
+      </Text>
     </div>
   );
-
   return (
     <DrawerPortal>
       <DrawerBackdrop
         type="button"
-        className="lp-document-drawer-backdrop"
+        className="lp-document-drawer-backdrop document-context-backdrop"
         aria-label="Close document panel"
         onClick={onClose}
       />
-      <DrawerPanel onDismiss={onClose} className="lp-document-drawer" aria-label={`${labelize(doc.documentType)} details`}>
+      <DrawerPanel
+        ref={setPanel}
+        onDismiss={onClose}
+        className="lp-document-drawer document-context"
+        aria-label={`${doc.displayName || labelize(doc.documentType)} details`}
+      >
         <header className="lp-document-drawer-header">
-          <span
-            className="lp-document-drawer-icon"
-            style={{ background: `color-mix(in srgb, ${categoryMeta.accent} 13.33%, transparent)`, color: categoryMeta.accent }}
-          >
-            <CategoryIcon aria-hidden="true" focusable="false" size="var(--icon-regular)" strokeWidth={1.9} />
+          <span className="lp-document-drawer-icon">
+            <CategoryIcon aria-hidden="true" size={18} />
           </span>
           <div>
-            <Heading level={2} size="sm">{doc.displayName || labelize(doc.documentType)}</Heading>
-            <Text as="p" size="sm">{doc.originalName}</Text>
+            <Heading level={2} size="sm">
+              {doc.displayName || labelize(doc.documentType)}
+            </Heading>
+            <Text as="p" size="sm" title={doc.originalName}>
+              {doc.originalName}
+            </Text>
           </div>
-          <Button iconOnly variant="tertiary" size="sm" type="button" aria-label="Close document panel" onClick={onClose} >
-            <X aria-hidden="true" focusable="false" size="var(--icon-small)" />
+          <Button
+            iconOnly
+            variant="secondary"
+            type="button"
+            aria-label="Close document panel"
+            onClick={onClose}
+          >
+            <X aria-hidden="true" size={16} />
           </Button>
         </header>
-
         <div className="lp-document-drawer-body">
-          {expiryDays !== null ? (
+          {expiryDays !== null && (
             <div
               className="lp-document-drawer-expiry"
-              data-state={expiryDays < 0 ? "expired" : expiryDays < 60 ? "soon" : "valid"}
+              data-state={
+                expiryDays < 0 ? "expired" : expiryDays < 60 ? "soon" : "valid"
+              }
             >
-              <Clock aria-hidden="true" focusable="false" size={15} />
-              <Text size="md">
+              <Clock aria-hidden="true" size={15} />
+              <Text>
                 {expiryDays < 0
                   ? `Expired ${Math.abs(expiryDays)} days ago`
                   : `Valid · expires in ${expiryDays} days`}
               </Text>
             </div>
-          ) : null}
-
-          <Text size="sm" weight="semibold" className="lp-document-drawer-label">Details</Text>
-          <Text as="div" size="md">
+          )}
+          <section
+            className="document-context-section"
+            aria-labelledby="document-details-heading"
+          >
+            <Heading level={3} id="document-details-heading" size="sm">
+              Details
+            </Heading>
             {fact("Category", labelize(category))}
             {fact("Source", sourceLabel(doc))}
             {fact(
-              doc.source === "MANUAL_UPLOAD" ? "Uploaded" : "Indexed",
+              "Added",
               new Date(doc.createdAt).toLocaleDateString(undefined, {
                 month: "short",
                 day: "numeric",
                 year: "numeric",
               }),
             )}
-            {fact("Size", `${Math.max(1, Math.round(doc.size / 1024)).toLocaleString()} KB`)}
-          </Text>
-
-          <Text size="sm" weight="semibold" className="lp-document-drawer-label">Review fields</Text>
-          {loading ? (
-            <Text as="p" size="md" className="lp-document-drawer-empty">Loading document details...</Text>
-          ) : null}
-          {!loading && approvedFields.length ? (
-            <Text as="div" size="md">
-              {approvedFields.map((field, index) => (
-                <div className="lp-document-drawer-fact" key={field.id ?? `${field.key}-${index}`}>
-                  <span>{field.label}</span>
-                  <strong>{field.value}</strong>
-                </div>
-              ))}
+            {fact(
+              "Size",
+              `${Math.max(1, Math.round(doc.size / 1024)).toLocaleString()} KB`,
+            )}
+          </section>
+          <section className="document-context-section">
+            <Field
+              label="Belongs to"
+              error={peopleError ? "Unable to load people." : undefined}
+            >
+              <SelectMenu
+                aria-label="Belongs to"
+                value={assignedId}
+                placeholder={person}
+                container={panel}
+                disabled={disabled || !people.length}
+                onValueChange={(id) => void assignPerson(id)}
+                options={people.map((item) => ({
+                  value: item.id,
+                  label: item.name,
+                }))}
+              />
+            </Field>
+          </section>
+          <section className="document-context-section">
+            <Field label="Expiry">
+              <Input
+                type="date"
+                value={dateValue}
+                disabled={disabled}
+                onChange={(event) =>
+                  void persistDetails(
+                    { expiry: event.target.value || null },
+                    "expiry",
+                  )
+                }
+              />
+            </Field>
+          </section>
+          <DocumentContextPackages
+            usedIn={usedIn}
+            packagesLoading={packagesLoading}
+            packagesError={packagesError}
+            onClose={onClose}
+          />
+          <section className="document-context-section">
+            <Field label="Notes">
+              <Textarea
+                value={notes}
+                maxLength={5000}
+                disabled={disabled}
+                placeholder="Anything your family should know about this document…"
+                onChange={(event) => setNotes(event.target.value)}
+                onBlur={() => {
+                  if (notes !== savedNotes)
+                    void persistDetails({ notes }, "notes");
+                }}
+              />
+            </Field>
+          </section>
+          {busy && busy !== "delete" && (
+            <Text as="p" size="sm" role="status">
+              Saving…
             </Text>
-          ) : !loading ? (
-            <Text as="p" size="md" className="lp-document-drawer-empty">No reviewed fields saved for this document.</Text>
-          ) : null}
-
+          )}
+          {error && (
+            <Text as="p" tone="danger" role="alert">
+              {error}
+            </Text>
+          )}
         </div>
-
         <footer className="lp-document-drawer-footer">
-          <Button variant="primary"
+          <Button
+            variant="primary"
             type="button"
             disabled={loading}
-            onClick={() => setPreviewOpen((current) => !current)}
-            style={{ flex: 1 }}
+            onClick={() => setPreviewOpen(true)}
           >
-            <FileText aria-hidden="true" focusable="false" size={15} />
+            <FileText aria-hidden="true" size={15} />
             Preview
           </Button>
-          <Button variant="secondary" type="button" disabled={loading || Boolean(busy)} onClick={() => void downloadDocument()} >
-            <Download aria-hidden="true" focusable="false" size={15} /> Download
-          </Button>
-          <Button tone="danger" variant="secondary" type="button" disabled={loading || Boolean(busy)} onClick={() => void removeDocument()} >
-            <Trash2 aria-hidden="true" focusable="false" size={15} /> Delete
+          <Button
+            iconOnly
+            tone="danger"
+            variant="secondary"
+            type="button"
+            aria-label="Delete document"
+            disabled={disabled}
+            onClick={() => void removeDocument()}
+          >
+            <Trash2 aria-hidden="true" size={15} />
           </Button>
         </footer>
       </DrawerPanel>
-      {previewOpen ? (
-        <>
-          <ModalBackdrop style={{ zIndex: "var(--layer-detailDialog)" }}>
-<DrawerBackdrop
-            type="button"
-            className="lp-document-preview-backdrop"
-            aria-label="Close file preview"
-            onClick={() => setPreviewOpen(false)}
-          />
-          <ModalPanel onDismiss={() => setPreviewOpen(false)} aria-label="Document preview" as="section" flush className="lp-document-preview-modal" role="dialog" aria-modal="true">
-            <header>
-              <div>
-                <Heading level={2} size="sm">{doc.displayName || labelize(doc.documentType)}</Heading>
-                <Text as="p" size="sm">{doc.originalName}</Text>
-              </div>
-              <Button iconOnly variant="tertiary" size="sm" aria-label="Close file preview"
-                type="button"
-                onClick={() => setPreviewOpen(false)}
-              >
-                <X aria-hidden="true" focusable="false" size="var(--icon-small)" />
-              </Button>
-            </header>
-            <div className="lp-document-preview-content">
-              <FilePreview doc={doc} rawExtractedText={rawExtractedText} />
-            </div>
-          </ModalPanel>
-</ModalBackdrop>
-        </>
-      ) : null}
+      {previewOpen && (
+        <DocumentPreviewDialog
+          doc={doc}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
     </DrawerPortal>
   );
 }

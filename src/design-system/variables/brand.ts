@@ -1,4 +1,6 @@
-// Approved landing identity, restored verbatim from the last styled version.
+import { primaryPalette } from "./colors";
+
+// Public surfaces share the app’s lavender action palette.
 export const landingBrand = {
   paper: "#F3EBDA",
   paperDeep: "#EDE3CF",
@@ -8,14 +10,15 @@ export const landingBrand = {
   ink: "#221E17",
   body: "#4C443A",
   muted: "#897E6D",
-  action: "#35a7a0",
-  actionText: "#FFFFFF",
-  actionSoft: "#E7F5F4",
+  action: primaryPalette.light.base,
+  actionText: primaryPalette.light.text,
+  actionHover: primaryPalette.light.hover,
+  actionSoft: primaryPalette.soft,
   emerald: "#1F9D66",
   clay: "#B85C42",
   red: "#C24A34",
   blue: "#4F79C7",
   purple: "#8467C4",
   pink: "#C25A86",
-  teal: "#3E9AA6",
+  teal: primaryPalette.light.base,
 };

@@ -33,7 +33,7 @@ export default function PackageSearchPanel({
 }: PackageSearchPanelProps) {
   const hasQuery = Boolean(query.trim());
   return (
-    <Stack>
+    <Stack className="packages-search-panel">
       <div>
         <CustomPackButton
           quotaReached={false}
@@ -58,7 +58,7 @@ export default function PackageSearchPanel({
           if (suggestions[0]) onOpen(suggestions[0].slug);
           else onGenerate();
         }}
-        placeholder="Search packages or describe what you need"
+        placeholder="Schengen visa, home loan, hospital admission, school admission, passport renewal"
         aria-label="Search packages"
         maxLength={MAX_PACKAGE_QUERY_LENGTH}
       />

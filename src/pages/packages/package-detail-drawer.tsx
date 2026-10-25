@@ -7,6 +7,7 @@ import type {
 } from "@/readiness/calculatePackageReadiness";
 import { X } from "lucide-react";
 import PackDetail from "./pack-detail";
+import "./package-detail-drawer.css";
 
 type PackageDetailDrawerProps = {
   completion: number;
@@ -43,7 +44,7 @@ export default function PackageDetailDrawer({
 }: PackageDetailDrawerProps) {
   if (!open) return null;
   return (
-    <DrawerContainer
+    <DrawerContainer className="package-detail-backdrop"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}

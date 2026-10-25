@@ -1,3 +1,4 @@
+import { mergePackageCategories } from "@/packages/packageCategories";
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import { api, type PackageListItem, type PackageListQuery, type PackageListResponse, type PackSummary } from "@/lib/api";
@@ -178,7 +179,7 @@ const packagesSlice = createSlice({
         }
         state.pageKeys[key] = response.items.map((item) => item.slug);
         state.paginationByKey[key] = response.pagination;
-        if (Array.isArray(response.categories)) state.categories = response.categories;
+        state.categories = mergePackageCategories(state.categories, response.categories, state.catalogueItems);
         if (!background && state.activeKey === key) {
           state.items = response.items;
           state.pagination = response.pagination;
@@ -251,8 +252,7 @@ async function refreshCategoryPagesForSearch(query: PackageListQuery, response: 
 
 function isValidCachedPage(page: CachedPackagePage | null | undefined): page is CachedPackagePage {
   if (!page?.response || !Array.isArray(page.response.items) || !page.response.pagination) return false;
-  if (!page.query.search && page.response.items.length === 0) return false;
-  return true;
+  return Boolean(page.query.search || page.response.items.length);
 }
 
 function hydratePages(state: PackagesState, pages: CachedPackagePage[]) {

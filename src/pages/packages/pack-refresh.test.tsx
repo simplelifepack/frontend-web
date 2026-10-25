@@ -40,6 +40,12 @@ describe("existing package refresh control", () => {
     await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Checked — no changes found"));
     expect(screen.getByRole("heading", { name: "Process" })).toBeTruthy();
   });
+  it("shows an incomplete verification result without claiming a successful check", async () => {
+    refresh.mockResolvedValue({ package: pack, changed: false, verified: false, message: "Complete checklist could not be verified. Saved checklist retained." });
+    render(header()); fireEvent.click(screen.getByRole("button", { name: "Check again now" }));
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("Saved checklist retained"));
+    expect(screen.getByText("Last checked Oct 4, 2026")).toBeTruthy();
+  });
   it("leaves requirements/cache unchanged on research failure", async () => {
     refresh.mockRejectedValue(new Error("Sources could not be validated"));
     render(header()); fireEvent.click(screen.getByRole("button", { name: "Check again now" }));

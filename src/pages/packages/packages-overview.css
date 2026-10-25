@@ -1,0 +1,142 @@
+.lp-packages-route {
+  --packages-progress: #a47400;
+  --packages-danger: #cf3040;
+  --packages-panel: #fff;
+  --packages-border: #e6e5ee;
+  --packages-text: #302b3c;
+  --packages-muted: #777185;
+}
+.dark .lp-packages-route {
+  --packages-progress: var(--lp-readiness);
+  --packages-danger: var(--lp-coral);
+  --packages-panel: var(--lp-panel);
+  --packages-border: var(--lp-border);
+  --packages-text: var(--lp-text);
+  --packages-muted: var(--lp-muted);
+}
+.lp-packages-route > [data-ds-text],
+.lp-packages-route > div > [data-ds-text] {
+  color: var(--packages-muted);
+}
+.lp-packages-route .packages-search-panel {
+  gap: 16px;
+}
+.lp-packages-route .packages-search-panel > div:first-child > button {
+  min-height: 46px;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 14px;
+}
+.lp-packages-route .lp-pack-search {
+  min-height: 48px;
+  padding-inline: 16px;
+  gap: 12px;
+  border: 1px solid var(--packages-border);
+  border-radius: 12px;
+  background: var(--packages-panel);
+  color: var(--packages-muted);
+}
+.lp-packages-route .lp-pack-search input {
+  padding-block: 10px;
+  min-height: 46px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--packages-text);
+}
+.lp-packages-route .lp-pack-search input::placeholder {
+  color: #9b96a3;
+}
+.lp-packages-route .packages-category-pills {
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.lp-packages-route .packages-category-pills > button {
+  min-height: 36px;
+  padding: 8px 16px;
+  border: 1px solid var(--packages-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--packages-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.lp-packages-route .packages-category-pills > button[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--lp-action) 45%, transparent);
+  background: color-mix(in srgb, var(--lp-action) 5%, transparent);
+  color: var(--packages-text);
+}
+.lp-packages-route .packages-card-grid {
+  gap: 12px;
+}
+.lp-packages-route .packages-card {
+  min-height: 88px;
+  padding: 16px;
+  gap: 16px;
+  border: 1px solid var(--packages-border);
+  border-radius: 12px;
+  background: var(--packages-panel);
+  color: var(--packages-text);
+  align-items: center;
+}
+.lp-packages-route .packages-card:hover {
+  background: color-mix(in srgb, var(--lp-action) 4%, var(--packages-panel));
+  border-color: color-mix(
+    in srgb,
+    var(--lp-action) 35%,
+    var(--packages-border)
+  );
+}
+.lp-packages-route .packages-card-copy {
+  gap: 6px;
+}
+.lp-packages-route .packages-card-copy > div {
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+.lp-packages-route .packages-card-copy > div > svg {
+  width: 15px;
+  height: 15px;
+}
+.lp-packages-route .packages-card-copy > div > [data-ds-text] {
+  color: var(--packages-text);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.lp-packages-route .packages-card-copy > [data-ds-text] {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--packages-muted);
+}
+.lp-packages-route .packages-card > svg:last-child {
+  width: 15px;
+  height: 15px;
+}
+.lp-packages-route .packages-results-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.lp-packages-route .packages-usage {
+  margin-top: 12px;
+}
+.lp-packages-route .packages-search-panel,
+.lp-packages-route .packages-search-panel *,
+.lp-packages-route .packages-category-pills *,
+.lp-packages-route .packages-card * {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+.lp-packages-route .packages-card circle:first-child {
+  stroke: var(--lp-raised);
+}
+
+.lp-packages-route .packages-card[aria-expanded="true"] {
+  outline: 2px solid var(--lp-action);
+  outline-offset: 3px;
+}

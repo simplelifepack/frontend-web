@@ -41,6 +41,8 @@ export function useDialogFocus(
     if (!panel.contains(document.activeElement)) focusFirst();
     const keydown = (event: KeyboardEvent) => {
       if (!top()) return;
+      if (event.key === "Escape" && panel.querySelector('[role="listbox"]'))
+        return;
       if (event.key === "Escape" && dismiss.current) {
         event.preventDefault();
         event.stopImmediatePropagation();

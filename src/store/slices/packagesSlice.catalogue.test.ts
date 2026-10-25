@@ -40,6 +40,16 @@ const store = () => configureStore({ reducer: { packages: reducer } });
 describe("persistent package catalogue", () => {
   beforeEach(() => { cache.clear(); list.mockReset(); get.mockReset(); });
 
+  it("does not lose category navigation when a background response omits categories", async () => {
+    const app = store();
+    const catalogue = { ...response(1, 1), categories: ["Travel & Immigration", "Health"] };
+    list.mockResolvedValueOnce(catalogue);
+    await app.dispatch(fetchPackages({ page: 1, forceRefresh: true }));
+    list.mockResolvedValueOnce({ ...response(1, 1), categories: [] });
+    await app.dispatch(fetchPackages({ page: 1, category: "My packs", background: true, forceRefresh: true }));
+    expect(app.getState().packages.categories).toEqual(expect.arrayContaining(["Health", "Travel & Immigration", "Finance"]));
+  });
+
   it("fetches and caches an empty first page once", async () => {
     list.mockResolvedValue(response(1, 1)); const app = store();
     await app.dispatch(fetchPackages({ page: 1 }));

@@ -1,3 +1,9 @@
+export const primaryPalette = {
+  light: { base: "#633ca6", hover: "#55328f", text: "#ffffff" },
+  dark: { base: "#b59af5", hover: "#c6b0fb", text: "#20162f" },
+  soft: "#eee8f7",
+} as const;
+
 // Semantic references preserve the existing CSS-variable light/dark palette.
 export const colors = {
   background: "var(--lp-navy)",
@@ -57,16 +63,16 @@ export const semanticColorVariables = `:root {
   --lp-border: #e3e6ea;
   --lp-readiness: #866318;
   --lp-readiness-bright: #9c7420;
-  --lp-action: #077480;
-  --lp-action-hover: #066773;
-  --lp-action-text: #ffffff;
+  --lp-action: ${primaryPalette.light.base};
+  --lp-action-hover: ${primaryPalette.light.hover};
+  --lp-action-text: ${primaryPalette.light.text};
   --lp-mint: #147952;
   --lp-warning: #935d19;
   --lp-coral: #ba4238;
   --lp-info: #356dbf;
   --lp-purple: #6b4bc3;
   --lp-pink: #9c3f68;
-  --lp-teal: #067c86;
+  --lp-teal: var(--lp-action);
   --lp-heading: #1b2431;
   --lp-text: #39424f;
   --lp-muted: #5e6674;
@@ -109,16 +115,16 @@ export const semanticColorVariables = `:root {
   --lp-border: #27324a;
   --lp-readiness: #d9b86a;
   --lp-readiness-bright: #eccb82;
-  --lp-action: #35a7a0;
-  --lp-action-hover: #43bbb4;
-  --lp-action-text: #0b1220;
+  --lp-action: ${primaryPalette.dark.base};
+  --lp-action-hover: ${primaryPalette.dark.hover};
+  --lp-action-text: ${primaryPalette.dark.text};
   --lp-mint: #4fcb95;
   --lp-warning: #d98a2b;
   --lp-coral: #e8736a;
   --lp-info: #5b8def;
   --lp-purple: #9b7be8;
   --lp-pink: #e86a9b;
-  --lp-teal: #3fb9c7;
+  --lp-teal: var(--lp-action);
   --lp-heading: #ffffff;
   --lp-text: #e6ebf5;
   --lp-muted: #8a97ae;

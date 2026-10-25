@@ -1,4 +1,9 @@
-import { typography, poppinsFontFaces, typographyVariables } from "@/design-system/variables/typography";
+import { primaryPalette } from "@/design-system/variables/colors";
+import {
+  typography,
+  poppinsFontFaces,
+  typographyVariables,
+} from "@/design-system/variables/typography";
 
 export function renderErrorPage(): string {
   return `<!doctype html>
@@ -10,8 +15,8 @@ export function renderErrorPage(): string {
     <style>
       ${poppinsFontFaces}
       ${typographyVariables}
-      :root { color-scheme: light dark; --bg: #fafafa; --text: #111827; --muted: #4b5563; --panel: #ffffff; --border: #d1d5db; --primary: #077480; --primary-text: #ffffff; }
-      @media (prefers-color-scheme: dark) { :root { --bg: #0b1220; --text: #ffffff; --muted: #8a97ae; --panel: #131c2e; --border: #27324a; --primary: #35a7a0; } }
+      :root { color-scheme: light dark; --bg: #fafafa; --text: #111827; --muted: #4b5563; --panel: #ffffff; --border: #d1d5db; --primary: ${primaryPalette.light.base}; --primary-text: ${primaryPalette.light.text}; }
+      @media (prefers-color-scheme: dark) { :root { --bg: #0b1220; --text: #ffffff; --muted: #8a97ae; --panel: #131c2e; --border: #27324a; --primary: ${primaryPalette.dark.base}; --primary-text: ${primaryPalette.dark.text}; } }
       body { font: ${typography.text.md}/${typography.lineHeights.body} ${typography.family}; background: var(--bg); color: var(--text); display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; }
       .card { max-width: 28rem; width: 100%; text-align: center; padding: 2rem; }
       h1 { font-size: ${typography.heading.md}; font-weight: ${typography.weights.semibold}; margin: 0 0 0.5rem; }

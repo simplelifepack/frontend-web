@@ -6,7 +6,7 @@ import {
   safeCategory,
 } from "./document-utils";
 
-export type QuickFilter = "all" | "soon" | "expired" | "week";
+export type QuickFilter = "all" | "soon" | "expired" | "week" | "proofs";
 export type DocumentSort = "newest" | "oldest" | "name-asc" | "name-desc";
 
 export function documentPerson(
@@ -14,6 +14,15 @@ export function documentPerson(
   currentUserName?: string,
 ) {
   const fields = fieldsObject(document);
+  const assigned = fields.assignedPerson;
+  if (
+    assigned &&
+    typeof assigned === "object" &&
+    "name" in assigned &&
+    typeof assigned.name === "string" &&
+    assigned.name.trim()
+  )
+    return assigned.name.trim();
   const direct = [
     "nameOnDocument",
     "holderName",
@@ -66,6 +75,11 @@ export function matchesQuickFilter(
   now = Date.now(),
 ) {
   if (filter === "all") return true;
+  if (filter === "proofs") {
+    return /transaction[ _-]*evidence|payment[ _-]*proof|proof[ _-]*of[ _-]*payment/i.test(
+      document.documentType ?? "",
+    );
+  }
   if (filter === "week") {
     const added = new Date(document.createdAt).getTime();
     return (

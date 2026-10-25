@@ -1,6 +1,7 @@
+import { landingBrand as C } from "@/design-system/variables/brand";
 import { motion } from "framer-motion";
 
-export default function Guilloche({ color = "#35A7A0" }: { color?: string }) {
+export default function Guilloche({ color = C.action }: { color?: string }) {
   const rings = Array.from({ length: 7 }, (_, i) => 60 + i * 34);
   const waves = Array.from({ length: 3 }, (_, k) => {
     let d = "M0 250 ";

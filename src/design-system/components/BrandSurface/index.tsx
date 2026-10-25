@@ -25,7 +25,7 @@ export const BrandSurface = styled.div`
   --lp-faint: ${C.muted};
   --lp-action: ${C.action};
   --lp-action-text: ${C.actionText};
-  --lp-action-hover: ${C.teal};
+  --lp-action-hover: ${C.actionHover};
   --lp-mint: ${C.emerald};
   --lp-coral: ${C.red};
   --lp-info: ${C.blue};

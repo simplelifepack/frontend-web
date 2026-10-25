@@ -8,7 +8,7 @@
   --color-ink: #0e1525;
   --color-inkdeep: #0b0e24;
   --color-paper: #f5f2ea;
-  --color-seal: #35a7a0;
+  --color-seal: var(--lp-action);
   --color-verified: #2fb68a;
   --color-brand: #5b5bf5;
   --color-brand-2: #8a6bf4;
@@ -92,8 +92,8 @@
   --card-foreground: #1b2431;
   --popover: #ffffff;
   --popover-foreground: #1b2431;
-  --primary: #077480;
-  --primary-foreground: #ffffff;
+  --primary: var(--lp-action);
+  --primary-foreground: var(--lp-action-text);
   --secondary: #eaecf0;
   --secondary-foreground: #1b2431;
   --muted: #eaecf0;
@@ -104,15 +104,15 @@
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: #e3e6ea;
   --input: #e3e6ea;
-  --ring: oklch(0.704 0.04 256.788);
+  --ring: var(--lp-action);
   --sidebar: #f2f3f5;
   --sidebar-foreground: #1b2431;
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: var(--lp-action);
+  --sidebar-primary-foreground: var(--lp-action-text);
   --sidebar-accent: #eaecf0;
   --sidebar-accent-foreground: #1b2431;
   --sidebar-border: #e3e6ea;
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --sidebar-ring: var(--lp-action);
   color-scheme: light;
 }
 
@@ -123,8 +123,8 @@
   --card-foreground: var(--lp-text);
   --popover: var(--lp-panel);
   --popover-foreground: var(--lp-text);
-  --primary: #35a7a0;
-  --primary-foreground: var(--lp-heading);
+  --primary: var(--lp-action);
+  --primary-foreground: var(--lp-action-text);
   --secondary: var(--lp-raised);
   --secondary-foreground: var(--lp-text);
   --muted: var(--lp-raised);
@@ -135,15 +135,15 @@
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: var(--lp-border);
   --input: var(--lp-border);
-  --ring: oklch(0.551 0.027 264.364);
+  --ring: var(--lp-action);
   --sidebar: var(--lp-navy);
   --sidebar-foreground: var(--lp-text);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: var(--lp-action);
+  --sidebar-primary-foreground: var(--lp-action-text);
   --sidebar-accent: var(--lp-raised);
   --sidebar-accent-foreground: var(--lp-text);
   --sidebar-border: var(--lp-border);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar-ring: var(--lp-action);
   color-scheme: dark;
 }
 
@@ -680,6 +680,8 @@ body,
 .lp-most-ready b {
   color: var(--lp-text);
 }
+.lp-collection-surface { background: #f7f7fb; }
+.dark .lp-collection-surface { background: var(--lp-navy); }
 .lp-documents-route {
   padding-top: 5px;
 }

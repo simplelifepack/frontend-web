@@ -81,6 +81,15 @@ export const deleteDocuments = createAsyncThunk("documents/deleteDocuments", asy
   return ids;
 });
 
+export const updateDocumentDetails = createAsyncThunk("documents/updateDocumentDetails", async (input: { id: string; notes?: string; expiry?: string | null }) => {
+  const { id, ...details } = input;
+  return (await api.documents.updateDetails(id, details)).document;
+});
+
+export const assignDocuments = createAsyncThunk("documents/assignDocuments", async (input: { ids: string[]; assigneeId: string }) => {
+  return (await api.documents.bulkAssign(input.ids, input.assigneeId)).documents;
+});
+
 export const addDocumentPages = createAsyncThunk("documents/addDocumentPages", async (input: { documentId: string; files: File[] }, { dispatch }) => {
   const response = await api.documents.addPageFiles(input.documentId, input.files);
   void dispatch(refreshUsage(true));
@@ -218,6 +227,11 @@ const documentsSlice = createSlice({
         if (state.selected?.id === action.payload) state.selected = null;
         if (existed) state.documentCount = Math.max(0, state.documentCount - 1);
       })
+      .addCase(assignDocuments.fulfilled, (state, action) => {
+        const updated = new Map(action.payload.map(document => [document.id, document]));
+        state.items = state.items.map(document => updated.get(document.id) ?? document);
+        if (state.selected) state.selected = updated.get(state.selected.id) ?? state.selected;
+      })
       .addCase(deleteDocuments.fulfilled, (state, action) => {
         const deleted = new Set(action.payload);
         const removed = state.items.filter((document) => deleted.has(document.id)).length;
@@ -230,6 +244,7 @@ const documentsSlice = createSlice({
       })
       .addMatcher(
         (action) => [
+          updateDocumentDetails.fulfilled.type,
           addDocumentPages.fulfilled.type,
           reorderDocumentPages.fulfilled.type,
           replaceDocumentPage.fulfilled.type,

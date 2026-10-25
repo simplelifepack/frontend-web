@@ -3,6 +3,9 @@ import { downloadBlob, request } from "./http-client";
 import type { AnalyzeDocumentResponse, DocumentRecord, SaveDocumentPayload, UploadDocumentResponse } from "./api.types";
 
 export const documentsApi = {
+  updateDetails: (id: string, details: { notes?: string; expiry?: string | null }) => request<{ document: DocumentRecord }>(`/documents/${encodeURIComponent(id)}/details`, { method: "PATCH", body: details, requiresAuth: true }),
+  assignmentOptions: () => request<Array<{ id: string; name: string }>>("/documents/assignment-options", { requiresAuth: true, dedupeMs: 0 }),
+  bulkAssign: (ids: string[], assigneeId: string) => request<{ documents: DocumentRecord[] }>("/documents/bulk-assign", { method: "POST", body: { ids, assigneeId }, requiresAuth: true }),
   list: () => request<DocumentRecord[]>("/documents", { requiresAuth: true }),
   getById: (id: string) => request<DocumentRecord>(`/documents/${id}`, { requiresAuth: true }),
   preview: (id: string) => downloadBlob(`/documents/${encodeURIComponent(id)}/preview`, { requiresAuth: true }),

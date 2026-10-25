@@ -53,12 +53,12 @@ describe("PackageGrid", () => {
   });
 
   it.each([
-    [0, "var(--lp-coral)"],
-    [25, "var(--lp-coral)"],
-    [50, "var(--lp-readiness)"],
-    [67, "var(--lp-readiness)"],
-    [80, "var(--lp-mint)"],
-    [89, "var(--lp-mint)"],
+    [0, "var(--packages-danger)"],
+    [25, "var(--packages-danger)"],
+    [50, "var(--packages-progress)"],
+    [67, "var(--packages-progress)"],
+    [80, "var(--packages-progress)"],
+    [89, "var(--packages-progress)"],
     [100, "var(--lp-mint)"],
   ])("keeps package accent separate from the %i%% readiness ring", (completion, stroke) => {
     renderGrid([pack(`score-${completion}`, completion, completion === 100 ? 4 : 2)]);

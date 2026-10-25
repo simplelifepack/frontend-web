@@ -11,6 +11,7 @@ import {
 } from "@/design-system";
 
 import { useState } from "react";
+import "./documents-table.css";
 import { ChevronRight } from "lucide-react";
 
 import { daysUntil } from "@/data/demoData";
@@ -66,9 +67,14 @@ export default function DocumentRows({
       <DocumentBulkActions
         documents={selectedDocuments}
         onDeleted={() => setSelected(new Set())}
+        onClear={() => setSelected(new Set())}
       />
-      <Card flush>
-        <DataListHeader $columns={showCategory ? 8 : 7}>
+      <Card flush className="documents-table">
+        <DataListHeader
+          className="documents-table-head"
+          $columns={showCategory ? 8 : 7}
+          data-category={showCategory}
+        >
           <Checkbox
             aria-label={
               allSelected ? "Deselect all documents" : "Select all documents"
@@ -109,12 +115,12 @@ export default function DocumentRows({
           const person = documentPerson(doc, currentUserName);
           const isSelected = selected.has(doc.id);
           const expiryDisplay = (() => {
-            if (!expiry) return "-";
+            if (!expiry) return "—";
             if (/^\d{4}-\d{2}-\d{2}$/.test(expiry))
-              return `${daysUntil(expiry)} days`;
+              return `${daysUntil(expiry)}d`;
             const parsed = new Date(expiry);
             return Number.isNaN(parsed.getTime())
-              ? "-"
+              ? "—"
               : parsed.toLocaleDateString(undefined, {
                   month: "short",
                   day: "2-digit",
@@ -124,6 +130,9 @@ export default function DocumentRows({
           return (
             <DataListRow
               key={doc.id}
+              className="documents-table-row"
+              data-category={showCategory}
+              data-selected={isSelected}
               role="button"
               tabIndex={0}
               $columns={showCategory ? 8 : 7}
@@ -149,14 +158,11 @@ export default function DocumentRows({
                   })
                 }
               />
-              <Row $wrap={false} $gap="s8">
-                <IconBadge>
-                  <CategoryIcon
-                    aria-hidden="true"
-                    color={categoryMeta.accent}
-                  />
+              <Row className="documents-table-main" $wrap={false} $gap="s8">
+                <IconBadge className="documents-table-icon">
+                  <CategoryIcon aria-hidden="true" color="currentColor" />
                 </IconBadge>
-                <Stack $gap="s4">
+                <Stack className="documents-table-copy" $gap="s4">
                   <Text weight="semibold" tone="heading">
                     {doc.displayName ||
                       labelize(doc.documentType) ||
@@ -167,11 +173,12 @@ export default function DocumentRows({
                   </Text>
                 </Stack>
               </Row>
-              <Text size="sm" tone="muted">
-                {person}
-              </Text>
+              <div className="documents-table-person">
+                <span aria-hidden="true" className="documents-person-dot" />
+                <Text title={person}>{person}</Text>
+              </div>
               {showCategory ? (
-                <Row>
+                <Row className="documents-table-category-cell">
                   <Pill tone="flat">{labelize(category)}</Pill>
                 </Row>
               ) : null}

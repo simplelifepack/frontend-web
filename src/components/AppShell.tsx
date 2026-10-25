@@ -142,7 +142,13 @@ export default function AppShell({ children }: AppShellProps) {
             <AccountMenu user={user} />
           </AppHeaderContent>
         </AppHeader>
-        <AppScroll>
+        <AppScroll
+          className={
+            currentRoute === "documents" || currentRoute === "packages"
+              ? "lp-collection-surface"
+              : undefined
+          }
+        >
           <AppContent>{children ?? <Outlet />}</AppContent>
         </AppScroll>
         {uploadOpen ? (

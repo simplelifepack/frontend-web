@@ -1,0 +1,279 @@
+.package-detail-backdrop {
+  background: #24223270;
+  backdrop-filter: none;
+}
+.lp-pack-drawer {
+  --pack-surface: #fff;
+  --pack-background: #f7f7fb;
+  --pack-raised: #efedf5;
+  --pack-border: #e6e5ee;
+  --pack-text: #302b3c;
+  --pack-muted: #777185;
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(450px, 100vw);
+  height: 100dvh;
+  animation: none;
+  background: var(--pack-background);
+  border-color: var(--pack-border);
+}
+.dark .lp-pack-drawer {
+  --pack-surface: var(--lp-panel);
+  --pack-background: var(--lp-navy);
+  --pack-raised: var(--lp-raised);
+  --pack-border: var(--lp-border);
+  --pack-text: var(--lp-text);
+  --pack-muted: var(--lp-muted);
+}
+.lp-pack-drawer,
+.lp-pack-drawer * {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+.lp-pack-drawer .lp-pack-drawer-head {
+  padding: 28px 24px 24px;
+  background: var(--pack-surface);
+  border-color: var(--pack-border);
+}
+.lp-pack-drawer .lp-pack-drawer-head > button:first-child {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  min-height: 44px;
+  width: 34px;
+  padding: 8px;
+  border: 1px solid var(--pack-border);
+  border-radius: 12px;
+  background: var(--pack-raised);
+  color: var(--pack-text);
+}
+.lp-pack-drawer .lp-pack-drawer-title {
+  gap: 12px;
+  padding-right: 34px;
+  align-items: flex-start;
+}
+.lp-pack-drawer .lp-pack-drawer-title > span {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--lp-action) 12%, transparent);
+  color: var(--lp-action);
+}
+.lp-pack-drawer .lp-pack-drawer-title h2 {
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--pack-text);
+}
+.lp-pack-drawer .lp-pack-drawer-title p {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--pack-muted);
+}
+.lp-pack-drawer .lp-pack-context-description {
+  margin: 16px 0 12px;
+  color: var(--pack-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.lp-pack-drawer .lp-pack-drawer-source {
+  position: relative;
+  display: grid;
+  align-items: start;
+  gap: 8px;
+  min-height: 94px;
+  margin-top: 12px;
+  padding: 14px 46px 14px 12px;
+  border: 1px solid var(--pack-border);
+  border-radius: 12px;
+  background: var(--pack-raised);
+  color: var(--pack-muted);
+}
+.lp-pack-drawer .lp-pack-source-label,
+.lp-pack-drawer .lp-pack-source-date {
+  font-size: 12px;
+  color: var(--pack-muted);
+}
+.lp-pack-drawer .lp-pack-source-links {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.lp-pack-drawer .lp-pack-drawer-source a {
+  display: block;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--lp-action);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: normal;
+}
+.lp-pack-drawer .lp-pack-drawer-source > button {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px;
+  min-height: 28px;
+  min-width: 28px;
+  color: var(--pack-muted);
+}
+.lp-pack-drawer .lp-pack-drawer-score {
+  margin-top: 16px;
+  gap: 16px;
+}
+.lp-pack-drawer .lp-pack-drawer-score > span {
+  color: var(--pack-muted);
+  font-size: 14px;
+  font-weight: 400;
+}
+.lp-pack-drawer .lp-pack-drawer-body {
+  padding: 20px;
+  background: var(--pack-background);
+}
+.lp-pack-drawer .lp-pack-check-card,
+.lp-pack-drawer .lp-pack-download-card {
+  border: 1px solid var(--pack-border);
+  border-radius: 12px;
+  background: var(--pack-surface);
+  box-shadow: 0 1px 2px #211b2b12;
+  margin: 0 0 12px;
+}
+.lp-pack-drawer .lp-pack-check-card h3 {
+  min-height: 54px;
+  padding: 16px;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pack-text);
+}
+.lp-pack-drawer .lp-pack-check-row-wrap {
+  border-color: var(--pack-border);
+}
+.lp-pack-drawer .lp-pack-check-row {
+  min-height: 47px;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--pack-text);
+}
+.lp-pack-drawer .lp-pack-check-row > [data-ds-text] {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--pack-text);
+}
+.lp-pack-drawer .lp-pack-check-row small {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--pack-muted);
+}
+.lp-pack-drawer .lp-pack-check-row > svg {
+  width: 14px;
+  height: 14px;
+  color: var(--pack-muted);
+}
+.lp-pack-drawer .lp-pack-status-icon {
+  width: 20px;
+  height: 20px;
+}
+.lp-pack-drawer .lp-pack-check-card.needed .lp-pack-check-row {
+  min-height: 68px;
+  padding-block: 12px;
+}
+.lp-pack-drawer .lp-pack-check-card.needed .lp-pack-check-row > button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--lp-action) 35%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--lp-action) 7%, var(--pack-surface));
+  color: var(--lp-action);
+  font-size: 12px;
+  font-weight: 500;
+}
+.lp-pack-drawer .lp-pack-download-section {
+  margin-top: 16px;
+}
+.lp-pack-drawer .lp-pack-download-card {
+  display: block;
+  padding: 0;
+}
+.lp-pack-drawer .lp-pack-download-card > div:first-child {
+  min-height: 48px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--pack-text);
+}
+.lp-pack-drawer .lp-pack-download-card > div:first-child b {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.lp-pack-drawer .lp-pack-download-card > div:first-child > span {
+  font-size: 12px;
+  color: var(--pack-muted);
+}
+.lp-pack-drawer .lp-pack-download-card label {
+  min-height: 66px;
+  padding: 14px 16px;
+  gap: 12px;
+  border-top: 1px solid var(--pack-border);
+}
+.lp-pack-drawer .lp-pack-download-card input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--lp-action);
+}
+.lp-pack-drawer .lp-pack-download-card label strong {
+  color: var(--pack-text);
+  font-size: 14px;
+  font-weight: 400;
+}
+.lp-pack-drawer .lp-pack-download-card label small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--pack-muted);
+}
+.lp-pack-drawer .lp-pack-add-another {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px;
+  border-top: 1px solid var(--pack-border);
+  border-radius: 0;
+  color: var(--lp-action);
+  font-size: 14px;
+  font-weight: 600;
+}
+.lp-pack-drawer .lp-pack-download-section > button {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  background: var(--lp-action);
+  color: var(--lp-action-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+.lp-pack-drawer .lp-pack-disclaimer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 16px 0 0;
+  color: var(--pack-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+.lp-pack-drawer .lp-pack-refresh-feedback {
+  font-size: 12px;
+  line-height: 1.5;
+}

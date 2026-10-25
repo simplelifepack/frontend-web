@@ -90,6 +90,9 @@ export default function DocumentsOverview({
       expired: documents.filter((document) =>
         matchesQuickFilter(document, "expired"),
       ).length,
+      proofs: documents.filter((document) =>
+        matchesQuickFilter(document, "proofs"),
+      ).length,
       week: documents.filter((document) => matchesQuickFilter(document, "week"))
         .length,
     }),
@@ -124,17 +127,19 @@ export default function DocumentsOverview({
         }
       />
 
-      <Stack>
-        <ChoiceGroup>
+      <Stack className="documents-collection">
+        <ChoiceGroup className="documents-quick-filters">
           {(
             [
               ["all", "All"],
               ["soon", "Expiring soon"],
               ["expired", "Expired"],
               ["week", "Added this week"],
+              ["proofs", "Proofs"],
             ] as const
           ).map(([key, label]) => (
             <Choice
+              data-filter={key}
               appearance="filter"
               count={quickCounts[key]}
               key={key}
@@ -142,18 +147,24 @@ export default function DocumentsOverview({
               aria-pressed={quick === key}
               onClick={() => setQuick(key)}
             >
+              {key !== "all" && (
+                <span
+                  className={`documents-filter-dot is-${key}`}
+                  aria-hidden="true"
+                />
+              )}
               {label}
             </Choice>
           ))}
         </ChoiceGroup>
 
-        <FilterBar $search>
+        <FilterBar className="documents-filters" $search>
           <SearchField
             appearance="filter"
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search documents"
+            placeholder="Search type, file, person, notes…"
             aria-label="Search documents"
           />
           <SelectMenu
@@ -161,7 +172,7 @@ export default function DocumentsOverview({
             value={category}
             onValueChange={setCategory}
             options={[
-              { value: "all", label: "All categories" },
+              { value: "all", label: "All" },
               ...categories.map((item) => ({
                 value: item.key,
                 label: item.name,
@@ -182,7 +193,7 @@ export default function DocumentsOverview({
             value={source}
             onValueChange={setSource}
             options={[
-              { value: "all", label: "All sources" },
+              { value: "all", label: "All" },
               { value: "uploaded", label: "Uploaded" },
               ...sources
                 .filter((value) => value !== "uploaded")

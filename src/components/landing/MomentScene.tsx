@@ -42,15 +42,15 @@ function MomentScene({ kind }: { kind: "travel" | "care" | "home" | "legacy" }) 
             <path d="M148 84 l-14 0 14 14 z" fill="#F0E9D8" />
             <rect x="63" y="98" width="58" height="4" rx="2" fill="#E2D8C2" />
             <rect x="63" y="108" width="70" height="4" rx="2" fill="#E9E0CC" />
-            <rect x="63" y="118" width="46" height="4" rx="2" fill="#35a7a0" opacity=".55" />
+            <rect x="63" y="118" width="46" height="4" rx="2" fill={C.action} opacity=".55" />
             <rect x="63" y="128" width="63" height="4" rx="2" fill="#E9E0CC" />
           </g>
           <g transform="rotate(-7 84 96)">
             <rect x="56" y="52" width="58" height="80" rx="6" fill="#242B34" />
             <rect x="56" y="52" width="58" height="80" rx="6" fill="url(#pp-sheen)" opacity=".25" />
-            <circle cx="85" cy="83" r="12" fill="none" stroke="#35a7a0" strokeWidth="1.8" />
-            <circle cx="85" cy="83" r="6.5" fill="none" stroke="#35a7a0" strokeWidth="1.4" />
-            <rect x="72" y="106" width="26" height="3" rx="1.5" fill="#35a7a0" opacity=".85" />
+            <circle cx="85" cy="83" r="12" fill="none" stroke={C.action} strokeWidth="1.8" />
+            <circle cx="85" cy="83" r="6.5" fill="none" stroke={C.action} strokeWidth="1.4" />
+            <rect x="72" y="106" width="26" height="3" rx="1.5" fill={C.action} opacity=".85" />
           </g>
           <g transform="rotate(5 196 120)">
             <rect x="160" y="92" width="76" height="52" rx="4" fill="#FFFDF6" stroke="#E4DAC4" />
@@ -97,7 +97,7 @@ function MomentScene({ kind }: { kind: "travel" | "care" | "home" | "legacy" }) 
             <rect x="72" y="74" width="40" height="4" rx="2" fill="#D8CFB8" />
             <rect x="72" y="84" width="32" height="4" rx="2" fill="#E4DCC6" />
             <rect x="72" y="94" width="37" height="4" rx="2" fill="#E4DCC6" />
-            <circle cx="92" cy="124" r="12" fill="#35a7a0" />
+            <circle cx="92" cy="124" r="12" fill={C.action} />
             <path d="M86 124 l4 5 8 -10" stroke="#1E242B" strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </g>
         </>
@@ -112,14 +112,14 @@ function MomentScene({ kind }: { kind: "travel" | "care" | "home" | "legacy" }) 
           <Shadow cx={116} cy={150} rx={72} />
           <g transform="rotate(-3 116 112)">
             <rect x="52" y="66" width="128" height="88" rx="4" fill="#FFFFFF" stroke="#E4DAC4" />
-            <rect x="64" y="78" width="56" height="5" rx="2.5" fill="#35a7a0" opacity=".6" />
+            <rect x="64" y="78" width="56" height="5" rx="2.5" fill={C.action} opacity=".6" />
             {[0, 1, 2].map((r) =>
               [0, 1, 2].map((c) => {
                 const i = r * 3 + c;
                 const filled = i < 6;
                 return (
                   <g key={i} transform={`translate(${64 + c * 38},${94 + r * 18})`}>
-                    <rect width="10" height="10" rx="2.5" fill={filled ? "#35a7a0" : "#fff"} stroke={filled ? "#2f9690" : "#D8CDB4"} />
+                    <rect width="10" height="10" rx="2.5" fill={filled ? C.action : "#fff"} stroke={filled ? C.actionHover : "#D8CDB4"} />
                     {filled && <path d="M2.5 5 l2.2 2.6 3.4 -5" stroke="#fff" strokeWidth="1.6" fill="none" strokeLinecap="round" />}
                     <rect x="15" y="3" width="17" height="3.5" rx="1.75" fill="#E4DAC4" />
                   </g>
@@ -129,7 +129,7 @@ function MomentScene({ kind }: { kind: "travel" | "care" | "home" | "legacy" }) 
           </g>
           <Shadow cx={140} cy={132} rx={40} />
           <BrandKey x={120} y={116} r={18} color="#2A2F38" carve="#fff" />
-          <BrandKey x={136} y={104} r={-8} color="#35a7a0" carve="#fff" />
+          <BrandKey x={136} y={104} r={-8} color={C.action} carve="#fff" />
           <circle cx="121" cy="109" r="14" fill="none" stroke="#B7B0A2" strokeWidth="3.5" opacity=".9" />
         </>
       ),

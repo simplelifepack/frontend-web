@@ -1,6 +1,6 @@
 import { Text } from "@/design-system";
 import { Lock } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { T } from "@/constants/theme";
 import type { DocumentRecord, PackSummary } from "@/lib/api";
@@ -9,6 +9,7 @@ import { downloadDocuments } from "../documents/document-actions";
 import ChangeDocumentDialog from "./pack-change-document-dialog";
 import PackDetailHeader from "./pack-detail-header";
 import { PackDownloadCard, RequirementSections } from "./pack-detail-panels";
+import PackExtraDocuments from "./pack-extra-documents";
 import PackageDocumentPreview from "./package-document-preview";
 
 type PackDetailProps = {
@@ -51,6 +52,8 @@ export default function PackDetail({
   const [assignmentError, setAssignmentError] = useState<string | null>(null);
   const [documentQuery, setDocumentQuery] = useState("");
   const [skipped, setSkipped] = useState<string[]>([]);
+  const [extraIds, setExtraIds] = useState<Set<string>>(new Set());
+  const [extraOpen, setExtraOpen] = useState(false);
   const [downloadIds, setDownloadIds] = useState<Set<string>>(new Set());
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
@@ -62,10 +65,8 @@ export default function PackDetail({
   const currentDocument = changing?.matchedDocument
     ? documents.find((document) => document.id === changing.matchedDocument?.id)
     : undefined;
-  const selectedDownloadDocuments = useMemo(() => found
-    .map((slot) => documents.find((document) => document.id === slot.matchedDocument?.id))
-    .filter((document): document is DocumentRecord => Boolean(document))
-    .filter((document) => !downloadIds.has(document.id)), [documents, downloadIds, found]);
+  const downloadSlots = [...found, ...documents.filter(document => extraIds.has(document.id) && !found.some(slot => slot.matchedDocument?.id === document.id)).map(document => ({ id: `extra-${document.id}`, title: document.displayName || document.title || document.originalName, matchedDocument: { ...document, normalizedType: document.normalizedType || document.documentType }, required: false, acceptedDocumentTypes: [], status: "ready", assignmentSource: "USER_SELECTED" } satisfies DerivedRequirement))];
+  const selectedDownloadDocuments = [...new Map(downloadSlots.map(slot => documents.find(document => document.id === slot.matchedDocument?.id)).filter((document): document is DocumentRecord => Boolean(document)).filter(document => !downloadIds.has(document.id)).map(document => [document.id, document])).values()];
   const documentNeedle = documentQuery.trim().toLowerCase();
   const documentsForPicker = changing
     ? documents
@@ -182,19 +183,15 @@ export default function PackDetail({
               onViewDocument={setViewingDocument}
             />
 
-            <Text as="p" size="sm" className="lp-pack-disclaimer">
-              <Lock aria-hidden="true" focusable="false" size={13} />
-              {typeof pack.searchMetadata?.disclaimer === "string" ? pack.searchMetadata.disclaimer : "Checklist based on stored requirements; completeness and eligibility are not guaranteed."}
-              {typeof pack.searchMetadata?.confidence === "string" ? ` Confidence: ${pack.searchMetadata.confidence}.` : ""}
-            </Text>
             <PackDownloadCard
               documents={documents}
               downloadError={downloadError}
               downloadIds={downloadIds}
               downloading={downloading}
-              found={found}
+              found={downloadSlots}
               selectedCount={selectedDownloadDocuments.length}
               onDownload={() => void downloadPack()}
+              onAddAnother={() => setExtraOpen(true)}
               onToggle={(documentId) => setDownloadIds((current) => {
                 const next = new Set(current);
                 if (next.has(documentId)) next.delete(documentId);
@@ -202,6 +199,11 @@ export default function PackDetail({
                 return next;
               })}
             />
+            <Text as="p" size="sm" className="lp-pack-disclaimer">
+              <Lock aria-hidden="true" focusable="false" size={13} />
+              {typeof pack.searchMetadata?.disclaimer === "string" ? pack.searchMetadata.disclaimer : "Checklist based on stored requirements; completeness and eligibility are not guaranteed."}
+              {typeof pack.searchMetadata?.confidence === "string" ? ` Confidence: ${pack.searchMetadata.confidence}.` : ""}
+            </Text>
           </div>
           {changing ? (
             <ChangeDocumentDialog
@@ -229,6 +231,7 @@ export default function PackDetail({
               onWarningClear={() => setWarningDocument(null)}
             />
           ) : null}
+          {extraOpen ? <PackExtraDocuments documents={documents.filter(document => !found.some(slot => slot.matchedDocument?.id === document.id))} selected={extraIds} onChange={id => setExtraIds(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next; })} onClose={() => setExtraOpen(false)} /> : null}
           {viewingDocument ? (
             <PackageDocumentPreview document={viewingDocument} onClose={() => setViewingDocument(null)} />
           ) : null}

@@ -34,7 +34,7 @@ function usableDocumentType(document: DocumentRecord) {
   return normalizeRequirementValue(document.normalizedType ?? document.documentType);
 }
 
-function documentRequirementTypes(document: DocumentRecord) {
+export function documentRequirementTypes(document: DocumentRecord) {
   const type = usableDocumentType(document);
   const implied: Record<string, string[]> = {
     aadhaar: ["identity_proof", "address_proof", "date_of_birth_proof"],

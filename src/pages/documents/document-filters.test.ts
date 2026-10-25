@@ -112,6 +112,26 @@ describe("Documents filters", () => {
     ]);
   });
 
+  it("uses the saved assignment for the Person column, search and filtering", () => {
+    const assigned = makeDocument("assigned", {
+      fields: {
+        patientName: "Extracted name",
+        assignedPerson: { id: "family-1", name: "Alex" },
+      },
+    });
+    expect(documentPerson(assigned, "Owner")).toBe("Alex");
+    expect(
+      filterDocuments([assigned], {
+        query: "Alex",
+        category: "all",
+        person: "Alex",
+        source: "all",
+        sort: "newest",
+        quick: "all",
+      }),
+    ).toEqual([assigned]);
+  });
+
   it("derives people and sources from actual document fields and counts dates dynamically", () => {
     expect(documentPerson(makeDocument("self"), "Ranjith")).toBe("Ranjith");
     expect(documentPerson(documents[2]!, "Ranjith")).toBe("Jordan");
