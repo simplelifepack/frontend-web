@@ -46,8 +46,8 @@ export type CheckoutVerification = {
   razorpay_signature: string;
 };
 export const billingApi = {
-  plans: () =>
-    request<BillingCatalogue>("/api/billing/plans", { dedupeMs: 10000 }),
+  plans: (signal?: AbortSignal) =>
+    request<BillingCatalogue>("/api/billing/plans", { dedupeMs: 10000, signal }),
   checkout: (plan: BillingPlanId) =>
     request<CheckoutResponse>("/api/billing/checkout", {
       method: "POST",
@@ -60,9 +60,9 @@ export const billingApi = {
       requiresAuth: true,
       body: response,
     }),
-  status: () =>
+  status: (signal?: AbortSignal) =>
     request<BillingStatus>("/api/billing/subscription", {
-      requiresAuth: true,
+      requiresAuth: true, signal,
       dedupeMs: 0,
     }),
   cancel: () =>

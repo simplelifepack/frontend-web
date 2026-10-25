@@ -1,6 +1,6 @@
 import { Heading, Text, ModalBackdrop, ModalPanel, Input, Select, Button, vars } from "@/design-system";
 
-import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent } from "react";
 import { T } from "@/constants/theme";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { analyzeDocument, clearPendingAnalysis, saveDocument } from "@/store/slices/documentsSlice";
@@ -31,8 +31,12 @@ export default function UploadDocumentModal({ open, onClose, onSaved, scanByDefa
     }).catch(() => { /* Manual entry remains available if preferences cannot load. */ });
     return () => { cancelled = true; };
   }, [open, scanByDefault]);
-  const previews = useMemo(() => files.map((file) => ({ file, url: URL.createObjectURL(file) })), [files]);
-  useEffect(() => () => previews.forEach((item) => URL.revokeObjectURL(item.url)), [previews]);
+  const [previews, setPreviews] = useState<Array<{ file: File; url: string }>>([]);
+  useEffect(() => {
+    const next = files.map(file => ({ file, url: URL.createObjectURL(file) }));
+    setPreviews(next);
+    return () => next.forEach(item => URL.revokeObjectURL(item.url));
+  }, [files]);
   const aiDisabled = pendingAnalysis?.warnings.some((warning) => warning.code === "AI_PROCESSING_DISABLED") ?? false;
   const aiFailed = pendingAnalysis?.warnings.some((warning) => ["AI_ANALYSIS_UNAVAILABLE", "OPENAI_API_KEY_MISSING", "OPENAI_API_AUTH_FAILED", "OPENAI_QUOTA_EXCEEDED"].includes(warning.code)) ?? false;
   const manualReview = !aiConsent || !aiAvailable || aiDisabled || aiFailed;

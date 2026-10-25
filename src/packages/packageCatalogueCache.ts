@@ -1,9 +1,10 @@
+import { getAccessToken, getAuthGeneration } from "@/lib/auth";
 import type { PackageListQuery, PackageListResponse } from "@/lib/api";
 
 const DB_NAME = "readiness-package-catalogue";
 // Compatibility: migrate the existing public package cache before deleting its old database.
 const LEGACY_DB_NAME = "lifepack-package-catalogue";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const CACHE_KEY_VERSION = "v7";
 const STORE_NAME = "pages";
 
@@ -12,6 +13,15 @@ export type CachedPackagePage = {
   query: Required<Pick<PackageListQuery, "limit" | "page" | "sort">> & Omit<PackageListQuery, "limit" | "page" | "sort">;
   response: PackageListResponse;
 };
+
+function accountScope() {
+  try {
+    const payload = getAccessToken()?.split(".")[1];
+    if (!payload) return "anonymous";
+    const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+    return typeof claims.sub === "string" ? encodeURIComponent(claims.sub) : "anonymous";
+  } catch { return "anonymous"; }
+}
 
 export function packagePageCacheKey(query: PackageListQuery = {}) {
   const params = new URLSearchParams({
@@ -24,7 +34,7 @@ export function packagePageCacheKey(query: PackageListQuery = {}) {
     sort: query.sort ?? "category",
     version: CACHE_KEY_VERSION,
   });
-  return `packages:${params.toString()}`;
+  return `packages:account=${accountScope()}:${params.toString()}`;
 }
 
 function openDatabase(): Promise<IDBDatabase | null> {
@@ -34,6 +44,8 @@ function openDatabase(): Promise<IDBDatabase | null> {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
       request.onupgradeneeded = () => {
         const database = request.result;
+        // Older pages mix shared catalogue data with private packages/assignments.
+        if (database.objectStoreNames.contains(STORE_NAME)) database.deleteObjectStore(STORE_NAME);
         if (!database.objectStoreNames.contains(STORE_NAME)) database.createObjectStore(STORE_NAME, { keyPath: "key" });
       };
       request.onsuccess = () => {
@@ -73,7 +85,7 @@ async function migrateLegacyCache(destination: IDBDatabase) {
       for (const page of pages) {
         const request = store.get(page.key);
         request.onsuccess = () => {
-          if (!request.result) { store.put(page); copied.push(page); }
+          if (!request.result && page.key.startsWith(`packages:account=${accountScope()}:`)) { store.put(page); copied.push(page); }
         };
       }
     });
@@ -113,7 +125,7 @@ async function transact<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore
 export function readPackagePage(key: string) {
   return transact<CachedPackagePage | null>("readonly", (store, resolve) => {
     const request = store.get(key);
-    request.onsuccess = () => resolve((request.result as CachedPackagePage | undefined) ?? null);
+    request.onsuccess = () => resolve((key.startsWith(`packages:account=${accountScope()}:`) ? request.result as CachedPackagePage | undefined : null) ?? null);
     request.onerror = () => resolve(null);
   }, null);
 }
@@ -121,13 +133,15 @@ export function readPackagePage(key: string) {
 export function readAllPackagePages() {
   return transact<CachedPackagePage[]>("readonly", (store, resolve) => {
     const request = store.getAll();
-    request.onsuccess = () => resolve(Array.isArray(request.result) ? request.result as CachedPackagePage[] : []);
+    request.onsuccess = () => resolve(Array.isArray(request.result) ? (request.result as CachedPackagePage[]).filter(page => page.key.startsWith(`packages:account=${accountScope()}:`)) : []);
     request.onerror = () => resolve([]);
   }, []);
 }
 
 export async function writePackagePage(page: CachedPackagePage) {
+  const generation = getAuthGeneration();
   await transact<void>("readwrite", (store, resolve) => {
+    if (generation !== getAuthGeneration()) { resolve(); return; }
     const request = store.put(page);
     request.onsuccess = () => resolve();
     request.onerror = () => resolve();

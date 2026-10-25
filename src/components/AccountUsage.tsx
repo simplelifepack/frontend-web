@@ -13,13 +13,13 @@ export function storageText(storage: Usage['storage']) {
     : `${mb(storage.usedBytes)} MB used of ${mb(storage.limitBytes ?? 0)} MB · Upgrade to use unlimited storage`;
 }
 export function aiUsageText(usage: Usage['aiUsage']) {
-  return usage.unlimited ? 'Unlimited AI actions' : `${usage.used} of ${usage.limit} actions used this month`;
+  return usage.unlimited ? 'Unlimited AI package searches' : `${usage.used} of ${usage.limit} AI package searches used this month`;
 }
 export default function AccountUsage({ usage, only }: { usage: Usage; only?: 'storage' | 'ai' }) {
   const { used, limit, unlimited, period } = usage.aiUsage;
   useEffect(() => {
     if (only === 'storage' || unlimited) return;
-    toast.info(`${used} of ${limit} actions used this month`, { id: 'ai-usage', duration: 3500 });
+    toast.info(`${used} of ${limit} AI package searches used this month`, { id: 'ai-usage', duration: 3500 });
   }, [used, limit, unlimited, period, only]);
   if (only === 'ai') return null;
   return <Card style={{ marginBottom: "var(--space-s16)" }}><section aria-label="Account usage">

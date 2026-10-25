@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 it('client source/config/build artifacts contain no provider secrets or direct provider authentication', () => {
-  const roots = [process.cwd(), path.resolve('../readiness-mobile')];
+  // Standalone frontend checkouts need not contain the sibling mobile repository.
+  const roots = [process.cwd(), path.resolve('../readiness-mobile')].filter(root => fs.existsSync(root));
   const failures: string[] = [];
   function visit(file: string) {
     const stat = fs.lstatSync(file);

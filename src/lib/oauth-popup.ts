@@ -82,7 +82,7 @@ export function useGoogleOAuthPopup({ provider, popupName, onResult, onCancel }:
     window.addEventListener("message", listener);
     return () => {
       window.removeEventListener("message", listener);
-      cleanupPopup(false);
+      cleanupPopup(true);
     };
   }, [cleanupPopup, provider]);
 

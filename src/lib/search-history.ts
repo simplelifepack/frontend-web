@@ -9,6 +9,8 @@ const SEARCH_HISTORY_KEY = "readiness_readiness_search_history";
 const MAX_SEARCH_HISTORY = 4;
 const HASH_VERSION = "sha256:v1";
 const memoryHistory = new Map<string, SearchHistoryItem[]>();
+let historyGeneration = 0;
+export function clearSearchHistory() { historyGeneration += 1; memoryHistory.clear(); }
 
 function storageKey(userKey?: string | null) { return userKey ? `${SEARCH_HISTORY_KEY}:${userKey}` : SEARCH_HISTORY_KEY; }
 
@@ -62,10 +64,12 @@ export async function recordSearch(
 ): Promise<SearchHistoryItem[]> {
   if (typeof window === "undefined") return [];
 
+  const generation = historyGeneration;
   const cleaned = normalizeQuery(query);
   if (!cleaned) return getSearchHistory(userKey);
 
   const queryHash = await hashQuery(cleaned);
+  if (generation !== historyGeneration) return [];
   const now = new Date().toISOString();
   const existing = await getSearchHistory(userKey);
   const match = existing.find((item) => item.queryHash === queryHash);

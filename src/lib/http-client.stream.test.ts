@@ -20,7 +20,7 @@ it('renders streaming deltas before the final result and cleans up the reader', 
 });
 it('handles HTTP quota and in-stream errors', async () => {
   vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ code: 'AI_MONTHLY_LIMIT_EXCEEDED', message: 'raw' }), { status: 429 })));
-  await expect(streamRequest('/api/packages/search-or-generate', {}, () => undefined)).rejects.toMatchObject({ code: 'AI_MONTHLY_LIMIT_EXCEEDED', message: expect.stringContaining('3 AI actions') });
+  await expect(streamRequest('/api/packages/search-or-generate', {}, () => undefined)).rejects.toMatchObject({ code: 'AI_MONTHLY_LIMIT_EXCEEDED', message: expect.stringContaining('3 AI package searches') });
   vi.stubGlobal('fetch', vi.fn(async () => new Response('event: error\ndata: {"message":"Request failed."}\n\n', { headers: { 'Content-Type': 'text/event-stream' } })));
   await expect(streamRequest('/api/packages/search-or-generate', {}, () => undefined)).rejects.toThrow('Request failed.');
 });

@@ -33,10 +33,12 @@ export default function FilePreview({
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [pendingError, setPendingError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const pendingPreviews = useMemo(() => pendingFiles.map((file) => ({
-    file,
-    url: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
-  })), [pendingFiles]);
+  const [pendingPreviews, setPendingPreviews] = useState<Array<{ file: File; url: string | null }>>([]);
+  useEffect(() => {
+    const previews = pendingFiles.map(file => ({ file, url: file.type.startsWith("image/") ? URL.createObjectURL(file) : null }));
+    setPendingPreviews(previews);
+    return () => previews.forEach(item => { if (item.url) URL.revokeObjectURL(item.url); });
+  }, [pendingFiles]);
   const pages = useMemo<DocumentPage[]>(() => doc.pages?.length ? doc.pages : [{
     id: doc.id,
     position: 1,
@@ -55,20 +57,17 @@ export default function FilePreview({
     setPageIndex((current) => Math.min(current, Math.max(0, pages.length - 1)));
   }, [pages.length]);
 
-  useEffect(() => () => pendingPreviews.forEach((item) => {
-    if (item.url) URL.revokeObjectURL(item.url);
-  }), [pendingPreviews]);
-
   useEffect(() => {
     if (doc.source === "GOOGLE_DRIVE") return;
     if (!mimeType.startsWith("image/") && mimeType !== "application/pdf") return;
+    const controller = new AbortController();
     let active = true;
     let objectUrl: string | null = null;
     setPreviewUrl(null);
     setPreviewError(null);
     const load = page.id === doc.id
-      ? api.documents.preview(doc.id)
-      : api.documents.previewPage(doc.id, page.id);
+      ? api.documents.preview(doc.id, controller.signal)
+      : api.documents.previewPage(doc.id, page.id, controller.signal);
     void load.then(({ blob }) => {
       if (!active) return;
       objectUrl = URL.createObjectURL(blob);
@@ -79,6 +78,7 @@ export default function FilePreview({
     });
     return () => {
       active = false;
+      controller.abort();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [doc.id, doc.source, mimeType, page.id]);
