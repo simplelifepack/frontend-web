@@ -1,14 +1,17 @@
 import { api, type DocumentRecord } from "@/lib/api";
 
 function saveBlob(blob: Blob, fileName: string) {
+  let decodedName = fileName;
+  try { decodedName = decodeURIComponent(fileName); } catch { /* Literal percent signs are valid filenames. */ }
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = decodeURIComponent(fileName);
+  link.download = decodedName;
   document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  try { link.click(); } finally {
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  }
 }
 
 export async function downloadDocuments(documents: DocumentRecord[]) {

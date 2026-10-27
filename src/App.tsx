@@ -1,7 +1,7 @@
 import DomainAccessGuard from "./components/DomainAccessGuard";
 import Landing from "./components/Landing";
 import BillingCheckoutController from "./components/BillingCheckoutController";
-import SettingsPage from "./pages/settings";
+
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
@@ -19,6 +19,7 @@ import { fetchDocuments } from "@/store/slices/documentsSlice";
 import { fetchPackages } from "@/store/slices/packagesSlice";
 import { restoreSession } from "@/store/slices/authSlice";
 
+const SettingsPage = lazy(() => import("./pages/settings"));
 const DocumentsPage = lazy(() => import("@/pages/documents"));
 const FamilyPage = lazy(() => import("@/pages/family"));
 const ForgotPasswordPage = lazy(() => import("@/pages/forgot-password"));

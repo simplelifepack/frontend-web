@@ -1,5 +1,10 @@
+import { clearPackageCatalogueCache } from "@/packages/packageCatalogueCache";
+import { clearSearchHistory } from "./search-history";
+import { invalidateRequests } from "./request-deduper";
 const LEGACY_AUTH_KEYS = ["lifepack_token", "lifepack_refresh_token", "lifepack_auth_user"];
 const LEGACY_SEARCH_PREFIX = "lifepack_readiness_search_history";
+let authGeneration = 0;
+export function getAuthGeneration() { return authGeneration; }
 let accessToken: string | null = null;
 
 export function clearLegacyBrowserAuth() {
@@ -17,6 +22,6 @@ export function clearLegacyBrowserAuth() {
 
 export function getAccessToken() { return accessToken; }
 export function setAccessToken(token: string | null) { accessToken = token; }
-export function clearInMemoryAuth() { accessToken = null; clearLegacyBrowserAuth(); }
+export function clearInMemoryAuth() { authGeneration += 1; accessToken = null; invalidateRequests(""); clearSearchHistory(); void clearPackageCatalogueCache().catch(() => undefined); clearLegacyBrowserAuth(); }
 
 clearLegacyBrowserAuth();

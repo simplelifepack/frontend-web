@@ -20,8 +20,8 @@ describe('account usage', () => {
   });
   it('shows action usage only as a short toast, without repeating on unchanged renders', () => {
     const view = render(<AccountUsage usage={usage} only="ai" />);
-    expect(screen.queryByText('2 of 3 actions used this month')).toBeNull();
-    expect(toast.info).toHaveBeenCalledWith('2 of 3 actions used this month', { id: 'ai-usage', duration: 3500 });
+    expect(screen.queryByText('2 of 3 AI package searches used this month')).toBeNull();
+    expect(toast.info).toHaveBeenCalledWith('2 of 3 AI package searches used this month', { id: 'ai-usage', duration: 3500 });
     view.rerender(<AccountUsage usage={{ ...usage }} only="ai" />);
     expect(toast.info).toHaveBeenCalledTimes(1);
   });
@@ -49,6 +49,6 @@ describe('account usage', () => {
   });
   it('maps stable quota codes to safe UI messages', () => {
     expect(apiError({ code: 'STORAGE_LIMIT_EXCEEDED', message: 'raw server error' }).message).toContain('Cloud storage full');
-    expect(apiError({ code: 'AI_MONTHLY_LIMIT_EXCEEDED', message: 'raw server error' }).message).toContain('3 AI actions');
+    expect(apiError({ code: 'AI_MONTHLY_LIMIT_EXCEEDED', message: 'raw server error' }).message).toContain('3 AI package searches');
   });
 });

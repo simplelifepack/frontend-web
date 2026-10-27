@@ -118,13 +118,13 @@ export default function PreferencesSection() {
           <Text weight="semibold">Appearance</Text>
         </Stack>
         <ChoiceGroup aria-label="Appearance">
-          {(["dark", "light"] as const).map((theme) => (
+          {(["system", "dark", "light"] as const).map((theme) => (
             <Choice
               key={theme}
               aria-pressed={preferences.appearance === theme}
               onClick={() => changeAppearance(theme)}
             >
-              {theme === "dark" ? "Dark" : "Light"}
+              {theme === "system" ? "System" : theme === "dark" ? "Dark" : "Light"}
             </Choice>
           ))}
         </ChoiceGroup>

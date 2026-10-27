@@ -1,3 +1,11 @@
+function safeNotificationPath(value) {
+  if (typeof value !== "string" || !value.startsWith("/")) return "/";
+  try {
+    const url = new URL(value, self.location.origin);
+    return url.origin === self.location.origin ? `${url.pathname}${url.search}${url.hash}` : "/";
+  } catch { return "/"; }
+}
+
 self.addEventListener("push", (event) => {
   let data = {};
   try {
@@ -8,7 +16,7 @@ self.addEventListener("push", (event) => {
   const title = typeof data.title === "string" ? data.title : "Readines";
   const body = typeof data.body === "string" ? data.body : "Open Readines for details.";
   const rawUrl = typeof data.url === "string" ? data.url : "/";
-  const url = rawUrl.startsWith("/") && !rawUrl.startsWith("//") ? rawUrl : "/";
+  const url = safeNotificationPath(rawUrl);
   event.waitUntil(self.registration.showNotification(title, {
     body,
     icon: "/readiness-logo.png",
@@ -22,7 +30,7 @@ self.addEventListener("notificationclick", (event) => {
   const rawUrl = event.notification.data && typeof event.notification.data.url === "string"
     ? event.notification.data.url
     : "/";
-  const targetPath = rawUrl.startsWith("/") && !rawUrl.startsWith("//") ? rawUrl : "/";
+  const targetPath = safeNotificationPath(rawUrl);
   event.waitUntil((async () => {
     const allClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
     const origin = self.location.origin;

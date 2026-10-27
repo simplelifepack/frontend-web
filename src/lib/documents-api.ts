@@ -8,7 +8,7 @@ export const documentsApi = {
   bulkAssign: (ids: string[], assigneeId: string) => request<{ documents: DocumentRecord[] }>("/documents/bulk-assign", { method: "POST", body: { ids, assigneeId }, requiresAuth: true }),
   list: () => request<DocumentRecord[]>("/documents", { requiresAuth: true }),
   getById: (id: string) => request<DocumentRecord>(`/documents/${id}`, { requiresAuth: true }),
-  preview: (id: string) => downloadBlob(`/documents/${encodeURIComponent(id)}/preview`, { requiresAuth: true }),
+  preview: (id: string, signal?: AbortSignal) => downloadBlob(`/documents/${encodeURIComponent(id)}/preview`, { requiresAuth: true, signal }),
   download: (id: string) => downloadBlob(`/documents/${encodeURIComponent(id)}/download`, { requiresAuth: true }),
   bulkDownload: (ids: string[]) => downloadBlob("/documents/bulk-download", { method: "POST", body: { ids }, requiresAuth: true }),
   analyze: async (files: File[], aiAnalysisConsent = false) =>
@@ -31,8 +31,8 @@ export const documentsApi = {
     request<{ document: DocumentRecord }>(`/documents/${encodeURIComponent(id)}/pages/${encodeURIComponent(pageId)}`, { method: "PATCH", body: { tempFileId }, requiresAuth: true }),
   deletePage: (id: string, pageId: string) =>
     request<{ document: DocumentRecord }>(`/documents/${encodeURIComponent(id)}/pages/${encodeURIComponent(pageId)}`, { method: "DELETE", requiresAuth: true }),
-  previewPage: (id: string, pageId: string) =>
-    downloadBlob(`/documents/${encodeURIComponent(id)}/pages/${encodeURIComponent(pageId)}/preview`, { requiresAuth: true }),
+  previewPage: (id: string, pageId: string, signal?: AbortSignal) =>
+    downloadBlob(`/documents/${encodeURIComponent(id)}/pages/${encodeURIComponent(pageId)}/preview`, { requiresAuth: true, signal }),
   downloadPage: (id: string, pageId: string) =>
     downloadBlob(`/documents/${encodeURIComponent(id)}/pages/${encodeURIComponent(pageId)}/download`, { requiresAuth: true }),
   delete: (id: string) => request<void>(`/documents/${encodeURIComponent(id)}`, { method: "DELETE", requiresAuth: true }),

@@ -1,6 +1,7 @@
 import { documentValidationMessages, fileTooLargeMessage } from "./documentValidationMessages";
 import {
   clearInMemoryAuth,
+  getAuthGeneration,
   getAccessToken,
   setAccessToken,
 } from "./auth";
@@ -27,12 +28,14 @@ const DEFAULT_GET_DEDUPE_MS = 500;
 let refreshInFlight: Promise<boolean> | null = null;
 
 async function performSessionRefresh() {
+  const generation = getAuthGeneration();
   const response = await fetch(`${API_URL}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
   const data = (await response.json().catch(() => ({}))) as Partial<AuthResponse>;
+  if (generation !== getAuthGeneration()) return false;
   if (!response.ok || !data.user || !(data.accessToken || data.token)) {
     clearInMemoryAuth();
     return false;
@@ -49,7 +52,7 @@ function refreshSession() {
 
 export const safeMessages: Record<string, string> = {
   STORAGE_LIMIT_EXCEEDED: "Cloud storage full. This upload would exceed your 50 MB allowance. Delete documents to free space or upgrade your account for unlimited cloud storage.",
-  AI_MONTHLY_LIMIT_EXCEEDED: "You've used your 3 AI actions for this month. Your allowance resets next month (UTC). Paid accounts have unlimited AI actions.",
+  AI_MONTHLY_LIMIT_EXCEEDED: "You've used your 3 AI package searches for this month. Your allowance resets next month (UTC). Paid accounts have unlimited AI package searches.",
   AI_PROCESSING_DISABLED: "AI processing is disabled for this account.",
   UNSUPPORTED_FILE_TYPE: "Use a supported PDF, JPEG, PNG, or WebP document.",
   FILE_TOO_LARGE: fileTooLargeMessage(10 * 1024 * 1024),
@@ -71,6 +74,7 @@ export const safeMessages: Record<string, string> = {
 };
 
 async function performRequest<T>(path: string, options: RequestOptions = {}) {
+  const generation = getAuthGeneration();
   const isFormData = options.body instanceof FormData;
   const body = isFormData ? options.body : options.body ? JSON.stringify(options.body) : undefined;
   const headers: HeadersInit = isFormData ? {} : { "Content-Type": "application/json" };
@@ -86,6 +90,7 @@ async function performRequest<T>(path: string, options: RequestOptions = {}) {
     signal: options.signal,
   });
   const data = (await response.json().catch(() => ({}))) as { code?: string; message?: string };
+  if (options.requiresAuth && generation !== getAuthGeneration()) throw new DOMException("Session ended.", "AbortError");
   if (
     response.status === 401 &&
     options.requiresAuth &&
@@ -103,7 +108,7 @@ async function performRequest<T>(path: string, options: RequestOptions = {}) {
 export function request<T>(path: string, options: RequestOptions = {}) {
   const method = options.method ?? "GET";
   const dedupeMs = options.dedupeMs ?? (method === "GET" ? DEFAULT_GET_DEDUPE_MS : 0);
-  if (dedupeMs <= 0) return performRequest<T>(path, options);
+  if (options.signal || dedupeMs <= 0) return performRequest<T>(path, options);
   const authKey = options.requiresAuth ? getAccessToken() ?? "" : "";
   const bodyKey = options.body && !(options.body instanceof FormData)
     ? JSON.stringify(options.body)
@@ -117,8 +122,9 @@ export function request<T>(path: string, options: RequestOptions = {}) {
 
 export async function downloadBlob(
   path: string,
-  options: Pick<RequestOptions, "body" | "method" | "requiresAuth" | "retryOnUnauthorized"> = {},
+  options: Pick<RequestOptions, "body" | "method" | "requiresAuth" | "retryOnUnauthorized" | "signal"> = {},
 ) {
+  const generation = getAuthGeneration();
   const headers: HeadersInit = options.body ? { "Content-Type": "application/json" } : {};
   if (options.requiresAuth) {
     const token = getAccessToken();
@@ -128,8 +134,10 @@ export async function downloadBlob(
     method: options.method ?? "GET",
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
+    signal: options.signal,
     credentials: "include",
   });
+  if (options.requiresAuth && generation !== getAuthGeneration()) throw new DOMException("Session ended.", "AbortError");
   if (
     response.status === 401 &&
     options.requiresAuth &&
@@ -143,8 +151,10 @@ export async function downloadBlob(
     throw new Error(data.message ?? "Download failed.");
   }
   const disposition = response.headers.get("Content-Disposition") ?? "";
+  const blob = await response.blob();
+  if (options.requiresAuth && generation !== getAuthGeneration()) throw new DOMException("Session ended.", "AbortError");
   return {
-    blob: await response.blob(),
+    blob,
     fileName: disposition.match(/filename="([^"]+)"/)?.[1] ?? "readiness.zip",
   };
 }
@@ -154,11 +164,13 @@ export function apiError(data: { code?: string; message?: string }) {
 }
 
 export async function streamRequest<T>(path: string, body: unknown, onDelta: (text: string) => void, signal?: AbortSignal, retry = true): Promise<T> {
+  const generation = getAuthGeneration();
   const response = await fetch(`${API_URL}${path}`, {
     method: "POST", credentials: "include", signal,
     headers: { "Content-Type": "application/json", Accept: "text/event-stream", Authorization: `Bearer ${getAccessToken() ?? ""}` },
     body: JSON.stringify(body),
   });
+  if (generation !== getAuthGeneration()) { await response.body?.cancel(); throw new DOMException("Session ended.", "AbortError"); }
   if (response.status === 401 && retry && await refreshSession()) return streamRequest(path, body, onDelta, signal, false);
   if (!response.ok) throw apiError(await response.json().catch(() => ({})));
   if (!response.headers.get("content-type")?.includes("text/event-stream")) return response.json() as Promise<T>;
@@ -170,6 +182,7 @@ export async function streamRequest<T>(path: string, body: unknown, onDelta: (te
   try {
     while (true) {
       const { done, value } = await reader.read();
+      if (generation !== getAuthGeneration()) throw new DOMException("Session ended.", "AbortError");
       buffer += decoder.decode(value, { stream: !done });
       let end;
       while ((end = buffer.indexOf("\n")) >= 0) {

@@ -166,7 +166,7 @@ function Feature({
 const freePrice = 0;
 const freeFeatures = [
   "Encrypted vault with 50 MB of storage",
-  "3 AI actions a month, when enabled",
+  "3 AI package searches a month, when enabled",
   "Prepare packages from document checklists",
   "Browse modules and add records manually",
   "Export your data from Settings",
@@ -180,7 +180,7 @@ const paidFeatures = [
 ];
 const comparison = [
   ["Encrypted storage", "50 MB", "For your whole family"],
-  ["AI actions, with your consent", "3 a month", "Unlimited"],
+  ["AI package searches, with your consent", "3 a month", "Unlimited"],
   [
     "Package checklists",
     "Browse available packages",

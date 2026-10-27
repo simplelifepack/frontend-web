@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 import {
   Button,
@@ -29,29 +29,37 @@ export default function BillingSection() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [plan, setPlan] = useState<BillingPlanId>(selectedBillingPlan);
+  const refreshController = useRef<AbortController | null>(null);
   const refresh = async () => {
+    refreshController.current?.abort();
+    const controller = new AbortController();
+    refreshController.current = controller;
     setBusy(true);
     setError("");
     try {
       const [current, prices] = await Promise.all([
-        billingApi.status(),
-        billingApi.plans(),
+        billingApi.status(controller.signal),
+        billingApi.plans(controller.signal),
       ]);
+      if (controller.signal.aborted) return;
       setStatus(current);
       setCatalogue(prices);
       await dispatch(refreshUsage(true));
     } catch (e) {
+      if (controller.signal.aborted) return;
       setError(e instanceof Error ? e.message : "Unable to load billing.");
     } finally {
-      setBusy(false);
+      if (!controller.signal.aborted) setBusy(false);
     }
   };
   useEffect(() => {
     void refresh();
     const updated = () => void refresh();
     window.addEventListener("readines-billing-updated", updated);
-    return () =>
+    return () => {
+      refreshController.current?.abort();
       window.removeEventListener("readines-billing-updated", updated);
+    };
     // refresh intentionally reads no props or changing state.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

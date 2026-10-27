@@ -1,6 +1,19 @@
 {
   "headers": [
     {
+      "source": "/.well-known/:path*",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
@@ -28,13 +41,21 @@
   ],
   "rewrites": [
     {
+      "source": "/.well-known/apple-app-site-association",
+      "destination": "/.well-known/apple-app-site-association"
+    },
+    {
+      "source": "/.well-known/assetlinks.json",
+      "destination": "/.well-known/assetlinks.json"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }
   ],
   "redirects": [
     {
-      "source": "/:path((?!assets/|icons/|readiness-logo\\.png$|readiness-sw\\.js$|manifest\\.webmanifest$|favicon\\.ico$|robots\\.txt$).+)",
+      "source": "/:path((?!\\.well-known/|assets/|icons/|readiness-logo\\.png$|readiness-sw\\.js$|manifest\\.webmanifest$|favicon\\.ico$|robots\\.txt$).+)",
       "has": [
         {
           "type": "host",
@@ -45,7 +66,7 @@
       "permanent": false
     },
     {
-      "source": "/:path((?!assets/|icons/|readiness-logo\\.png$|readiness-sw\\.js$|manifest\\.webmanifest$|favicon\\.ico$|robots\\.txt$).+)",
+      "source": "/:path((?!\\.well-known/|assets/|icons/|readiness-logo\\.png$|readiness-sw\\.js$|manifest\\.webmanifest$|favicon\\.ico$|robots\\.txt$).+)",
       "has": [
         {
           "type": "host",
