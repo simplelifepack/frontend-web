@@ -1,4 +1,3 @@
-import { hasFullApplicationAccess } from "./lib/domain-access";
 import React, { useSyncExternalStore } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -44,7 +43,7 @@ const app = <Application />;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    {googleClientId && hasFullApplicationAccess(window.location.hostname) ? (
+    {googleClientId ? (
       <GoogleOAuthProvider
         clientId={googleClientId}
         onScriptLoadSuccess={() => {

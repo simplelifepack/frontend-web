@@ -9,7 +9,7 @@ import { useLandingLogic } from "./Landing.useLandingLogic";
 
 
 export function LandingViewSection7(context: ReturnType<typeof useLandingLogic>) {
-const { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
+const { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
 return (<Section
             id="pricing"
             tabIndex={-1}
@@ -47,7 +47,7 @@ return (<Section
                       </Content>
                       <Content>
                         <Button size="lg" variant="secondary" onClick={start}>
-                          {earlyAccess ? "Register for Early Access" : "Start free"} <ArrowRight aria-hidden="true" />
+                          {"Start free"} <ArrowRight aria-hidden="true" />
                         </Button>
                       </Content>
                     </Card>
@@ -59,7 +59,7 @@ return (<Section
                             <Choice
                               key={period}
                               aria-pressed={billing === period}
-                              onClick={() => { setBilling(period); if (!earlyAccess) selectBillingPlan(period); }}
+                              onClick={() => { setBilling(period); selectBillingPlan(period); }}
                             >
                               {period === "annual" ? "Annual" : "Monthly"}
                             </Choice>
@@ -70,29 +70,29 @@ return (<Section
                         <Center>
                           <Row>
                             <Heading level={3} size="lg">
-                              {earlyAccess ? "At launch" : "₹"}
-                              {earlyAccess ? "" : catalogue ? billingPrice(catalogue.plans[billing].amountPaise) : "—"}
+                              {"₹"}
+                              {catalogue ? billingPrice(catalogue.plans[billing].amountPaise) : "—"}
                             </Heading>
                             <Text>
-                              {earlyAccess ? "" : billing === "monthly" ? "/month" : "/year"}
+                              {billing === "monthly" ? "/month" : "/year"}
                             </Text>
                           </Row>
                           <Text size="sm" tone="muted">
-                            {earlyAccess ? "Paid plans will be available at launch." : catalogue
+                            {catalogue
                               ? billing === "monthly"
                                 ? `Cancel anytime · annual saves ₹${billingPrice(catalogue.annualSavingsPaise)} a year`
                                 : `About ₹${catalogue.annualMonthlyEquivalent} a month, billed yearly`
                               : "Loading pricing…"}
                           </Text>
-                          <Text size="sm" tone="muted">{earlyAccess ? "Register for updates" : catalogue?.testPaymentButtonId ? "Test payment button · No subscription activation" : "Renews automatically · Cancel anytime"}</Text>
+                          <Text size="sm" tone="muted">{catalogue?.testPaymentButtonId ? "Test payment button · No subscription activation" : "Renews automatically · Cancel anytime"}</Text>
                         </Center>
                       </Content>
                       <Content>
                         <Highlights items={paidFeatures} />
                       </Content>
                       <Content>
-                        <Button size="lg" variant="primary" onClick={startPaid} disabled={!earlyAccess && !catalogue}>
-                          {earlyAccess ? "Register for Early Access" : "Get started"} <ArrowRight aria-hidden="true" />
+                        <Button size="lg" variant="primary" onClick={startPaid} disabled={!catalogue}>
+                          {"Get started"} <ArrowRight aria-hidden="true" />
                         </Button>
                       </Content>
                     </Card>

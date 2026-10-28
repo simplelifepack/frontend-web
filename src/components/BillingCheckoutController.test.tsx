@@ -110,8 +110,10 @@ describe("billing checkout lifecycle", () => {
     mocks.plans.mockResolvedValue({ testPaymentButtonId: "pl_TroJQy6559FmHg", plans: { annual: { id: "annual", name: "Full plan · Annual", amountPaise: 199900 } } });
     requestBillingCheckout("annual"); render(<BillingCheckoutController />);
     await waitFor(() => expect(screen.getByRole("dialog", { name: "Razorpay test payment" })).toBeTruthy());
-    const script = document.querySelector('script[data-payment_button_id="pl_TroJQy6559FmHg"]');
-    expect(script?.getAttribute("src")).toBe("https://checkout.razorpay.com/v1/payment-button.js");
+    await waitFor(() => {
+      const script = document.querySelector('script[data-payment_button_id="pl_TroJQy6559FmHg"]');
+      expect(script?.getAttribute("src")).toBe("https://checkout.razorpay.com/v1/payment-button.js");
+    });
     expect(mocks.checkout).not.toHaveBeenCalled(); expect(mocks.verify).not.toHaveBeenCalled(); expect(mocks.dispatch).not.toHaveBeenCalled();
   });
   it("existing paid users never open Checkout", async () => {

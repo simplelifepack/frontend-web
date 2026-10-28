@@ -11,30 +11,27 @@ import { Brand } from "./Landing.Brand";
 
 export function useLandingLogic({
   initialAuthMode = null,
-  earlyAccess = false,
   onAuthed,
 }: {
-  earlyAccess?: boolean;
   initialAuthMode?: "signin" | "signup" | null;
   onAuthed: (isNew: boolean) => void;
 }) {
 
-  const [auth, setAuth] = useState<null | "signin" | "signup">(earlyAccess ? null : initialAuthMode);
-  const [waitlistOpen, setWaitlistOpen] = useState(false);
+  const [auth, setAuth] = useState<null | "signin" | "signup">(initialAuthMode);
   const [unsubscribeToken, setUnsubscribeToken] = useState(() => new URLSearchParams(window.location.search).get("waitlistUnsubscribe") ?? undefined);
   const [billing, setBilling] = useState<"annual" | "monthly">(selectedBillingPlan);
   const [catalogue, setCatalogue] = useState<BillingCatalogue | null>(null);
-  useEffect(() => { if (!earlyAccess) void billingApi.plans().then(setCatalogue).catch(() => {}); }, [earlyAccess]);
+  useEffect(() => { void billingApi.plans().then(setCatalogue).catch(() => {}); }, []);
   const startPaid = () => {
-    if (earlyAccess) { setWaitlistOpen(true); return; }
+
     if (!catalogue?.available) { toast.error("Payments are not available yet. Please try again later."); return; }
     requestBillingCheckout(billing); start();
   };
   useEffect(() => {
-    if (!earlyAccess && initialAuthMode) setAuth(initialAuthMode);
-  }, [earlyAccess, initialAuthMode]);
+    if (initialAuthMode) setAuth(initialAuthMode);
+  }, [initialAuthMode]);
   const start = () => {
-    if (earlyAccess) { setWaitlistOpen(true); return; }
+
     sessionStorage.setItem("lp-fresh", "1");
     setAuth("signup");
   };
@@ -60,12 +57,12 @@ export function useLandingLogic({
         : "smooth",
     });
   };
-return { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection };
+return { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection };
 }
 
 
 export function LandingViewSection1(context: ReturnType<typeof useLandingLogic>) {
-const { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
+const { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
 return (<SiteNav aria-label="Main navigation">
           <Container>
             <NavLayout>
@@ -85,9 +82,9 @@ return (<SiteNav aria-label="Main navigation">
               <Button
                 size="sm"
                 variant="tertiary"
-                onClick={() => earlyAccess ? setWaitlistOpen(true) : setAuth("signin")}
+                onClick={() => setAuth("signin")}
               >
-                {earlyAccess ? "Register for Early Access" : "Sign in"}
+                {"Sign in"}
               </Button>
             </NavLayout>
           </Container>
@@ -96,7 +93,7 @@ return (<SiteNav aria-label="Main navigation">
 
 
 export function LandingViewSection2(context: ReturnType<typeof useLandingLogic>) {
-const { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
+const { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
 return (<header className="lp-hero">
             <div className="lp-herobg" aria-hidden>
               <Radar />
@@ -124,7 +121,7 @@ return (<header className="lp-hero">
                     type="button"
                     onClick={start}
                   >
-                    {earlyAccess ? "Register for Early Access" : "Get started"}{" "}
+                    {"Get started"}{" "}
                     <ArrowRight
                       aria-hidden="true"
                       focusable="false"
@@ -164,7 +161,7 @@ return (<header className="lp-hero">
 
 
 export function LandingViewSection3(context: ReturnType<typeof useLandingLogic>) {
-const { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
+const { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
 return (<Section
             id="how"
             tabIndex={-1}

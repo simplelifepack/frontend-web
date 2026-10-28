@@ -1,5 +1,3 @@
-import DomainAccessGuard from "./components/DomainAccessGuard";
-import Landing from "./components/Landing";
 import BillingCheckoutController from "./components/BillingCheckoutController";
 
 import { lazy, Suspense, useEffect, useRef } from "react";
@@ -168,9 +166,6 @@ function FullApplication() {
   );
 }
 
-// Resolve the host before mounting anything that restores a session or starts checkout.
 export default function App() {
-  return <DomainAccessGuard landing={<Landing earlyAccess onAuthed={() => {}} />}>
-    <DigiLockerReturnGate><FullApplication /></DigiLockerReturnGate>
-  </DomainAccessGuard>;
+  return <DigiLockerReturnGate><FullApplication /></DigiLockerReturnGate>;
 }

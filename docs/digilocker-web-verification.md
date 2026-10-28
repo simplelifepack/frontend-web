@@ -68,3 +68,5 @@ removed. The application already allowlists the exact main hostnames; protected
 routes and normal API authentication remain in place. Backend early-access-only
 blocking is now an explicit opt-in mode. The prior main frontend deployment is
 retained for rollback before assigning the tested frontend to the main hostname.
+
+Authentication gates removed: the application and Google authentication now load on every hostname; landing sign-in, signup and billing controls are always available. The obsolete hostname allowlist and early-access prop paths have been deleted. Existing unsubscribe links retain their handling. Main serving aliases require a separate deployment cutover; preview verification does not establish main-domain runtime behavior.

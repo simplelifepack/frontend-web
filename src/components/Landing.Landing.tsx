@@ -18,7 +18,7 @@ import { LandingViewSection7 } from "./Landing.LandingViewSection7";
 
 export function Landing(props: Parameters<typeof useLandingLogic>[0]) {
 const context = useLandingLogic(props);
-const { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
+const { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
 
 return ((
     <MotionConfig reducedMotion="user">
@@ -47,7 +47,7 @@ return ((
                       Bring your records together, one document at a time.
                     </Text>
                     <Button size="lg" variant="primary" onClick={start}>
-                      {earlyAccess ? "Register for Early Access" : "Get started"} <ArrowRight aria-hidden="true" />
+                      {"Get started"} <ArrowRight aria-hidden="true" />
                     </Button>
                   </Center>
                 </Content>
@@ -66,12 +66,12 @@ return ((
             </Row>
           </Container>
         </Section>
-        {(waitlistOpen || unsubscribeToken) && <WaitlistModal unsubscribeToken={unsubscribeToken} onClose={() => {
-          setWaitlistOpen(false); setUnsubscribeToken(undefined);
+        {unsubscribeToken && <WaitlistModal unsubscribeToken={unsubscribeToken} onClose={() => {
+          setUnsubscribeToken(undefined);
           const url = new URL(window.location.href); url.searchParams.delete("waitlistUnsubscribe");
           window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
         }} />}
-        {!earlyAccess && auth && (
+        {auth && (
           <AuthModal
             mode={auth}
             onClose={() => { setAuth(null); clearBillingIntent(); }}

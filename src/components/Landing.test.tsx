@@ -184,30 +184,14 @@ vi.mock("@/lib/waitlist-api", () => ({
   },
   solveChallenge: () => Promise.resolve("123"),
 }));
-describe("early access landing", () => {
-  it("replaces every auth and checkout CTA with the same registration dialog and retains pricing", async () => {
-    const onAuthed = vi.fn();
-    render(<Landing earlyAccess initialAuthMode="signin" onAuthed={onAuthed} />);
-    expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Sign in" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Get started" })).toBeNull();
-    expect(screen.getByRole("heading", { name: "Pricing" })).toBeTruthy();
-    const triggers = screen.getAllByRole("button", { name: "Register for Early Access" });
-    expect(triggers.length).toBe(5);
-    for (const trigger of triggers) {
-      fireEvent.click(trigger);
-      const dialog = screen.getByRole("dialog", { name: "Register for Early Access" });
-      expect(within(dialog).getByRole("textbox", { name: "Email address" })).toBeTruthy();
-      expect(within(dialog).queryByLabelText("Password")).toBeNull();
-      fireEvent.click(within(dialog).getByRole("button", { name: "Close" }));
-    }
-    expect(onAuthed).not.toHaveBeenCalled();
-    expect(sessionStorage.getItem("readines-billing-intent")).toBeNull();
-    fireEvent.click(triggers[0]);
-    const dialog = screen.getByRole("dialog");
-    fireEvent.change(within(dialog).getByRole("textbox", { name: "Email address" }), { target: { value: "person@example.com" } });
-    await waitFor(() => expect((within(dialog).getByRole("button", { name: "Register for Early Access" }) as HTMLButtonElement).disabled).toBe(false));
-    fireEvent.click(within(dialog).getByRole("button", { name: "Register for Early Access" }));
-    expect(await within(dialog).findByRole("status")).toHaveProperty("textContent", "You’re registered for early access. Thank you!");
+describe("authentication landing", () => {
+  it("always offers sign-in and account creation instead of early-access registration", () => {
+    render(<Landing onAuthed={vi.fn()} />);
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeTruthy();
+    expect(screen.getAllByRole("button", { name: "Get started" }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: "Register for Early Access" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Start free" }));
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    expect(within(screen.getByRole("dialog")).getByText("Create your account")).toBeTruthy();
   });
 });

@@ -7,7 +7,7 @@ import { useLandingLogic } from "./Landing.useLandingLogic";
 
 
 export function LandingViewSection4(context: ReturnType<typeof useLandingLogic>) {
-const { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
+const { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
 return (<Section id="privacy" tabIndex={-1} aria-labelledby="privacy-heading">
             <motion.div {...fade()}>
               <Container>
@@ -58,7 +58,7 @@ return (<Section id="privacy" tabIndex={-1} aria-labelledby="privacy-heading">
 
 
 export function LandingViewSection5(context: ReturnType<typeof useLandingLogic>) {
-const { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
+const { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
 return (<Section $tone="raised">
             <Container>
               <Stack $gap="s32">
@@ -89,7 +89,7 @@ return (<Section $tone="raised">
 
 
 export function LandingViewSection6(context: ReturnType<typeof useLandingLogic>) {
-const { initialAuthMode, earlyAccess, onAuthed, auth, setAuth, waitlistOpen, setWaitlistOpen, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
+const { initialAuthMode, onAuthed, auth, setAuth, unsubscribeToken, setUnsubscribeToken, billing, setBilling, catalogue, setCatalogue, startPaid, start, navigateSection } = context;
 return (<Section
             id="features"
             tabIndex={-1}
