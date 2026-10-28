@@ -147,6 +147,13 @@ describe("session restoration and entry routing", () => {
     expect(screen.queryByText("Public landing")).toBeNull();
   });
 
+  it("keeps the original landing on its existing /landing route", async () => {
+    validRefreshSession = false;
+    openPage("/landing");
+    await screen.findByText("Original landing");
+    expect(screen.queryByText("Public landing")).toBeNull();
+  });
+
   it.each(["/", "/home"])("shows the landing page when %s has no valid refresh session", async (path) => {
     validRefreshSession = false;
     openPage(path);

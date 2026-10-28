@@ -26,7 +26,7 @@ export default function EarlyAccessLanding({
   }, [initialAuthMode]);
   return (
     <MotionConfig reducedMotion="user">
-      <EarlyAccessHero />
+      <EarlyAccessHero onSignIn={() => setAuth("signin")} />
       <BrandSurface>
         {auth && (
           <AuthModal

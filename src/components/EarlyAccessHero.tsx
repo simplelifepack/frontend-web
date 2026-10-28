@@ -35,7 +35,7 @@ import {
   HeroBrand,
 } from "./EarlyAccessHero.styles";
 
-export function EarlyAccessHero() {
+export function EarlyAccessHero({ onSignIn }: { onSignIn: () => void }) {
   const appearance = useSyncExternalStore(
     subscribeAppearance,
     getAppliedAppearance,
@@ -108,6 +108,13 @@ export function EarlyAccessHero() {
             ) : (
               <Moon aria-hidden="true" />
             )}
+          </HeroNavigationButton>
+          <HeroNavigationButton
+            type="button"
+            variant="secondary"
+            onClick={onSignIn}
+          >
+            Sign in
           </HeroNavigationButton>
         </Actions>
       </Nav>

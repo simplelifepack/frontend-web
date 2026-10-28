@@ -1,20 +1,23 @@
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { Button, Heading, Input, Text, colors } from "@/design-system";
 import { theme } from "@/design-system/variables/theme";
 
 export const Surface = styled.div`
   position: relative;
   min-height: 100svh;
-  background:
-    radial-gradient(ellipse at 80% 35%, ${colors.actionSoft}, transparent 60%),
-    linear-gradient(125deg, ${colors.surface}, ${colors.background});
+  background-color: ${colors.background};
+  background-image: url("/images/early-access-background-light.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  .dark & { background-image: url("/images/early-access-background-dark.png"); }
   color: ${colors.text};
   overflow: clip;
 `;
 export const Nav = styled.nav`
   max-width: 1536px;
   margin: auto;
-  padding: 38px clamp(24px, 6.7vw, 104px);
+  padding: 38px clamp(24px, 8.5vw, 132px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,7 +30,6 @@ export const Nav = styled.nav`
 export const Logo = styled.a`
   display: inline-flex;
   align-items: center;
-  gap: 14px;
   color: ${colors.heading};
   text-decoration: none;
   &:focus-visible {
@@ -44,9 +46,9 @@ export const Layout = styled.main`
   max-width: 1536px;
   margin: auto;
   min-height: calc(100svh - 128px);
-  padding: 36px clamp(24px, 6.7vw, 104px) 64px;
+  padding: 36px clamp(24px, 8.5vw, 132px) 64px;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
   align-items: center;
   gap: 32px;
   @media ${({ theme }) => theme.media.mobile} {
@@ -60,9 +62,11 @@ export const Copy = styled.div`
   position: relative;
   z-index: 1;
   min-width: 0;
-  transform: translateY(-70px);
+  transform: translateY(-45px);
+  @media ${({ theme }) => theme.media.desktop} { padding-left: 24px; }
   @media ${({ theme }) => theme.media.mobile} {
     transform: none;
+    padding: 0; margin: 0;
   }
 `;
 export const Badge = styled(Text)`
@@ -73,6 +77,9 @@ export const Badge = styled(Text)`
   color: ${colors.action};
   margin-bottom: 28px;
   letter-spacing: 0.02em;
+  align-items: center;
+  gap: 8px;
+  &::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 `;
 export const Title = styled(Heading)`
   font-size: clamp(40px, 5.5vw, 84px);
@@ -93,13 +100,13 @@ export const Title = styled(Heading)`
 export const Description = styled(Text)`
   display: block;
   margin: 24px 0 34px;
-  max-width: 620px;
-  font-size: clamp(17px, 1.9vw, 26px);
+  max-width: 680px;
+  font-size: clamp(17px, 1.9vw, 28px);
   line-height: 1.5;
 `;
 export const Form = styled.form`
   width: 100%;
-  max-width: 650px;
+  max-width: 760px;
 `;
 export const EmailLabel = styled.label`
   position: relative;
@@ -123,11 +130,11 @@ export const EmailLabel = styled.label`
   }
 `;
 export const EmailInput = styled(Input)`
-  height: 64px;
+  height: 80px;
   padding-left: 56px;
   border: 0;
   background: transparent;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: ${({ theme }) => theme.typography.weights.regular};
 `;
 export const FormRow = styled.div`
@@ -136,12 +143,15 @@ export const FormRow = styled.div`
   border-radius: 14px;
   background: color-mix(in srgb, ${colors.surface} 65%, transparent);
   button[data-ds-button] {
-    min-height: 64px;
+    min-height: 80px;
     padding-inline: 24px;
-    font-size: 18px;
+    font-size: 22px;
+    flex: 0 0 43%;
   }
   @media ${({ theme }) => theme.media.tablet} {
     flex-direction: column;
+    button[data-ds-button] { flex: auto; font-size: 18px; min-height: 64px; }
+    input { height: 64px; font-size: 16px; }
     gap: 8px;
     border: 0;
     background: transparent;
@@ -162,16 +172,16 @@ export const Reassurance = styled.ul`
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px 24px;
-  font-size: 15px;
+  gap: 12px 32px;
+  font-size: 18px;
   li {
     display: flex;
     align-items: center;
     gap: 10px;
   }
   svg {
-    width: 30px;
-    height: 30px;
+    width: 36px;
+    height: 36px;
     padding: 6px;
     border-radius: 50%;
     color: ${colors.action};
@@ -190,18 +200,14 @@ export const Reassurance = styled.ul`
     }
   }
 `;
-const float = keyframes`0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); }`;
-
 // Crop transparent padding with layout only; retain the supplied bitmap unchanged.
 export const Mascot = styled.div`
-  animation: ${float} 6s ease-in-out infinite;
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
   position: relative;
-  width: min(126%, 720px);
+  width: min(136%, 700px);
+  align-self: end;
+  margin-right: -132px;
   aspect-ratio: 1000 / 1024;
-  justify-self: center;
+  justify-self: end;
   overflow: hidden;
   filter: drop-shadow(
     0 22px 22px color-mix(in srgb, ${colors.action} 18%, transparent)
@@ -214,12 +220,16 @@ export const Mascot = styled.div`
     top: 0;
     left: -34%;
   }
+  @media ${({ theme }) => theme.media.tablet} { margin-right: -40px; width: min(130%, 380px); align-self: center; }
   @media ${({ theme }) => theme.media.mobile} {
     width: min(100%, 360px);
+    margin-right: 0;
+    justify-self: center;
   }
 `;
 export const HeroNavigationButton = styled(Button)`
   min-height: 48px;
+  &:not([data-ds-icon-only]) { background: transparent; border-color: ${colors.controlBorder}; color: ${colors.heading}; }
   svg { width: 24px; height: 24px; }
   &:not([data-ds-icon-only]) { min-width: 132px; font-size: 18px; }
   @media ${({ theme }) => theme.media.compact} { &:not([data-ds-icon-only]) { min-width: 76px; font-size: 14px; } }
