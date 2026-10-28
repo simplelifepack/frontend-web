@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import DigiLockerDialog from "./digilocker-dialog";
 import { digilocker, type LockerDocument } from "@/lib/digilocker-api";
 const dispatch = vi.fn();
-vi.mock("@/store/hooks", () => ({ useAppDispatch: () => dispatch }));
+vi.mock("@/store/hooks", () => ({ useAppDispatch: () => dispatch, useAppSelector: (selector: (state: unknown) => unknown) => selector({auth:{user:{id:"owner-a"}}}) }));
 vi.mock("@/store/slices/documentsSlice", () => ({ fetchDocuments: () => ({ type: "refresh" }) }));
 vi.mock("@/lib/digilocker-api", () => ({ digilocker: { status: vi.fn(), session: vi.fn(), documents: vi.fn(), start: vi.fn(), cancel: vi.fn(), import: vi.fn() } }));
 const docs: LockerDocument[] = [
@@ -13,7 +13,7 @@ const docs: LockerDocument[] = [
   { reference: "aadhaar", name: "Aadhaar", type: "Aadhaar", issuer: null, issueDate: null, modifiedAt: null, available: false, reason: "Restricted" },
 ];
 beforeEach(() => {
-  vi.resetAllMocks(); sessionStorage.clear(); window.history.replaceState(null, "", "/documents");
+  vi.resetAllMocks(); sessionStorage.clear(); sessionStorage.setItem("readines.digilocker.session.owner", "owner-a"); window.history.replaceState(null, "", "/documents");
   vi.mocked(digilocker.status).mockResolvedValue({ configured: true, message: null });
   vi.mocked(digilocker.session).mockResolvedValue({ id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] });
   vi.mocked(digilocker.documents).mockResolvedValue({ documents: docs, session: { id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] } });
@@ -127,4 +127,45 @@ it("resumes a running import and refreshes the normal Documents library on compl
   await screen.findByText("Completed");
   expect(dispatch).toHaveBeenCalledWith({ type: "refresh" });
   expect((screen.getByLabelText("Select Certificate one") as HTMLInputElement).disabled).toBe(true);
+});
+it("allows retrying an initial connection check before any session exists", async () => {
+  vi.mocked(digilocker.status).mockRejectedValueOnce(new Error("Network interrupted"));
+  render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
+  await screen.findByText("Network interrupted");
+  fireEvent.click(screen.getByText("Refresh Status"));
+  await waitFor(() => expect((screen.getByText("Connect DigiLocker") as HTMLButtonElement).disabled).toBe(false));
+  expect(digilocker.status).toHaveBeenCalledTimes(2);
+  expect(digilocker.session).not.toHaveBeenCalled();
+});
+it("aborts a pending initialization request when the dialog unmounts", async () => {
+  let signal: AbortSignal | undefined;
+  vi.mocked(digilocker.status).mockImplementation(current => { signal = current; return new Promise(() => {}); });
+  const view = render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
+  expect(signal?.aborted).toBe(false);
+  view.unmount();
+  expect(signal?.aborted).toBe(true);
+});
+
+it("discards another account's pending session before loading private status", async () => {
+  sessionStorage.setItem("readines.digilocker.session", "other-session");
+  sessionStorage.setItem("readines.digilocker.session.owner", "other-owner");
+  render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
+  await waitFor(() => expect((screen.getByText("Connect DigiLocker") as HTMLButtonElement).disabled).toBe(false));
+  expect(digilocker.session).not.toHaveBeenCalled();
+  expect(digilocker.documents).not.toHaveBeenCalled();
+  expect(sessionStorage.getItem("readines.digilocker.session")).toBeNull();
+});
+
+it("a timed-out initialization releases controls and offers retry", async () => {
+  vi.useFakeTimers();
+  try {
+    vi.mocked(digilocker.status).mockImplementation(signal => new Promise((_resolve, reject) => {
+      signal?.addEventListener("abort", () => reject(signal.reason), {once:true});
+    }));
+    render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
+    await act(async () => { await vi.advanceTimersByTimeAsync(20_000); });
+    expect(screen.getByText(/Connection check timed out/)).toBeTruthy();
+    expect((screen.getByText("Cancel") as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByText("Refresh Status") as HTMLButtonElement).disabled).toBe(false);
+  } finally { vi.useRealTimers(); }
 });

@@ -2,20 +2,31 @@ import { useEffect, useRef, useState } from "react";
 import { FileCheck2 } from "lucide-react";
 import { Button, Checkbox, ModalBackdrop, ModalPanel, ModalHeader, ModalContent, ModalActions, Stack, Row, Text, Card, ScrollRegion } from "@/design-system";
 import { digilocker, type LockerDocument, type LockerSession } from "@/lib/digilocker-api";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchDocuments } from "@/store/slices/documentsSlice";
 const SESSION_KEY = "readines.digilocker.session";
+const OWNER_KEY = `${SESSION_KEY}.owner`;
+function pendingSession(userId: string) {
+  if (sessionStorage.getItem(OWNER_KEY) === userId) return sessionStorage.getItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(OWNER_KEY);
+  return null;
+}
 const CONSENT_TEXT = "ReadiNes will securely copy your selected DigiLocker documents into your account. These copies will be encrypted and processed using our existing AI document management system.";
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : "DigiLocker could not complete the request.";
 
 export default function DigiLockerDialog() {
+  const userId = useAppSelector(state => state.auth.user?.id ?? "");
+  return userId ? <AccountDigiLockerDialog key={userId} userId={userId} /> : null;
+}
+function AccountDigiLockerDialog({ userId }: { userId: string }) {
   const dispatch = useAppDispatch();
   const importGeneration = useRef(0);
   const callback = new URLSearchParams(window.location.hash.slice(1));
   const [invalidReturn, setInvalidReturn] = useState(() => callback.has("digilocker_error") ||
-    (callback.has("digilocker") && callback.get("digilocker") !== sessionStorage.getItem(SESSION_KEY)));
+    (callback.has("digilocker") && callback.get("digilocker") !== pendingSession(userId)));
   const [open, setOpen] = useState(() => callback.has("digilocker") || callback.has("digilocker_error"));
-  const [id, setId] = useState(() => sessionStorage.getItem(SESSION_KEY) ?? "");
+  const [id, setId] = useState(() => pendingSession(userId) ?? "");
   const [session, setSession] = useState<LockerSession | null>(null);
   const [documents, setDocuments] = useState<LockerDocument[]>([]);
   const [selection, setSelection] = useState<string[]>([]);
@@ -26,6 +37,7 @@ export default function DigiLockerDialog() {
   const [message, setMessage] = useState("");
   const [visibleDocuments, setVisibleDocuments] = useState(50);
   const [retryUntil, setRetryUntil] = useState(0);
+  const [connectionRefreshKey, setConnectionRefreshKey] = useState(0);
   useEffect(() => { setVisibleDocuments(50); }, [id]);
   useEffect(() => {
     if (!retryUntil) return;
@@ -41,26 +53,28 @@ export default function DigiLockerDialog() {
   useEffect(() => {
     const result = new URLSearchParams(window.location.hash.slice(1));
     if (result.has("digilocker") || result.has("digilocker_error")) {
-      const expected = sessionStorage.getItem(SESSION_KEY);
+      const expected = pendingSession(userId);
       if (result.has("digilocker_error") || result.get("digilocker") !== expected) setMessage("DigiLocker authorization could not be verified. Start a new connection.");
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
     }
-  }, []);
+  }, [userId]);
   useEffect(() => {
     if (!open) return;
     let active = true;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(new DOMException("Connection check timed out. Use Refresh Status to retry.", "TimeoutError")), 20_000);
     setBusy(true);
     void (async () => {
-      const status = await digilocker.status();
+      const status = await digilocker.status(controller.signal);
       if (!active) return;
       setConfigured(status.configured);
       if (!status.configured) { setMessage(status.message ?? "DigiLocker is not configured."); return; }
       if (id && !invalidReturn) {
-        const current = await digilocker.session(id);
+        const current = await digilocker.session(id, controller.signal);
         if (!active) return;
         setSession(current);
         if (["AUTHENTICATED", "IMPORTING"].includes(current.status)) {
-          const result = await digilocker.documents(id);
+          const result = await digilocker.documents(id, controller.signal);
           if (active) setDocuments(result.documents);
         } else {
           setDocuments([]);
@@ -68,9 +82,9 @@ export default function DigiLockerDialog() {
           setMessage(({ PENDING: "Authorization was not completed. Connect again or cancel.", CONSENT_DENIED: "DigiLocker consent was declined. You can start a new connection.", EXPIRED: "Your DigiLocker session expired. Connect again.", CANCELLED: "DigiLocker connection was cancelled.", FAILED: "DigiLocker authentication failed. Please reconnect." } as Record<string, string>)[current.status] ?? "Please reconnect DigiLocker.");
         }
       }
-    })().catch(error => { if (active) { setSession(null); setDocuments([]); setSelection([]); setMessage(errorMessage(error)); } }).finally(() => { if (active) setBusy(false); });
-    return () => { active = false; };
-  }, [open, id, invalidReturn]);
+    })().catch(error => { if (active) { setSession(null); setDocuments([]); setSelection([]); setMessage(controller.signal.reason?.name === "TimeoutError" ? "Connection check timed out. Use Refresh Status to retry." : errorMessage(error)); } }).finally(() => { clearTimeout(timeout); if (active) setBusy(false); });
+    return () => { active = false; clearTimeout(timeout); controller.abort(); };
+  }, [open, id, invalidReturn, connectionRefreshKey]);
   const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
     if (!open || !id || importing || !["IMPORTING", "PENDING"].includes(session?.status ?? "")) return;
@@ -118,6 +132,7 @@ export default function DigiLockerDialog() {
       }
       const next = await digilocker.start();
       sessionStorage.setItem(SESSION_KEY, next.id);
+      sessionStorage.setItem(OWNER_KEY, userId);
       window.location.assign(next.authorizationUrl);
     } catch (error) { showError(error); setBusy(false); }
   };
@@ -130,6 +145,7 @@ export default function DigiLockerDialog() {
         catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
       }
       sessionStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(OWNER_KEY);
       setInvalidReturn(false); setId(""); setSession(null); setDocuments([]); setSelection([]); setConfirm(false); setMessage(""); setOpen(false);
     } catch (error) { showError(error); }
     finally { setBusy(false); }
@@ -189,10 +205,11 @@ export default function DigiLockerDialog() {
       <ModalActions>
         {confirm ? <><Button variant="secondary" onClick={() => setConfirm(false)}>Cancel</Button><Button variant="primary" onClick={() => void runImport()}>Allow &amp; Import</Button></> : <>
           <Button variant="secondary" disabled={busy || importing} onClick={() => void close()}>{session?.status === "IMPORTING" ? "Cancel Import" : connected ? "Done" : "Cancel"}</Button>
-          {id && <Button variant="tertiary" disabled={busy || importing} onClick={() => {
+          <Button variant="tertiary" disabled={busy || importing || retryUntil > Date.now()} onClick={() => {
             setRefreshKey(value => value + 1);
-            void digilocker.session(id).then(next => { setSession(next); setMessage(""); }).catch(error => setMessage(errorMessage(error)));
-          }}>Refresh Status</Button>}
+            setConnectionRefreshKey(value => value + 1);
+            setMessage("");
+          }}>Refresh Status</Button>
           {message && session?.status === "IMPORTING" && <Button variant="secondary" disabled={busy || importing} onClick={() => void connect()}>Reconnect</Button>}
           {connected ? <Button variant="primary" disabled={locked || !selection.length} loading={importing} onClick={() => setConfirm(true)}>{selection.some(ref => session?.progress.some(p => p.reference === ref && p.phase === "Failed")) ? "Retry Selected" : "Import Selected"}</Button> : <Button variant="primary" disabled={busy || !configured || retryUntil > Date.now()} loading={busy} onClick={() => void connect()}>Connect DigiLocker</Button>}
         </>}
