@@ -61,3 +61,10 @@ is `frontend-web-git-codex-digilocker-preview-lifepack1.vercel.app`; both fronte
 preview branches use the designated backend host
 `backend-git-codex-digilocker-preview-lifepack1.vercel.app`. The generated new
 preview hostnames remain blocked by the existing verified-host rule.
+
+The user requested full authentication on `readines.com` for DigiLocker testing.
+Main-domain redirects that forced private/authentication paths back to `/` are
+removed. The application already allowlists the exact main hostnames; protected
+routes and normal API authentication remain in place. Backend early-access-only
+blocking is now an explicit opt-in mode. The prior main frontend deployment is
+retained for rollback before assigning the tested frontend to the main hostname.
