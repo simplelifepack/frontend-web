@@ -38,7 +38,7 @@ Draft PR #4 now includes PR #3 and current main. The separate Vercel test branch
 - Pending Redux request IDs expire after ten minutes and are capped at 2,048. Late responses from logout or account replacement are rejected.
 - DigiLocker polling forwards AbortSignal, backs off with Retry-After, and pauses scheduling while the tab is hidden. Refresh Status, Cancel Import and Reconnect provide recovery actions.
 - Individual results and clear expiry messages preserve partial success. The scroll region renders fifty documents at a time, with Show More Documents.
-- Large inherited modules were separated into hooks and view components using the same design-system components and styling. Both lint and TypeScript checks pass. The combined frontend suite passes 57 files / 266 tests; production build passes with existing bundle-size warnings.
+- Large inherited modules were separated into hooks and view components using the same design-system components and styling. Both lint and TypeScript checks pass. The combined frontend suite passes 56 files / 226 tests after deleting obsolete gate tests; production build passes with existing bundle-size warnings.
 - Existing unrelated local BrandLogo and AppLayout edits were excluded from the integration commit and deployment snapshot.
 
 A real localhost OAuth attempt reached the provider and was rejected with
@@ -53,8 +53,7 @@ The Git-connected test backend is
 `backend-git-codex-digilocker-durable-integration-lifepack1.vercel.app`.
 The additive import-job migration is confirmed applied to the connected Supabase
 test project. The frontend test branch's VITE_API_URL points to that backend.
-Existing serving aliases remain unchanged. Firewall/callback routing must be
-verified before treating a Ready deployment as an accessible, end-to-end test.
+The main frontend aliases now serve the approved authentication-enabled test build; callback forwarding is published.
 
 For browser testing through the existing firewall, the designated frontend host
 is `frontend-web-git-codex-digilocker-preview-lifepack1.vercel.app`; both frontend
@@ -64,9 +63,8 @@ preview hostnames remain blocked by the existing verified-host rule.
 
 The user requested full authentication on `readines.com` for DigiLocker testing.
 Main-domain redirects that forced private/authentication paths back to `/` are
-removed. The application already allowlists the exact main hostnames; protected
-routes and normal API authentication remain in place. Backend early-access-only
-blocking is now an explicit opt-in mode. The prior main frontend deployment is
-retained for rollback before assigning the tested frontend to the main hostname.
+removed. The hostname allowlist and early-access UI paths were deleted; protected routes and normal API authentication remain in place. Backend early-access blocking was deleted. The prior main frontend deployment is retained for rollback.
 
-Authentication gates removed: the application and Google authentication now load on every hostname; landing sign-in, signup and billing controls are always available. The obsolete hostname allowlist and early-access prop paths have been deleted. Existing unsubscribe links retain their handling. Main serving aliases require a separate deployment cutover; preview verification does not establish main-domain runtime behavior.
+Authentication gates removed: the application and Google authentication now load on every hostname; landing sign-in, signup and billing controls are always available. The obsolete hostname allowlist and early-access prop paths have been deleted. Existing unsubscribe links retain their handling. Both main serving aliases now point to approved build b68b397. Chrome restored the signed-in account, loaded Documents and reached the real DigiLocker sign-in form with the registered callback accepted. Provider consent, returned scopes, HMAC and import remain pending human sign-in.
+
+Live provider verification: after user sign-in and consent, the main-domain callback and document listing succeeded. With explicit action-time approval, the selected PAN import completed as already in Documents; no duplicate record was created. A fresh provider download/HMAC path remains unverified because this record was deduplicated. The user requested releasing the combined PRs and current local changes to main.

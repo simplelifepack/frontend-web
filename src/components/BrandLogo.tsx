@@ -61,7 +61,7 @@ export function BrandWordmark({
   if (!tick) {
     return (
       <span style={base}>
-        Readi<span style={{ color: highlight }}>n</span>es
+        Readi<span style={{ color: highlight }}>N</span>es
       </span>
     );
   }

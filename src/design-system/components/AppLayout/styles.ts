@@ -21,7 +21,7 @@ export const AppSidebar = styled.aside<{ $expanded: boolean }>`
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: ${({ theme }) => theme.spacing.s16};
+  gap: ${({ theme }) => theme.spacing.s4};
   padding: ${({ theme, $expanded }) =>
     $expanded
       ? theme.spacing.s16
@@ -36,7 +36,7 @@ export const AppSidebar = styled.aside<{ $expanded: boolean }>`
 export const AppBrand = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
+  padding: 0 ${({ theme }) => theme.spacing.s10} 0 ${({ theme }) => theme.spacing.s12} ;
   min-height: ${({ theme }) => theme.spacing.s44};
 `;
 export const AppNavigation = styled.nav`
