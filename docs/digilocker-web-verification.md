@@ -55,3 +55,9 @@ The additive import-job migration is confirmed applied to the connected Supabase
 test project. The frontend test branch's VITE_API_URL points to that backend.
 Existing serving aliases remain unchanged. Firewall/callback routing must be
 verified before treating a Ready deployment as an accessible, end-to-end test.
+
+For browser testing through the existing firewall, the designated frontend host
+is `frontend-web-git-codex-digilocker-preview-lifepack1.vercel.app`; both frontend
+preview branches use the designated backend host
+`backend-git-codex-digilocker-preview-lifepack1.vercel.app`. The generated new
+preview hostnames remain blocked by the existing verified-host rule.
