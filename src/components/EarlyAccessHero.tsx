@@ -14,6 +14,7 @@ import {
 } from "@/lib/theme";
 import { solveChallenge, waitlistApi } from "@/lib/waitlist-api";
 import { BrandMark, BrandWordmark } from "./BrandLogo";
+import { EarlyAccessOffer } from "./EarlyAccessOffer";
 import {
   Surface,
   Nav,
@@ -127,7 +128,7 @@ export function EarlyAccessHero({ onSignIn }: { onSignIn: () => void }) {
             Your life,<span>better prepared.</span>
           </Title>
           <Description as="p">
-            Store, organize and get ready for life’s important moments — all in
+            Store, organize and get ready for life’s important moments, all in
             one secure place.
           </Description>
           <Form
@@ -192,13 +193,16 @@ export function EarlyAccessHero({ onSignIn }: { onSignIn: () => void }) {
             </Feedback>
           </Form>
           <Reassurance>
-            {["Free to join", "No spam", "Early updates"].map((text) => (
-              <li key={text}>
-                <Check aria-hidden="true" />
-                {text}
-              </li>
-            ))}
+            {["Free to join", "No spam", "Founding price reserved for you"].map(
+              (text) => (
+                <li key={text}>
+                  <Check aria-hidden="true" />
+                  {text}
+                </li>
+              ),
+            )}
           </Reassurance>
+          <EarlyAccessOffer />
         </Copy>
         <Mascot>
           <img

@@ -55,3 +55,7 @@ Desktop images use a 1536×1024 viewport. Mobile images use a 390×844 viewport 
 Screenshots were captured during earlier local browser QA. The light/dark desktop, tablet, mobile and registration-success captures show the supplied room backgrounds; the 320px and error/sign-in captures predate that background update. Browser automation was disabled in Work settings during the final route-transfer validation, so these are not fresh captures of the final route wiring.
 
 Additional evidence: [light mobile](screenshots/after-light-mobile.jpg), [tablet](screenshots/after-dark-tablet.jpg), [320px mobile](screenshots/after-light-narrow.jpg), [registration success](screenshots/registration-success-mobile.jpg), [registration error](screenshots/registration-error-mobile.jpg), [prior sign-in validation, before button removal](screenshots/sign-in-mobile.jpg).
+
+## Founding-price copy update
+
+Added `EarlyAccessOffer.tsx`: a translucent rounded card with ₹999 for the first year, struck-through ₹1,999, the first-1,000 founding-member copy, no-payment-today reassurance, and ₹1,999 annual renewal / GST note. Supporting copy and the final reassurance item match the supplied pricing reference. Header, theme controls, backgrounds, mascot, route and signup/API behavior are retained. This is display copy only; no billing prices or payment contracts were changed. Earlier screenshots predate this card.
