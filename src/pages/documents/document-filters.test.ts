@@ -153,3 +153,10 @@ describe("Documents filters", () => {
     ).toBe(true);
   });
 });
+
+it("identifies DigiLocker records separately from manual uploads", async () => {
+  const document = makeDocument("locker", { sourceProvider: "DIGILOCKER" });
+  const { sourceLabel } = await import("./document-utils");
+  expect(documentSource(document)).toBe("digilocker");
+  expect(sourceLabel(document)).toBe("DigiLocker");
+});

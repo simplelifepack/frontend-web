@@ -48,6 +48,7 @@ export function documentPerson(
 }
 
 export function documentSource(document: DocumentRecord) {
+  if (document.sourceProvider === "DIGILOCKER") return "digilocker";
   if (document.source === "GMAIL") return "gmail";
   if (document.source === "GOOGLE_DRIVE") return "drive";
   if (String(document.source) === "SCAN" || document.sourceProvider === "SCAN")
@@ -56,6 +57,7 @@ export function documentSource(document: DocumentRecord) {
 }
 
 export const sourceNames: Record<string, string> = {
+  digilocker: "DigiLocker",
   uploaded: "Uploaded",
   scanned: "Scanned",
   gmail: "Gmail",
