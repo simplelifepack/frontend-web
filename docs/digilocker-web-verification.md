@@ -28,3 +28,23 @@ The actual Chrome Documents dialog was observed with Connect DigiLocker enabled 
 A real DigiLocker sign-in, provider consent return and authorized document download were not exercised. Automated provider/download fixtures are synthetic; the backend encryption and local file-storage tests execute the real existing pipeline. Desktop/mobile viewport and light/dark visual verification of the post-consent list is still required in an authenticated browser with real provider access.
 
 No deployment, new worktree, auth bypass, mobile edit or real document import was performed.
+
+## Combined security/import integration — 2026-10-28
+
+Draft PR #4 now includes PR #3 and current main. The separate Vercel test branch is
+`codex/digilocker-durable-integration`; no PR has been merged.
+
+- IndexedDB clears and writes serialize through transaction commit. Account/generation checks reject stale writes.
+- Pending Redux request IDs expire after ten minutes and are capped at 2,048. Late responses from logout or account replacement are rejected.
+- DigiLocker polling forwards AbortSignal, backs off with Retry-After, and pauses scheduling while the tab is hidden. Refresh Status, Cancel Import and Reconnect provide recovery actions.
+- Individual results and clear expiry messages preserve partial success. The scroll region renders fifty documents at a time, with Show More Documents.
+- Large inherited modules were separated into hooks and view components using the same design-system components and styling. Both lint and TypeScript checks pass. The combined frontend suite passes 57 files / 266 tests; production build passes with existing bundle-size warnings.
+- Existing unrelated local BrandLogo and AppLayout edits were excluded from the integration commit and deployment snapshot.
+
+A real localhost OAuth attempt reached the provider and was rejected with
+`redirect_uri_mismatch` before authentication or document consent. The registered
+callback is the existing backend Vercel root URL. The user authorized test-branch
+deployment against the connected Supabase test environment, preserving records
+and existing production aliases. Hosted OAuth/scopes/HMAC/imports, real payment
+lifecycle, mobile/light/dark/focus QA and production-equivalent performance remain
+live verification gates until separately evidenced.
