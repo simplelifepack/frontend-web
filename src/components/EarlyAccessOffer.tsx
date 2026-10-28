@@ -70,7 +70,7 @@ export function EarlyAccessOffer() {
         </Price>
         <Details>
           <Text as="p" weight="semibold" tone="heading">
-            Founding member price for the first 1,000 on the list
+            Founding price for the first 1,000 on the list
           </Text>
           <Text as="p">
             Join now, pay nothing today. Your founding price is held until

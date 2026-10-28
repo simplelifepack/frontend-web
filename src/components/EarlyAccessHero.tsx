@@ -118,11 +118,11 @@ export function EarlyAccessHero() {
             EARLY ACCESS
           </Badge>
           <Title level={1}>
-            Your life,<span>better prepared.</span>
+            Be ready for<span>life’s important moments.</span>
           </Title>
           <Description as="p">
-            Store, organize and get ready for life’s important moments, all in
-            one secure place.
+            Visa, loan, admission, hospital visit, or a family handoff: the documents
+            you’ll be asked for, matched and ready before the day comes.
           </Description>
           <Form
             aria-label="Join early access"

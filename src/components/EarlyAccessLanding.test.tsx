@@ -49,7 +49,7 @@ describe("separate early-access landing", () => {
   it("omits Sign In and retains explicit authentication navigation", () => {
     const { rerender } = render(<EarlyAccessLanding onAuthed={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
-      "Your life,better prepared.",
+      "Be ready forlife’s important moments.",
     );
     expect(screen.queryByRole("heading", { name: "Features" })).toBeNull();
     expect(screen.queryByRole("heading", { name: "Pricing" })).toBeNull();
