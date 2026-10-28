@@ -130,11 +130,25 @@ describe("session restoration and entry routing", () => {
     let resolveRefresh!: (response: Response) => void;
     refreshResponse = () => new Promise((resolve) => { resolveRefresh = resolve; });
     openPage(path);
-    expect(screen.getByText("Initializing session")).toBeTruthy();
+    expect(screen.getByRole("status", { name: "Checking your session" })).toBeTruthy();
+    expect(screen.queryByText("Initializing session")).toBeNull();
     expect(screen.queryByText("Public landing")).toBeNull();
     await act(async () => { resolveRefresh(json(authResult)); });
     await screen.findByText("Signed in home");
     expect(screen.getByTestId("path").textContent).toBe("/home");
+  });
+
+  it("does not show the home skeleton before an anonymous visitor reaches the landing", async () => {
+    let resolveRefresh!: (response: Response) => void;
+    refreshResponse = () => new Promise(resolve => { resolveRefresh = resolve; });
+    openPage("/");
+    expect(screen.getByRole("status", { name: "Checking your session" })).toBeTruthy();
+    expect(screen.queryByText("Initializing session")).toBeNull();
+    expect(screen.queryByText("Signed in home")).toBeNull();
+    await act(async () => { resolveRefresh(json({ message: "Session expired." }, 401)); });
+    await screen.findByText("Public landing");
+    expect(screen.queryByText("Initializing session")).toBeNull();
+    expect(screen.queryByRole("status", { name: "Checking your session" })).toBeNull();
   });
 
   it("retains the DigiLocker callback through sign-in after a refresh session expires", async () => {
