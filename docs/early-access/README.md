@@ -21,7 +21,7 @@ All implementation files live in `simplelifepack/frontend-web`, at `/Users/ranji
 | `src/components/EarlyAccessLanding.test.tsx` | Registration validation, loading/success, duplicate email, retry, unmount cancellation, Sign In and theme behavior. |
 | `public/images/early-access-background-light.png` | Original supplied Lavender Light Modern Showroom PNG, byte-for-byte. |
 | `public/images/early-access-background-dark.png` | Original supplied Midnight Atrium in Violet Light PNG, byte-for-byte. |
-| `public/images/early-access-squirrel.png` | Original supplied folder-holding squirrel PNG, byte-for-byte, separate from background. |
+| `public/images/early-access-squirrel.png` | Latest user-supplied mascot (`codex-clipboard-a2ab9a4e-fcd3-4755-911a-d41e4719766f.png`), byte-for-byte, separate from background. |
 
 The original `Landing*` component files, `src/pages/landing/index.tsx`, `BrandLogo.tsx`, design-system/theme files and waitlist API client have no diff from base `3434bfa`. No backend, payment, dependency, package, build configuration or deployment change is included.
 
@@ -39,6 +39,8 @@ The original `Landing*` component files, `src/pages/landing/index.tsx`, `BrandLo
 ## Visual notes
 
 The supplied room PNG backgrounds are used directly, without gradients or stretching; `cover` crops their edges to fit different viewports. The transparent mascot remains separate. The repository's official BrandMark/BrandWordmark and semantic palette remain authoritative, so they differ from the reference's wordmark spelling and vivid dark CTA. Layout refinements and Sign In restoration were made before the final routing correction; the routing correction itself does not change the design.
+
+The mascot was subsequently replaced with the latest supplied transparent PNG (same 1536×1024 dimensions); earlier screenshots below show the prior mascot. Layout and functionality were unchanged.
 
 ## Actual screenshots
 
