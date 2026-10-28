@@ -13,6 +13,7 @@ import { persistHomeCurrency } from "@/lib/preferences-storage";
 import { persistTheme } from "@/lib/theme";
 import LandingPage from "@/pages/landing";
 import TempLandingRoute from "@/pages/landing/TempLandingRoute";
+import { usesEarlyAccessLanding } from "@/lib/landing-host";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializeApp } from "@/store/bootstrap";
 import { fetchDocuments } from "@/store/slices/documentsSlice";
@@ -111,7 +112,7 @@ function FullApplication() {
       <BillingCheckoutController />
       <Routes>
         {/* <Route path="/" element={<SessionGate><LandingRoute /></SessionGate>} /> */}
-        <Route path="/" element={<SessionGate><TempLandingRoute /></SessionGate>} />
+        <Route path="/" element={<SessionGate>{usesEarlyAccessLanding(window.location.hostname) ? <TempLandingRoute /> : <LandingRoute />}</SessionGate>} />
         <Route path="/landing" element={<SessionGate><LandingRoute /></SessionGate>} />
         <Route path="/login" element={<Navigate to="/" replace state={{ authMode: "signin" }} />} />
         <Route path="/signin" element={<Navigate to="/" replace state={{ authMode: "signin" }} />} />

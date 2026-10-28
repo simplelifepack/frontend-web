@@ -41,7 +41,7 @@ export const Layout = styled.main`
   max-width: 1600px;
   min-height: 0;
   margin-inline: auto;
-  padding: 0 clamp(16px, 6vw, 100px) clamp(12px, 3dvh, 32px);
+  padding: 0 clamp(16px, 7vw, 100px) clamp(12px, 3dvh, 32px);
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   align-items: center;
@@ -86,12 +86,8 @@ export const Description = styled(Text)`
   font-size: clamp(14px, min(1.6vw, 2.4dvh), 20px);
   line-height: 1.45;
   :root:not(.dark) & {
-    color: ${colors.actionText};
+    color: ${colors.heading};
     font-weight: ${({ theme }) => theme.typography.weights.medium};
-    background: color-mix(in srgb, ${colors.action} 88%, transparent);
-    backdrop-filter: blur(14px);
-    border-radius: 6px;
-    box-shadow: 0 0 0 8px color-mix(in srgb, ${colors.action} 88%, transparent);
   }
   @media ${({ theme }) => theme.media.mobile} { font-size: clamp(12px, 1.9dvh, 16px); }
 `;
@@ -158,7 +154,7 @@ export const Reassurance = styled.ul`
   :root:not(.dark) & li {
     color: ${colors.heading};
     background: color-mix(in srgb, ${colors.action} 10%, transparent);
-    backdrop-filter: blur(14px);
+
     border-radius: 6px;
     box-shadow: 0 0 0 3px color-mix(in srgb, ${colors.action} 10%, transparent);
   }

@@ -10,6 +10,9 @@ import authReducer, { login } from "./store/slices/authSlice";
 import { clearInMemoryAuth, getAccessToken } from "./lib/auth";
 import { request } from "./lib/http-client";
 
+const { landingHost } = vi.hoisted(() => ({ landingHost: vi.fn(() => true) }));
+vi.mock("@/lib/landing-host", () => ({ usesEarlyAccessLanding: landingHost }));
+
 vi.mock("@/pages/settings", () => ({ default: () => null }));
 vi.mock("@/pages/landing", () => ({ default: () => <div>Original landing</div> }));
 vi.mock("@/components/EarlyAccessLanding", () => ({ default: () => <div>Public landing</div> }));
@@ -48,6 +51,7 @@ function openPage(path: string) {
 }
 
 beforeEach(() => {
+  landingHost.mockReturnValue(true);
   clearInMemoryAuth();
   localStorage.clear();
   sessionStorage.clear();
@@ -78,6 +82,14 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); clearInMemoryAuth(); });
 
 describe("session restoration and entry routing", () => {
+  it("shows the regular root landing on the Vercel host", async () => {
+    landingHost.mockReturnValue(false);
+    validRefreshSession = false;
+    openPage("/");
+    await screen.findByText("Original landing");
+    expect(screen.queryByText("Public landing")).toBeNull();
+  });
+
   it("login → home → root returns to /home, including a fresh navigation to root", async () => {
     validRefreshSession = false;
     const store = openPage("/");
