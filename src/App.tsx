@@ -112,7 +112,7 @@ function FullApplication() {
       <BillingCheckoutController />
       <Routes>
         {/* <Route path="/" element={<SessionGate><LandingRoute /></SessionGate>} /> */}
-        <Route path="/" element={<SessionGate>{usesEarlyAccessLanding(window.location.hostname) ? <TempLandingRoute /> : <LandingRoute />}</SessionGate>} />
+        <Route path="/" element={<SessionGate publicEntry={usesEarlyAccessLanding(window.location.hostname)}>{usesEarlyAccessLanding(window.location.hostname) ? <TempLandingRoute /> : <LandingRoute />}</SessionGate>} />
         <Route path="/landing" element={<SessionGate><LandingRoute /></SessionGate>} />
         <Route path="/login" element={<Navigate to="/" replace state={{ authMode: "signin" }} />} />
         <Route path="/signin" element={<Navigate to="/" replace state={{ authMode: "signin" }} />} />

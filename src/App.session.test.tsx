@@ -126,13 +126,19 @@ describe("session restoration and entry routing", () => {
     expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/auth/refresh"))).toHaveLength(2);
   });
 
-  it.each(["/", "/home", "/login"])("waits for refresh before showing login or redirecting %s", async (path) => {
+  it.each(["/", "/home", "/login"])("keeps protected content gated while restoring the session on %s", async (path) => {
     let resolveRefresh!: (response: Response) => void;
     refreshResponse = () => new Promise((resolve) => { resolveRefresh = resolve; });
     openPage(path);
-    expect(screen.getByRole("status", { name: "Checking your session" })).toBeTruthy();
+    if (path === "/home") {
+      expect(screen.getByRole("status", { name: "Checking your session" })).toBeTruthy();
+      expect(screen.queryByText("Public landing")).toBeNull();
+    } else {
+      expect(screen.getByText("Public landing")).toBeTruthy();
+      expect(screen.queryByRole("status", { name: "Checking your session" })).toBeNull();
+    }
     expect(screen.queryByText("Initializing session")).toBeNull();
-    expect(screen.queryByText("Public landing")).toBeNull();
+    expect(screen.queryByText("Signed in home")).toBeNull();
     await act(async () => { resolveRefresh(json(authResult)); });
     await screen.findByText("Signed in home");
     expect(screen.getByTestId("path").textContent).toBe("/home");
@@ -142,13 +148,36 @@ describe("session restoration and entry routing", () => {
     let resolveRefresh!: (response: Response) => void;
     refreshResponse = () => new Promise(resolve => { resolveRefresh = resolve; });
     openPage("/");
-    expect(screen.getByRole("status", { name: "Checking your session" })).toBeTruthy();
+    expect(screen.getByText("Public landing")).toBeTruthy();
+    expect(screen.queryByRole("status", { name: "Checking your session" })).toBeNull();
     expect(screen.queryByText("Initializing session")).toBeNull();
     expect(screen.queryByText("Signed in home")).toBeNull();
     await act(async () => { resolveRefresh(json({ message: "Session expired." }, 401)); });
     await screen.findByText("Public landing");
     expect(screen.queryByText("Initializing session")).toBeNull();
     expect(screen.queryByRole("status", { name: "Checking your session" })).toBeNull();
+  });
+
+  it("keeps the public registration page usable if session restoration fails", async () => {
+    refreshResponse = async () => json({ message: "Service unavailable." }, 503);
+    const store = openPage("/");
+    expect(screen.getByText("Public landing")).toBeTruthy();
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); });
+    expect(store.getState().auth.sessionStatus).toBe("failed");
+    expect(screen.getByText("Public landing")).toBeTruthy();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.queryByText("Signed in home")).toBeNull();
+  });
+
+  it("still waits for session restoration on the regular Vercel landing", async () => {
+    landingHost.mockReturnValue(false);
+    let resolveRefresh!: (response: Response) => void;
+    refreshResponse = () => new Promise(resolve => { resolveRefresh = resolve; });
+    openPage("/");
+    expect(screen.getByRole("status", { name: "Checking your session" })).toBeTruthy();
+    expect(screen.queryByText("Original landing")).toBeNull();
+    await act(async () => { resolveRefresh(json({ message: "Session expired." }, 401)); });
+    await screen.findByText("Original landing");
   });
 
   it("retains the DigiLocker callback through sign-in after a refresh session expires", async () => {
@@ -194,7 +223,7 @@ describe("session restoration and entry routing", () => {
       if (status === 0) throw new TypeError("Failed to fetch");
       return json({ message: "Service unavailable." }, status);
     };
-    openPage("/");
+    openPage("/home");
     await screen.findByRole("alert");
     expect(screen.queryByText("Public landing")).toBeNull();
     refreshResponse = async () => json(authResult);
