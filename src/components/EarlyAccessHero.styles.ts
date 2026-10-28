@@ -147,6 +147,13 @@ export const Reassurance = styled.ul`
   gap: 6px clamp(10px, 1.5vw, 24px);
   font-size: clamp(11px, 1vw, 15px);
   li { display: flex; align-items: center; gap: 6px; }
+  :root:not(.dark) & li {
+    color: ${colors.heading};
+    background: color-mix(in srgb, ${colors.action} 10%, transparent);
+    backdrop-filter: blur(14px);
+    border-radius: 6px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, ${colors.action} 10%, transparent);
+  }
   svg { width: 22px; height: 22px; padding: 4px; border-radius: 50%; color: ${colors.action}; background: ${colors.actionSoft}; }
 `;
 export const Mascot = styled.div`

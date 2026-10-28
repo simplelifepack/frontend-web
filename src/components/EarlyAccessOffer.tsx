@@ -57,6 +57,16 @@ const Terms = styled(Text)`
   display: block;
   margin-top: 6px;
   font-size: clamp(10px, 1.5dvh, 12px);
+  :root:not(.dark) & {
+    width: fit-content;
+    max-width: 100%;
+    color: ${colors.heading};
+    font-weight: ${({ theme }) => theme.typography.weights.medium};
+    background: color-mix(in srgb, ${colors.action} 10%, transparent);
+    backdrop-filter: blur(14px);
+    border-radius: 6px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, ${colors.action} 10%, transparent);
+  }
 `;
 
 export function EarlyAccessOffer() {
