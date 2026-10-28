@@ -46,16 +46,15 @@ function submit(email = "audit@example.invalid") {
 }
 
 describe("separate early-access landing", () => {
-  it("renders only the new landing and retains the existing sign-in modal and focus restoration", () => {
-    render(<EarlyAccessLanding onAuthed={vi.fn()} />);
+  it("omits Sign In while retaining explicit authentication navigation", () => {
+    const { rerender } = render(<EarlyAccessLanding onAuthed={vi.fn()} />);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
       "Your life,better prepared.",
     );
     expect(screen.queryByRole("heading", { name: "Features" })).toBeNull();
     expect(screen.queryByRole("heading", { name: "Pricing" })).toBeNull();
-    const signIn = screen.getByRole("button", { name: "Sign in" });
-    signIn.focus();
-    fireEvent.click(signIn);
+    expect(screen.queryByRole("button", { name: "Sign in" })).toBeNull();
+    rerender(<EarlyAccessLanding initialAuthMode="signin" onAuthed={vi.fn()} />);
     const dialog = screen.getByRole("dialog", { name: "Account access" });
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Continue with email" }),
@@ -66,7 +65,6 @@ describe("separate early-access landing", () => {
     ).toBeTruthy();
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(document.activeElement).toBe(signIn);
   });
   it("validates email without requesting proof or registering", () => {
     render(<EarlyAccessLanding onAuthed={vi.fn()} />);
@@ -150,7 +148,7 @@ describe("separate early-access landing", () => {
   });
   it("aborts pending challenge work on unmount", () => {
     challenge.mockReturnValue(new Promise(() => {}));
-    const { unmount } = render(<EarlyAccessHero onSignIn={vi.fn()} />);
+    const { unmount } = render(<EarlyAccessHero />);
     submit();
     const signal = challenge.mock.calls[0][0] as AbortSignal;
     unmount();
