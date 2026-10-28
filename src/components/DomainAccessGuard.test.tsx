@@ -6,7 +6,7 @@ import { hasFullApplicationAccess } from "@/lib/domain-access";
 afterEach(cleanup);
 function Location() { const location = useLocation(); return <span>{location.pathname}</span>; }
 describe("hostname routing boundary", () => {
-  for (const host of ["readines.com", "www.readines.com", "unknown.example", "malicious.vercel.app"]) {
+  for (const host of ["unknown.example", "malicious.vercel.app"]) {
     for (const path of ["/", "/login", "/dashboard", "/packages", "/documents/a", "/checkout", "/forgot-password"]) {
       it(`${host}${path} mounts only the public landing at /`, () => {
         const mount = vi.fn();
@@ -18,7 +18,7 @@ describe("hostname routing boundary", () => {
       });
     }
   }
-  for (const host of ["localhost", "127.0.0.1", "frontend-web-nine-amber.vercel.app"]) {
+  for (const host of ["readines.com", "www.readines.com", "localhost", "127.0.0.1", "frontend-web-nine-amber.vercel.app"]) {
     for (const path of ["/login", "/dashboard", "/packages", "/documents", "/checkout"]) {
       it(`${host}${path} preserves the application and URL`, () => {
         render(<MemoryRouter initialEntries={[path]}><DomainAccessGuard hostname={host} landing={<div>Public landing</div>}><div>Private application</div></DomainAccessGuard><Location /></MemoryRouter>);
@@ -27,11 +27,12 @@ describe("hostname routing boundary", () => {
       });
     }
   }
-  it("accepts exact configured preview hosts without allowing suffix lookalikes or production overrides", () => {
+  it("accepts exact configured preview hosts without allowing suffix lookalikes", () => {
     const configured = "staging.example.com,project-abc-team.vercel.app,readines.com";
     expect(hasFullApplicationAccess("project-abc-team.vercel.app", configured)).toBe(true);
     expect(hasFullApplicationAccess("staging.example.com", configured)).toBe(true);
     expect(hasFullApplicationAccess("staging.example.com.evil.com", configured)).toBe(false);
-    expect(hasFullApplicationAccess("readines.com", configured)).toBe(false);
+    expect(hasFullApplicationAccess("readines.com", configured)).toBe(true);
+    expect(hasFullApplicationAccess("readines.com.evil.com", configured)).toBe(false);
   });
 });
