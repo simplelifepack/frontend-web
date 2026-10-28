@@ -7,8 +7,8 @@ const auth = { requiresAuth: true, dedupeMs: 0 };
 export const digilocker = {
   status: () => request<{ configured: boolean; message: string | null }>(`${base}/status`, auth),
   start: () => request<LockerSession & { authorizationUrl: string }>(`${base}/sessions`, { ...auth, method: "POST", body: {} }),
-  session: (id: string) => request<LockerSession>(`${base}/sessions/${encodeURIComponent(id)}/status`, auth),
-  documents: (id: string) => request<{ documents: LockerDocument[]; session: LockerSession }>(`${base}/sessions/${encodeURIComponent(id)}/documents`, auth),
+  session: (id: string, signal?: AbortSignal) => request<LockerSession>(`${base}/sessions/${encodeURIComponent(id)}/status`, { ...auth, signal }),
+  documents: (id: string, signal?: AbortSignal) => request<{ documents: LockerDocument[]; session: LockerSession }>(`${base}/sessions/${encodeURIComponent(id)}/documents`, { ...auth, signal }),
   cancel: (id: string) => request<LockerSession>(`${base}/sessions/${encodeURIComponent(id)}/cancel`, { ...auth, method: "POST" }),
   import: (id: string, references: string[]) => request<LockerSession>(`${base}/sessions/${encodeURIComponent(id)}/import`, {
     ...auth, method: "POST", body: { references, consent: true, consentVersion: "digilocker-copy-v1" },

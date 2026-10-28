@@ -24,6 +24,19 @@ export default function DigiLockerDialog() {
   const [busy, setBusy] = useState(false);
   const [importing, setImporting] = useState(false);
   const [message, setMessage] = useState("");
+  const [visibleDocuments, setVisibleDocuments] = useState(50);
+  const [retryUntil, setRetryUntil] = useState(0);
+  useEffect(() => { setVisibleDocuments(50); }, [id]);
+  useEffect(() => {
+    if (!retryUntil) return;
+    const timer = setTimeout(() => setRetryUntil(0), Math.max(0, retryUntil - Date.now()));
+    return () => clearTimeout(timer);
+  }, [retryUntil]);
+  const showError = (error: unknown) => {
+    const delay = (error as { retryAfterMs?: number }).retryAfterMs;
+    if (delay) setRetryUntil(Date.now() + delay);
+    setMessage(errorMessage(error));
+  };
 
   useEffect(() => {
     const result = new URLSearchParams(window.location.hash.slice(1));
@@ -58,51 +71,58 @@ export default function DigiLockerDialog() {
     })().catch(error => { if (active) { setSession(null); setDocuments([]); setSelection([]); setMessage(errorMessage(error)); } }).finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
   }, [open, id, invalidReturn]);
+  const [refreshKey, setRefreshKey] = useState(0);
   useEffect(() => {
-    if (!open || !id || (!importing && !["IMPORTING", "PENDING"].includes(session?.status ?? ""))) return;
+    if (!open || !id || importing || !["IMPORTING", "PENDING"].includes(session?.status ?? "")) return;
+    const controller = new AbortController();
     let active = true;
+    let delay = 1500;
     let timer: ReturnType<typeof setTimeout>;
     const generation = importGeneration.current;
     const poll = async () => {
+      if (document.hidden || !active) return;
       try {
-        const next = await digilocker.session(id);
-        if (active && generation === importGeneration.current && (!importing || next.status === "IMPORTING")) {
-          if (session?.status === "PENDING" && next.status === "AUTHENTICATED") {
-            const result = await digilocker.documents(id);
-            if (!active) return;
-            setDocuments(result.documents); setMessage("");
-          }
-          setSession(next);
-          setSelection(previous => previous.filter(reference => !next.progress.some(p => p.reference === reference && p.phase === "Completed")));
-          if (["EXPIRED", "CANCELLED", "CONSENT_DENIED", "FAILED"].includes(next.status)) {
-            setDocuments([]); setSelection([]);
-            setMessage("DigiLocker authorization ended or expired. Connect again to continue.");
-          }
-          if (session?.status === "IMPORTING" && next.status !== "IMPORTING") void dispatch(fetchDocuments());
+        const next = await digilocker.session(id, controller.signal);
+        if (!active || generation !== importGeneration.current) return;
+        if (session?.status === "PENDING" && next.status === "AUTHENTICATED") {
+          const result = await digilocker.documents(id, controller.signal);
+          if (!active) return;
+          setDocuments(result.documents);
         }
-      } catch {
-        if (active && !importing) setMessage("Unable to refresh DigiLocker progress. Retrying automatically.");
+        delay = 1500; setMessage(""); setSession(next);
+        setSelection(previous => previous.filter(reference => !next.progress.some(p => p.reference === reference && p.phase === "Completed")));
+        if (["EXPIRED", "CANCELLED", "CONSENT_DENIED", "FAILED"].includes(next.status)) {
+          setSelection([]);
+          setMessage(next.status === "EXPIRED" ? "DigiLocker access expired. Your imported documents are saved. Reconnect to continue." : "This connection ended. Your imported documents are saved. Reconnect to retry remaining documents.");
+        }
+        if (session?.status === "IMPORTING" && next.status !== "IMPORTING") void dispatch(fetchDocuments());
+      } catch (error) {
+        if (!active || controller.signal.aborted) return;
+        delay = Math.min(30_000, Math.max(delay * 2, (error as { retryAfterMs?: number }).retryAfterMs ?? 0));
+        setMessage("Unable to refresh DigiLocker progress. Retrying automatically. You can refresh status or reconnect.");
       }
-      if (active) timer = setTimeout(() => void poll(), 1500);
+      if (active && !document.hidden) timer = setTimeout(() => void poll(), delay);
     };
+    const visibility = () => { clearTimeout(timer); if (!document.hidden) void poll(); };
+    document.addEventListener("visibilitychange", visibility);
     void poll();
-    return () => { active = false; clearTimeout(timer); };
-  }, [open, id, importing, session?.status, dispatch]);
+    return () => { active = false; controller.abort(); clearTimeout(timer); document.removeEventListener("visibilitychange", visibility); };
+  }, [open, id, importing, session?.status, dispatch, refreshKey]);
 
   const connect = async () => {
     setBusy(true); setMessage("");
     try {
-      if (id && session?.status !== "IMPORTING") {
+      if (id) {
         try { await digilocker.cancel(id); }
         catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
       }
       const next = await digilocker.start();
       sessionStorage.setItem(SESSION_KEY, next.id);
       window.location.assign(next.authorizationUrl);
-    } catch (error) { setMessage(errorMessage(error)); setBusy(false); }
+    } catch (error) { showError(error); setBusy(false); }
   };
   const close = async () => {
-    if (importing || session?.status === "IMPORTING") return;
+    if (importing) return;
     setBusy(true);
     try {
       if (id) {
@@ -111,7 +131,7 @@ export default function DigiLockerDialog() {
       }
       sessionStorage.removeItem(SESSION_KEY);
       setInvalidReturn(false); setId(""); setSession(null); setDocuments([]); setSelection([]); setConfirm(false); setMessage(""); setOpen(false);
-    } catch (error) { setMessage(errorMessage(error)); }
+    } catch (error) { showError(error); }
     finally { setBusy(false); }
   };
   const runImport = async () => {
@@ -126,11 +146,11 @@ export default function DigiLockerDialog() {
       setSelection(previous => previous.filter(reference => !next.progress.some(p => p.reference === reference && p.phase === "Completed")));
       void dispatch(fetchDocuments());
     } catch (error) {
-      setMessage(errorMessage(error));
+      showError(error);
       try { setSession(await digilocker.session(id)); } catch { /* A new connection can recover an expired session. */ }
     } finally { importGeneration.current++; setImporting(false); }
   };
-  const locked = busy || importing || session?.status === "IMPORTING";
+  const locked = busy || importing || session?.status === "IMPORTING" || retryUntil > Date.now();
   const completed = new Set(session?.progress.filter(p => p.phase === "Completed").map(p => p.reference));
   const available = documents.filter(doc => doc.available && !completed.has(doc.reference));
   const connected = session?.status === "AUTHENTICATED" || session?.status === "IMPORTING";
@@ -148,9 +168,9 @@ export default function DigiLockerDialog() {
             <Text>Select documents to copy into your account. The date shown is the last modified date supplied by DigiLocker; issue dates are shown only when available.</Text>
             <Row><Button variant="tertiary" disabled={locked || !available.length} onClick={() => setSelection(available.slice(0, 50).map(doc => doc.reference))}>{available.length > 50 ? "Select First 50" : "Select All"}</Button><Button variant="tertiary" disabled={locked} onClick={() => setSelection([])}>Deselect All</Button></Row>
             {available.length > 50 && <Text tone="muted">Import up to 50 documents per batch.</Text>}
-            <ScrollRegion $vertical><Stack>
+            <ScrollRegion $vertical style={{ maxHeight: "50vh" }}><Stack>
               {documents.length === 0 && <Text tone="muted">DigiLocker returned no issued documents for this authorization.</Text>}
-              {documents.map(doc => {
+              {documents.slice(0, visibleDocuments).map(doc => {
                 const progress = session?.progress.find(p => p.reference === doc.reference);
                 return <Card key={doc.reference}><Stack $gap="s8">
                   <Row $wrap={false}><Checkbox aria-label={`Select ${doc.name}`} checked={selection.includes(doc.reference)} disabled={locked || !doc.available || completed.has(doc.reference)} onChange={event => setSelection(previous => event.target.checked ? [...previous, doc.reference].slice(0, 50) : previous.filter(ref => ref !== doc.reference))} /><Text weight="semibold">{doc.name}</Text></Row>
@@ -159,15 +179,22 @@ export default function DigiLockerDialog() {
                   {progress && <Text role="status" tone={progress.phase === "Failed" ? "danger" : "muted"}>{progress.phase}{progress.duplicate ? " — already in Documents" : ""}{progress.message ? `: ${progress.message}` : ""}</Text>}
                 </Stack></Card>;
               })}
+              {documents.length > visibleDocuments && <Button variant="tertiary" onClick={() => setVisibleDocuments(count => count + 50)}>Show More Documents ({documents.length - visibleDocuments})</Button>}
             </Stack></ScrollRegion>
           </>}
         </>}
+        {!connected && session?.progress.map(progress => <Text key={progress.reference} role="status" tone={progress.phase === "Failed" ? "danger" : "muted"}>{documents.find(doc => doc.reference === progress.reference)?.name ?? "Document"}: {progress.phase}{progress.message ? ` — ${progress.message}` : ""}</Text>)}
         {message && <Text role="status" tone="danger">{message}</Text>}
       </Stack></ModalContent>
       <ModalActions>
         {confirm ? <><Button variant="secondary" onClick={() => setConfirm(false)}>Cancel</Button><Button variant="primary" onClick={() => void runImport()}>Allow &amp; Import</Button></> : <>
-          <Button variant="secondary" disabled={locked} onClick={() => void close()}>{connected ? "Done" : "Cancel"}</Button>
-          {connected ? <Button variant="primary" disabled={locked || !selection.length} loading={importing} onClick={() => setConfirm(true)}>{selection.some(ref => session?.progress.some(p => p.reference === ref && p.phase === "Failed")) ? "Retry Selected" : "Import Selected"}</Button> : <Button variant="primary" disabled={busy || !configured} loading={busy} onClick={() => void connect()}>Connect DigiLocker</Button>}
+          <Button variant="secondary" disabled={busy || importing} onClick={() => void close()}>{session?.status === "IMPORTING" ? "Cancel Import" : connected ? "Done" : "Cancel"}</Button>
+          {id && <Button variant="tertiary" disabled={busy || importing} onClick={() => {
+            setRefreshKey(value => value + 1);
+            void digilocker.session(id).then(next => { setSession(next); setMessage(""); }).catch(error => setMessage(errorMessage(error)));
+          }}>Refresh Status</Button>}
+          {message && session?.status === "IMPORTING" && <Button variant="secondary" disabled={busy || importing} onClick={() => void connect()}>Reconnect</Button>}
+          {connected ? <Button variant="primary" disabled={locked || !selection.length} loading={importing} onClick={() => setConfirm(true)}>{selection.some(ref => session?.progress.some(p => p.reference === ref && p.phase === "Failed")) ? "Retry Selected" : "Import Selected"}</Button> : <Button variant="primary" disabled={busy || !configured || retryUntil > Date.now()} loading={busy} onClick={() => void connect()}>Connect DigiLocker</Button>}
         </>}
       </ModalActions>
     </ModalPanel></ModalBackdrop>}

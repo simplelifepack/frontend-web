@@ -37,3 +37,17 @@ it("refreshes expired authentication before retrying the import without changing
   expect(fetch.mock.calls[0][1].body).toBe(fetch.mock.calls[2][1].body);
   expect(fetch.mock.calls[2][1].headers).toMatchObject({ Authorization: "Bearer new-access" });
 });
+it("exposes Retry-After for busy admission responses without automatically replaying consent", async () => {
+  setAccessToken("test-access");
+  const fetch = vi.fn(async () => Response.json({ message: "busy" }, { status: 503, headers: { "Retry-After": "7" } }));
+  vi.stubGlobal("fetch", fetch);
+  await expect(digilocker.import("session", ["one"])).rejects.toMatchObject({ status: 503, retryAfterMs: 7000 });
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+it("forwards a polling AbortSignal to fetch", async () => {
+  const controller = new AbortController();
+  const fetch = vi.fn(async () => Response.json({ id: "session", status: "IMPORTING", progress: [] }));
+  vi.stubGlobal("fetch", fetch);
+  await digilocker.session("session", controller.signal);
+  expect((fetch.mock.calls as unknown as [string, RequestInit][])[0][1].signal).toBe(controller.signal);
+});

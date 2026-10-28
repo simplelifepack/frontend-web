@@ -109,17 +109,28 @@ async function migrateLegacyCache(destination: IDBDatabase) {
   finally { source?.close(); }
 }
 
-async function transact<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore, resolve: (value: T) => void) => void, fallback: T) {
+async function performTransaction<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore, resolve: (value: T) => void) => void, fallback: T) {
   const database = await openDatabase();
   if (!database) return fallback;
   return new Promise<T>((resolve) => {
     try {
       const transaction = database.transaction(STORE_NAME, mode);
+      let value = fallback;
+      transaction.oncomplete = () => resolve(value);
       transaction.onabort = () => resolve(fallback);
       transaction.onerror = () => resolve(fallback);
-      run(transaction.objectStore(STORE_NAME), resolve);
+      run(transaction.objectStore(STORE_NAME), result => { value = result; });
     } catch { resolve(fallback); }
   }).finally(() => database.close());
+}
+
+// Reserve ordering before opening IndexedDB: account-switch clears must finish
+// before a new account can write. Resolve writes only after transaction commit.
+let transactionTail: Promise<unknown> = Promise.resolve();
+function transact<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore, resolve: (value: T) => void) => void, fallback: T): Promise<T> {
+  const result = transactionTail.then(() => performTransaction(mode, run, fallback));
+  transactionTail = result.catch(() => undefined);
+  return result;
 }
 
 export function readPackagePage(key: string) {
@@ -141,7 +152,7 @@ export function readAllPackagePages() {
 export async function writePackagePage(page: CachedPackagePage) {
   const generation = getAuthGeneration();
   await transact<void>("readwrite", (store, resolve) => {
-    if (generation !== getAuthGeneration()) { resolve(); return; }
+    if (generation !== getAuthGeneration() || !page.key.startsWith(`packages:account=${accountScope()}:`)) { resolve(); return; }
     const request = store.put(page);
     request.onsuccess = () => resolve();
     request.onerror = () => resolve();

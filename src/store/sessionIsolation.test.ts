@@ -17,3 +17,10 @@ it("discards a restoreSession response after logout",()=>{
   expect(store.getState().auth.user).toBeNull();
   expect(store.getState().auth.token).toBeNull();
 });
+it("drops completions evicted from the bounded pending-request registry", () => {
+  for (let index = 0; index < 2049; index++) store.dispatch(fetchDocuments.pending(`pending-${index}`, undefined));
+  store.dispatch(fetchDocuments.fulfilled([{ id: "evicted" } as DocumentRecord], "pending-0", undefined));
+  expect(store.getState().documents.items).toEqual([]);
+  store.dispatch(fetchDocuments.fulfilled([{ id: "current" } as DocumentRecord], "pending-2048", undefined));
+  expect(store.getState().documents.items[0]?.id).toBe("current");
+});

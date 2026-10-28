@@ -100,7 +100,11 @@ async function performRequest<T>(path: string, options: RequestOptions = {}) {
     return performRequest<T>(path, { ...options, retryOnUnauthorized: false });
   }
   if (!response.ok) {
-    throw Object.assign(apiError(data), { status: response.status });
+    const retryHeader = response.headers.get("Retry-After");
+    const retrySeconds = retryHeader ? Number(retryHeader) : NaN;
+    const retryAfterMs = retryHeader ? (Number.isFinite(retrySeconds) ? retrySeconds * 1000 : Date.parse(retryHeader) - Date.now()) : 2000;
+    throw Object.assign(response.status === 503 ? new Error("Service is busy. Please wait a moment and retry.") : apiError(data),
+      { status: response.status, retryAfterMs: Math.max(1000, Math.min(60_000, retryAfterMs || 2000)) });
   }
   return data as T;
 }

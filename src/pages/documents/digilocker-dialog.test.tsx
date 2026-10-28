@@ -114,7 +114,7 @@ it("recovers a pending authorization and loads its documents when the backend co
   vi.mocked(digilocker.documents).mockImplementation(() => new Promise(resolve => { finishListing = resolve; }));
   sessionStorage.setItem("readines.digilocker.session", "session-a");
   render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
-  await waitFor(() => expect(digilocker.documents).toHaveBeenCalledWith("session-a"));
+  await waitFor(() => expect(digilocker.documents).toHaveBeenCalledWith("session-a", expect.any(AbortSignal)));
   finishListing({ documents: docs, session: { id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] } });
   await screen.findByLabelText("Select Certificate one");
   expect(screen.queryByText(/Authorization was not completed/)).toBeNull();
