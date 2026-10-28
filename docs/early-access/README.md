@@ -21,7 +21,7 @@ All implementation files live in `simplelifepack/frontend-web`, at `/Users/ranji
 | `src/components/EarlyAccessLanding.test.tsx` | Registration validation, loading/success, duplicate email, retry, unmount cancellation, Sign In and theme behavior. |
 | `public/images/early-access-background-light.png` | Original supplied Lavender Light Modern Showroom PNG, byte-for-byte. |
 | `public/images/early-access-background-dark.png` | Original supplied Midnight Atrium in Violet Light PNG, byte-for-byte. |
-| `public/images/early-access-squirrel.png` | Latest user-supplied mascot (`codex-clipboard-a2ab9a4e-fcd3-4755-911a-d41e4719766f.png`), byte-for-byte, separate from background. |
+| `public/images/early-access-squirrel.png` | Latest user-supplied mascot (`Purple Squirrel Mascot with Folder.png`, 1024×1536), byte-for-byte, separate from background. |
 
 The original `Landing*` component files, `src/pages/landing/index.tsx`, `BrandLogo.tsx`, design-system/theme files and waitlist API client have no diff from base `3434bfa`. No backend, payment, dependency, package, build configuration or deployment change is included.
 
@@ -65,3 +65,5 @@ Added `EarlyAccessOffer.tsx`: a translucent rounded card with ₹999 for the fir
 Replaced the temporary hero's expanding minimum height and oversized/offset mascot with a viewport-height grid. Header takes its natural height, content uses the remaining row, and the mascot uses the available grid area with `object-fit: contain`. There are no fixed mascot pixel dimensions, negative image offsets, translated content, or oversized image percentages. Intrinsic image width/height attributes retain the source aspect ratio only. Type, control height, gaps and pricing-card padding respond to viewport dimensions. Mobile reserves a flexible row for the mascot below the form/card; shorter narrow screens keep email and CTA side by side to save vertical space. Backgrounds continue using cover without distortion.
 
 Lint, typecheck, production build and all 31 relevant tests passed after this correction. Browser discovery still reports local browser use disabled in Work settings, so runtime overflow and screenshot verification could not be performed in this turn; earlier screenshots do not represent this viewport-fit correction.
+
+Latest mascot replacement uses the supplied portrait PNG unchanged, with intrinsic dimensions updated to 1024×1536. CSS continues to use responsive containment; the source is not stretched or cropped.

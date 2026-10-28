@@ -208,8 +208,8 @@ export function EarlyAccessHero({ onSignIn }: { onSignIn: () => void }) {
           <img
             src="/images/early-access-squirrel.png"
             alt="Purple squirrel with tufted ears, brown eyes, a cream-striped tail, holding a branded document folder"
-            width="1536"
-            height="1024"
+            width="1024"
+            height="1536"
             fetchPriority="high"
             decoding="async"
           />
