@@ -67,3 +67,5 @@ Replaced the temporary hero's expanding minimum height and oversized/offset masc
 Lint, typecheck, production build and all 31 relevant tests passed after this correction. Browser discovery still reports local browser use disabled in Work settings, so runtime overflow and screenshot verification could not be performed in this turn; earlier screenshots do not represent this viewport-fit correction.
 
 Latest mascot replacement uses the supplied portrait PNG unchanged, with intrinsic dimensions updated to 1024×1536. CSS continues to use responsive containment; the source is not stretched or cropped.
+
+The latest requested revision removes the Sign In button from the temporary page header. Theme switching remains; existing login routes and the original landing page are unchanged.
