@@ -48,3 +48,10 @@ deployment against the connected Supabase test environment, preserving records
 and existing production aliases. Hosted OAuth/scopes/HMAC/imports, real payment
 lifecycle, mobile/light/dark/focus QA and production-equivalent performance remain
 live verification gates until separately evidenced.
+
+The Git-connected test backend is
+`backend-git-codex-digilocker-durable-integration-lifepack1.vercel.app`.
+The additive import-job migration is confirmed applied to the connected Supabase
+test project. The frontend test branch's VITE_API_URL points to that backend.
+Existing serving aliases remain unchanged. Firewall/callback routing must be
+verified before treating a Ready deployment as an accessible, end-to-end test.
