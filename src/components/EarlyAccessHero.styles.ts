@@ -85,6 +85,14 @@ export const Description = styled(Text)`
   max-width: 680px;
   font-size: clamp(14px, min(1.6vw, 2.4dvh), 20px);
   line-height: 1.45;
+  :root:not(.dark) & {
+    color: ${colors.actionText};
+    font-weight: ${({ theme }) => theme.typography.weights.medium};
+    background: color-mix(in srgb, ${colors.action} 88%, transparent);
+    backdrop-filter: blur(14px);
+    border-radius: 6px;
+    box-shadow: 0 0 0 8px color-mix(in srgb, ${colors.action} 88%, transparent);
+  }
   @media ${({ theme }) => theme.media.mobile} { font-size: clamp(12px, 1.9dvh, 16px); }
 `;
 export const Form = styled.form`
