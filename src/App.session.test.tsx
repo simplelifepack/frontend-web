@@ -11,7 +11,8 @@ import { clearInMemoryAuth, getAccessToken } from "./lib/auth";
 import { request } from "./lib/http-client";
 
 vi.mock("@/pages/settings", () => ({ default: () => null }));
-vi.mock("@/pages/landing", () => ({ default: () => <div>Public landing</div> }));
+vi.mock("@/pages/landing", () => ({ default: () => <div>Original landing</div> }));
+vi.mock("@/components/EarlyAccessLanding", () => ({ default: () => <div>Public landing</div> }));
 vi.mock("@/pages/documents", () => ({ default: () => <div>Documents return</div> }));
 vi.mock("@/pages/home", () => ({ default: () => <div>Signed in home</div> }));
 vi.mock("@/components/AppShell", () => ({ default: () => <Outlet /> }));
@@ -81,6 +82,7 @@ describe("session restoration and entry routing", () => {
     validRefreshSession = false;
     const store = openPage("/");
     await screen.findByText("Public landing");
+    expect(screen.queryByText("Original landing")).toBeNull();
     await act(async () => { await store.dispatch(login({ email: user.email, password: "password" })); });
     await screen.findByText("Signed in home");
     expect(screen.getByTestId("path").textContent).toBe("/home");
@@ -128,6 +130,7 @@ describe("session restoration and entry routing", () => {
     const destination = "/documents?view=all#digilocker=session-a&result=AUTHENTICATED";
     const store = openPage(destination);
     await screen.findByText("Public landing");
+    expect(screen.queryByText("Original landing")).toBeNull();
     await act(async () => { await store.dispatch(login({ email: user.email, password: "password" })); });
     await screen.findByText("Documents return");
     expect(screen.getByTestId("full-path").textContent).toBe(destination);
@@ -148,6 +151,7 @@ describe("session restoration and entry routing", () => {
     validRefreshSession = false;
     openPage(path);
     await screen.findByText("Public landing");
+    expect(screen.queryByText("Original landing")).toBeNull();
     expect(screen.getByTestId("path").textContent).toBe("/");
     expect(screen.queryByText("Signed in home")).toBeNull();
   });

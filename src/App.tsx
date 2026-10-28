@@ -11,7 +11,8 @@ import SessionGate from "@/components/SessionGate";
 import { preferencesApi } from "@/lib/preferences-api";
 import { persistHomeCurrency } from "@/lib/preferences-storage";
 import { persistTheme } from "@/lib/theme";
-import LandingPage from "@/pages/landing";
+import LandingPage from "@/pages/landing"; // Retained for restoring the original landing page.
+import EarlyAccessLanding from "@/components/EarlyAccessLanding";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { initializeApp } from "@/store/bootstrap";
 import { fetchDocuments } from "@/store/slices/documentsSlice";
@@ -63,7 +64,7 @@ function LandingRoute() {
     return <Navigate to={destination} replace />;
   }
 
-  return <LandingPage initialAuthMode={authMode} onAuthed={() => navigate(destination, { replace: true })} />;
+  return <EarlyAccessLanding initialAuthMode={authMode} onAuthed={() => navigate(destination, { replace: true })} />;
 }
 
 function FullApplication() {
