@@ -3,7 +3,7 @@ import { Text, colors } from "@/design-system";
 import { theme } from "@/design-system/variables/theme";
 
 const Offer = styled.aside`
-  margin-top: 28px;
+  margin-top: 0;
   max-width: 760px;
   color: ${colors.heading};
 `;
@@ -11,8 +11,8 @@ const Card = styled.div`
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 24px;
-  padding: 22px 24px;
+  gap: clamp(10px, 1.5vw, 24px);
+  padding: clamp(10px, 1.7dvh, 22px) clamp(12px, 1.5vw, 24px);
   border: 1px solid color-mix(in srgb, ${colors.heading} 22%, transparent);
   border-radius: 18px;
   background: color-mix(in srgb, ${colors.surface} 72%, transparent);
@@ -20,10 +20,10 @@ const Card = styled.div`
   .dark & {
     background: color-mix(in srgb, ${colors.heading} 9%, transparent);
   }
-  @media ${({ theme }) => theme.media.tablet} {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
-    padding: 20px;
+  @media ${({ theme }) => theme.media.compact} {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 2fr);
+    gap: 10px;
+    padding: 10px 12px;
   }
 `;
 const Price = styled.div`
@@ -32,29 +32,31 @@ const Price = styled.div`
   flex-wrap: wrap;
   gap: 8px;
   strong {
-    font-size: 44px;
+    font-size: clamp(26px, 4.7dvh, 44px);
     font-weight: ${({ theme }) => theme.typography.weights.bold};
     line-height: 1.1;
     letter-spacing: -0.04em;
   }
   del {
-    font-size: 18px;
+    font-size: clamp(12px, 1.8dvh, 18px);
     color: ${colors.muted};
   }
   span {
     flex-basis: 100%;
-    font-size: 12px;
+    font-size: clamp(9px, 1.4dvh, 12px);
     font-weight: ${({ theme }) => theme.typography.weights.semibold};
     letter-spacing: 0.08em;
   }
 `;
 const Details = styled.div`
   display: grid;
-  gap: 6px;
+  gap: 4px;
+  p { font-size: clamp(11px, 1.7dvh, 14px); line-height: 1.4; }
 `;
 const Terms = styled(Text)`
   display: block;
-  margin-top: 10px;
+  margin-top: 6px;
+  font-size: clamp(10px, 1.5dvh, 12px);
 `;
 
 export function EarlyAccessOffer() {

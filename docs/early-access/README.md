@@ -59,3 +59,9 @@ Additional evidence: [light mobile](screenshots/after-light-mobile.jpg), [tablet
 ## Founding-price copy update
 
 Added `EarlyAccessOffer.tsx`: a translucent rounded card with ₹999 for the first year, struck-through ₹1,999, the first-1,000 founding-member copy, no-payment-today reassurance, and ₹1,999 annual renewal / GST note. Supporting copy and the final reassurance item match the supplied pricing reference. Header, theme controls, backgrounds, mascot, route and signup/API behavior are retained. This is display copy only; no billing prices or payment contracts were changed. Earlier screenshots predate this card.
+
+## Viewport-fit correction
+
+Replaced the temporary hero's expanding minimum height and oversized/offset mascot with a viewport-height grid. Header takes its natural height, content uses the remaining row, and the mascot uses the available grid area with `object-fit: contain`. There are no fixed mascot pixel dimensions, negative image offsets, translated content, or oversized image percentages. Intrinsic image width/height attributes retain the source aspect ratio only. Type, control height, gaps and pricing-card padding respond to viewport dimensions. Mobile reserves a flexible row for the mascot below the form/card; shorter narrow screens keep email and CTA side by side to save vertical space. Backgrounds continue using cover without distortion.
+
+Lint, typecheck, production build and all 31 relevant tests passed after this correction. Browser discovery still reports local browser use disabled in Work settings, so runtime overflow and screenshot verification could not be performed in this turn; earlier screenshots do not represent this viewport-fit correction.
