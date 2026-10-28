@@ -17,9 +17,6 @@ export const Header = styled.div`
     & > :last-child:not(:first-child) {
       align-self: stretch;
     }
-    & > :last-child:not(:first-child) button {
-      width: 100%;
-    }
   }
 `;
 

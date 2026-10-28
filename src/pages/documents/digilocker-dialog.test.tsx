@@ -13,7 +13,7 @@ const docs: LockerDocument[] = [
   { reference: "aadhaar", name: "Aadhaar", type: "Aadhaar", issuer: null, issueDate: null, modifiedAt: null, available: false, reason: "Restricted" },
 ];
 beforeEach(() => {
-  vi.resetAllMocks(); sessionStorage.clear(); sessionStorage.setItem("readines.digilocker.session.owner", "owner-a"); window.history.replaceState(null, "", "/documents");
+  vi.resetAllMocks(); sessionStorage.clear(); window.history.replaceState(null, "", "/documents");
   vi.mocked(digilocker.status).mockResolvedValue({ configured: true, message: null });
   vi.mocked(digilocker.session).mockResolvedValue({ id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] });
   vi.mocked(digilocker.documents).mockResolvedValue({ documents: docs, session: { id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] } });
@@ -21,7 +21,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 async function connected() {
-  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  sessionStorage.setItem("readines.digilocker.session:owner-a", "session-a");
   window.history.replaceState(null, "", "/documents#digilocker=session-a&result=AUTHENTICATED");
   render(<DigiLockerDialog />);
   await screen.findByLabelText("Select Certificate one");
@@ -56,7 +56,7 @@ it("unconfigured provider remains unavailable and cannot simulate a connection",
 });
 it("denied authorization is shown and closing cancels the server session", async () => {
   vi.mocked(digilocker.session).mockResolvedValue({ id: "session-a", status: "CONSENT_DENIED", expiresAt: null, progress: [] });
-  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  sessionStorage.setItem("readines.digilocker.session:owner-a", "session-a");
   window.history.replaceState(null, "", "/documents#digilocker=session-a&result=CONSENT_DENIED");
   render(<DigiLockerDialog />);
   await screen.findByText(/DigiLocker consent was declined/);
@@ -64,7 +64,7 @@ it("denied authorization is shown and closing cancels the server session", async
   await waitFor(() => expect(digilocker.cancel).toHaveBeenCalledWith("session-a"));
 });
 it("rejects a mismatched callback without reading either session's documents", async () => {
-  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  sessionStorage.setItem("readines.digilocker.session:owner-a", "session-a");
   window.history.replaceState(null, "", "/documents#digilocker=other-session&result=AUTHENTICATED");
   render(<DigiLockerDialog />);
   await screen.findByText(/authorization could not be verified/);
@@ -75,7 +75,7 @@ it("rejects a mismatched callback without reading either session's documents", a
 });
 it("expired sessions allow reconnecting and never list or import documents", async () => {
   vi.mocked(digilocker.session).mockResolvedValue({ id: "session-a", status: "EXPIRED", expiresAt: null, progress: [] });
-  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  sessionStorage.setItem("readines.digilocker.session:owner-a", "session-a");
   window.history.replaceState(null, "", "/documents#digilocker=session-a");
   render(<DigiLockerDialog />);
   await screen.findByText("Your DigiLocker session expired. Connect again.");
@@ -90,7 +90,7 @@ it("Deselect All disables import and an empty provider list is explained", async
 });
 it("an empty provider list is not replaced with fabricated documents", async () => {
   vi.mocked(digilocker.documents).mockResolvedValue({ documents: [], session: { id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] } });
-  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  sessionStorage.setItem("readines.digilocker.session:owner-a", "session-a");
   window.history.replaceState(null, "", "/documents#digilocker=session-a");
   render(<DigiLockerDialog />);
   await screen.findByText(/DigiLocker returned no issued documents/);
@@ -99,12 +99,13 @@ it("an empty provider list is not replaced with fabricated documents", async () 
 it("missing sessions do not trap the user in an uncloseable dialog", async () => {
   vi.mocked(digilocker.session).mockRejectedValue(Object.assign(new Error("Session not found"), { status: 404 }));
   vi.mocked(digilocker.cancel).mockRejectedValue(Object.assign(new Error("Session not found"), { status: 404 }));
-  sessionStorage.setItem("readines.digilocker.session", "deleted-session");
+  sessionStorage.setItem("readines.digilocker.session:owner-a", "deleted-session");
   render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
   await screen.findByText("Session not found");
   fireEvent.click(screen.getByText("Cancel"));
   await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-  expect(sessionStorage.getItem("readines.digilocker.session")).toBeNull();
+  expect(sessionStorage.getItem("readines.digilocker.session:owner-a")).toBeNull();
+
 });
 it("recovers a pending authorization and loads its documents when the backend completes consent", async () => {
   vi.mocked(digilocker.session)
@@ -112,7 +113,7 @@ it("recovers a pending authorization and loads its documents when the backend co
     .mockResolvedValue({ id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] });
   let finishListing!: (value: Awaited<ReturnType<typeof digilocker.documents>>) => void;
   vi.mocked(digilocker.documents).mockImplementation(() => new Promise(resolve => { finishListing = resolve; }));
-  sessionStorage.setItem("readines.digilocker.session", "session-a");
+  sessionStorage.setItem("readines.digilocker.session:owner-a", "session-a");
   render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
   await waitFor(() => expect(digilocker.documents).toHaveBeenCalledWith("session-a", expect.any(AbortSignal)));
   finishListing({ documents: docs, session: { id: "session-a", status: "AUTHENTICATED", expiresAt: null, progress: [] } });
@@ -147,13 +148,13 @@ it("aborts a pending initialization request when the dialog unmounts", async () 
 });
 
 it("discards another account's pending session before loading private status", async () => {
-  sessionStorage.setItem("readines.digilocker.session", "other-session");
-  sessionStorage.setItem("readines.digilocker.session.owner", "other-owner");
+  sessionStorage.setItem("readines.digilocker.session:other-owner", "other-session");
   render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
   await waitFor(() => expect((screen.getByText("Connect DigiLocker") as HTMLButtonElement).disabled).toBe(false));
   expect(digilocker.session).not.toHaveBeenCalled();
   expect(digilocker.documents).not.toHaveBeenCalled();
-  expect(sessionStorage.getItem("readines.digilocker.session")).toBeNull();
+  expect(sessionStorage.getItem("readines.digilocker.session:owner-a")).toBeNull();
+  expect(sessionStorage.getItem("readines.digilocker.session:other-owner")).toBe("other-session");
 });
 
 it("a timed-out initialization releases controls and offers retry", async () => {
@@ -168,4 +169,41 @@ it("a timed-out initialization releases controls and offers retry", async () => 
     expect((screen.getByText("Cancel") as HTMLButtonElement).disabled).toBe(false);
     expect((screen.getByText("Refresh Status") as HTMLButtonElement).disabled).toBe(false);
   } finally { vi.useRealTimers(); }
+});
+it("renders provider documents in bounded pages and caps batch selection at fifty", async () => {
+  const many = Array.from({length:120},(_,index)=>({...docs[0],reference:`fixture-${index}`,name:`Fixture ${index}`}));
+  vi.mocked(digilocker.documents).mockResolvedValue({documents:many,session:{id:"session-a",status:"AUTHENTICATED",expiresAt:null,progress:[]}});
+  sessionStorage.setItem("readines.digilocker.session:owner-a", "session-a");
+  render(<DigiLockerDialog />); fireEvent.click(screen.getByText("DigiLocker"));
+  await screen.findByLabelText("Select Fixture 0");
+  expect(screen.getAllByRole("checkbox")).toHaveLength(50);
+  fireEvent.click(screen.getByText("Show More Documents (70)"));
+  expect(screen.getAllByRole("checkbox")).toHaveLength(100);
+  fireEvent.click(screen.getByText("Select First 50"));
+  expect(screen.getAllByRole("checkbox").filter(input=>(input as HTMLInputElement).checked)).toHaveLength(50);
+});
+it("traps keyboard focus, supports Escape and returns focus to the opener", async () => {
+  const rectangles = vi.spyOn(HTMLElement.prototype,"getClientRects").mockReturnValue([{}] as unknown as DOMRectList);
+  try {
+    render(<DigiLockerDialog />);
+    const opener = screen.getByText("DigiLocker"); opener.focus(); fireEvent.click(opener);
+    await waitFor(()=>expect((screen.getByText("Connect DigiLocker") as HTMLButtonElement).disabled).toBe(false));
+    screen.getByText("Connect DigiLocker").focus(); fireEvent.keyDown(document,{key:"Tab"});
+    expect(document.activeElement).toBe(screen.getByText("Cancel"));
+    fireEvent.keyDown(document,{key:"Tab",shiftKey:true});
+    expect(document.activeElement).toBe(screen.getByText("Connect DigiLocker"));
+    fireEvent.keyDown(document,{key:"Escape"});
+    await waitFor(()=>expect(screen.queryByRole("dialog")).toBeNull());
+    expect(document.activeElement).toBe(opener);
+  } finally { rectangles.mockRestore(); }
+});
+it("defers background polling until the document becomes visible", async () => {
+  const hidden = vi.spyOn(document,"hidden","get").mockReturnValue(true);
+  try {
+    vi.mocked(digilocker.session).mockResolvedValue({id:"session-a",status:"IMPORTING",expiresAt:null,progress:[]});
+    await connected();
+    expect(digilocker.session).toHaveBeenCalledTimes(1);
+    hidden.mockReturnValue(false); fireEvent(document,new Event("visibilitychange"));
+    await waitFor(()=>expect(digilocker.session).toHaveBeenCalledTimes(2));
+  } finally { hidden.mockRestore(); }
 });

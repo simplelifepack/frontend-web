@@ -80,8 +80,9 @@ export const ModalForm = styled(Stack)`
   padding-top: ${({ theme }) => theme.spacing.s10};
   gap: ${({ theme }) => theme.spacing.s10};
 `;
-export const ModalActions = styled(Stack)`
-  align-items: flex-start;
+export const ModalActions = styled(Row)`
+  align-items: center;
+  flex-wrap: wrap;
   margin-top: ${({ theme }) => theme.spacing.s4};
   gap: ${({ theme }) => theme.spacing.s12};
 `;

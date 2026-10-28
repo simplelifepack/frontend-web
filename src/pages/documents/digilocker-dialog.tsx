@@ -5,12 +5,13 @@ import { digilocker, type LockerDocument, type LockerSession } from "@/lib/digil
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchDocuments } from "@/store/slices/documentsSlice";
 const SESSION_KEY = "readines.digilocker.session";
-const OWNER_KEY = `${SESSION_KEY}.owner`;
+const sessionKey = (userId: string) => `${SESSION_KEY}:${encodeURIComponent(userId)}`;
 function pendingSession(userId: string) {
-  if (sessionStorage.getItem(OWNER_KEY) === userId) return sessionStorage.getItem(SESSION_KEY);
+  // Retire the old unscoped format. Each account now owns an independent key,
+  // so a late cancel from another account cannot erase a new connection.
   sessionStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(OWNER_KEY);
-  return null;
+  sessionStorage.removeItem(`${SESSION_KEY}.owner`);
+  return sessionStorage.getItem(sessionKey(userId));
 }
 const CONSENT_TEXT = "ReadiNes will securely copy your selected DigiLocker documents into your account. These copies will be encrypted and processed using our existing AI document management system.";
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : "DigiLocker could not complete the request.";
@@ -131,8 +132,7 @@ function AccountDigiLockerDialog({ userId }: { userId: string }) {
         catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
       }
       const next = await digilocker.start();
-      sessionStorage.setItem(SESSION_KEY, next.id);
-      sessionStorage.setItem(OWNER_KEY, userId);
+      sessionStorage.setItem(sessionKey(userId), next.id);
       window.location.assign(next.authorizationUrl);
     } catch (error) { showError(error); setBusy(false); }
   };
@@ -144,8 +144,7 @@ function AccountDigiLockerDialog({ userId }: { userId: string }) {
         try { await digilocker.cancel(id); }
         catch (error) { if ((error as { status?: number }).status !== 404) throw error; }
       }
-      sessionStorage.removeItem(SESSION_KEY);
-      sessionStorage.removeItem(OWNER_KEY);
+      sessionStorage.removeItem(sessionKey(userId));
       setInvalidReturn(false); setId(""); setSession(null); setDocuments([]); setSelection([]); setConfirm(false); setMessage(""); setOpen(false);
     } catch (error) { showError(error); }
     finally { setBusy(false); }
