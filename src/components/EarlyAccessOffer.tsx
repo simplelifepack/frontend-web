@@ -83,7 +83,7 @@ export function EarlyAccessOffer() {
           </Text>
         </Details>
         <Terms as="p" size="sm">
-        Renews at ₹1,999 per year. Prices exclusive of GST.
+        Renews at ₹1,999 per year. Prices inclusive of GST.
         </Terms>
       </Card>
     </Offer>
