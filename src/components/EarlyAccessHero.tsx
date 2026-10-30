@@ -200,18 +200,27 @@ export function EarlyAccessHero() {
         </Copy>
         <Mascot>
           <svg
-            viewBox="0 0 1024 1536"
+            viewBox="0 0 1024 1600"
             preserveAspectRatio="xMidYMax meet"
             role="img"
             aria-label="Purple squirrel standing on the floor, holding a document folder with the Readines logo"
           >
             <defs>
               <radialGradient id="mascot-ground-shadow">
-                <stop stopColor="currentColor" stopOpacity="0.3" />
-                <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+                <stop stopColor="#21152E" stopOpacity="0.54" />
+                <stop offset="0.45" stopColor="#21152E" stopOpacity="0.32" />
+                <stop offset="1" stopColor="#21152E" stopOpacity="0" />
+              </radialGradient>
+              <radialGradient id="mascot-contact-shadow">
+                <stop stopColor="#160E20" stopOpacity="0.8" />
+                <stop offset="0.5" stopColor="#160E20" stopOpacity="0.5" />
+                <stop offset="1" stopColor="#160E20" stopOpacity="0" />
               </radialGradient>
             </defs>
-            <ellipse cx="480" cy="1495" rx="385" ry="38" fill="url(#mascot-ground-shadow)" />
+            {/* Cast the floor shadow behind the character, toward the upper right. */}
+            <ellipse cx="675" cy="1445" rx="340" ry="38" transform="rotate(-9 480 1490)" fill="url(#mascot-ground-shadow)" />
+            <ellipse cx="325" cy="1488" rx="120" ry="18" fill="url(#mascot-contact-shadow)" />
+            <ellipse cx="650" cy="1488" rx="120" ry="18" fill="url(#mascot-contact-shadow)" />
             <image href="/images/early-access-squirrel.png" width="1024" height="1536" />
             {/* Use the actual brand asset over the illustrated folder's distorted mark. */}
             <image
