@@ -37,16 +37,20 @@ type AccountModalKind = "email" | "password" | null;
 
 const changelog = [
   [
-    "Landing auth",
-    "Sign in and sign up now live directly on the landing page.",
+    "Clearer typography",
+    "Inter brings lighter labels, consistent text sizes, and clearer headings across Readines.",
   ],
   [
-    "Document archive",
-    "Cleaner archive states and safer missing-file handling.",
+    "Consistent dropdowns",
+    "Filters and forms now share the same dropdown design. Searchable country and document-type pickers make longer lists easier to use, while custom entries remain available.",
   ],
   [
-    "Health readiness",
-    "Health profiles and visit packs are now part of the app shell.",
+    "Packages that fit your screen",
+    "Package cards adapt to the available space on desktop, tablet, and phone, keeping titles and readiness details readable.",
+  ],
+  [
+    "Account protection, explained",
+    "The sign-in dialog keeps security information beside your sign-in options on larger screens. On phones, open it with How your account is protected.",
   ],
 ];
 
@@ -157,8 +161,7 @@ export default function SettingsPage() {
             <Row
               icon={Sparkles}
               label="What's new"
-              value="v0.9"
-              sub="Latest changes in Readines"
+              sub="Recent improvements across Readines"
               onClick={() => setModal("whatsnew")}
               first
             />

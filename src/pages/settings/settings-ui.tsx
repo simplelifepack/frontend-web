@@ -60,7 +60,7 @@ export function Row({
     <>
       <Icon aria-hidden="true" color={danger ? T.coral : T.muted} />
       <Stack $grow $gap="s4">
-        <Text weight="semibold" tone={danger ? "danger" : "default"}>
+        <Text weight="medium" tone={danger ? "danger" : "default"}>
           {label}
         </Text>
         {sub && (

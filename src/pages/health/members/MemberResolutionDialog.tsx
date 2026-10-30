@@ -1,4 +1,4 @@
-import { Heading, Text, ModalBackdrop, ModalPanel, Select, Button } from "@/design-system";
+import { Heading, Text, ModalBackdrop, ModalPanel, SelectMenu, Button } from "@/design-system";
 
 import { useState } from "react";
 import { X } from "lucide-react";
@@ -59,19 +59,23 @@ function MemberResolutionDialog({
           </footer>
           {choosingExisting ? (
             <div className="lp-health-form">
-              <Text as="label" size="sm" weight="semibold">
+              <Text as="label" size="sm" weight="medium">
                 <span>Who does this record belong to?</span>
-                <Select
+                <SelectMenu
                   value={memberId}
-                  onChange={(event) => setMemberId(event.target.value)}
-                >
-                  <option value="">Choose a profile</option>
-                  {members.map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {member.name} · {member.relation}
-                    </option>
-                  ))}
-                </Select>
+                  onValueChange={(selectedValue) => setMemberId(selectedValue)}
+                  options={[
+                    { value: "", label: "Choose a profile" },
+                    ...members.map((member) => ({
+                      value: member.id,
+                      label: (
+                        <>
+                          {member.name} · {member.relation}
+                        </>
+                      ),
+                    })),
+                  ]}
+                />
               </Text>
               {memberId ? (
                 <Button variant="primary"
@@ -113,21 +117,25 @@ function MemberResolutionDialog({
             : "Choose an existing profile to continue."}
         </Text>
         <div className="lp-health-form">
-          <Text as="label" size="sm" weight="semibold">
+          <Text as="label" size="sm" weight="medium">
             <span>Health profile</span>
-            <Select
+            <SelectMenu
               value={memberId}
-              onChange={(event) => setMemberId(event.target.value)}
-            >
-              <option value="">Choose a profile</option>
-              {(ambiguous ? resolution.memberMatch.candidates : members).map(
-                (member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name} · {member.relation}
-                  </option>
+              onValueChange={(selectedValue) => setMemberId(selectedValue)}
+              options={[
+                { value: "", label: "Choose a profile" },
+                ...(ambiguous ? resolution.memberMatch.candidates : members).map(
+                  (member) => ({
+                    value: member.id,
+                    label: (
+                      <>
+                        {member.name} · {member.relation}
+                      </>
+                    ),
+                  }),
                 ),
-              )}
-            </Select>
+              ]}
+            />
           </Text>
         </div>
         <footer>

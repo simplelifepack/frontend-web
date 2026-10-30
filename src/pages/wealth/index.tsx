@@ -132,7 +132,7 @@ export default function WealthPage() {
   return (
     <div className="lp-route lp-wealth-route">
       <div className="lp-mobile-module-head">
-        <Heading level={1} size="sm">Wealth</Heading>
+        <Heading level={1} size="md">Wealth</Heading>
         <div>
           <Button size="sm" iconOnly variant="primary"
             type="button"

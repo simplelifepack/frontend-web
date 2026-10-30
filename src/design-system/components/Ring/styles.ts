@@ -30,7 +30,7 @@ export const Value = styled.div<{ $large: boolean }>`
   font-size: ${({ theme, $large }) =>
     $large ? theme.typography.text.lg : theme.typography.text.sm};
   font-variant-numeric: tabular-nums;
-  font-weight: ${({ theme }) => theme.typography.weights.bold};
+  font-weight: ${({ theme }) => theme.typography.weights.semibold};
 `;
 Progress.defaultProps = Value.defaultProps = { theme };
 

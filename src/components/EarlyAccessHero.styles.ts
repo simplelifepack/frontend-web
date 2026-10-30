@@ -10,6 +10,7 @@ export const Surface = styled.div`
   background: ${colors.background} url("/images/early-access-background-light.png") center / cover no-repeat;
   .dark & { background-image: url("/images/early-access-background-dark.png"); }
   color: ${colors.text};
+  @media (max-width: 900px) { height: auto; min-height: 100dvh; }
 `;
 export const Nav = styled.nav`
   box-sizing: border-box;
@@ -46,9 +47,9 @@ export const Layout = styled.main`
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   align-items: center;
   gap: clamp(8px, 2vw, 32px);
-  @media ${({ theme }) => theme.media.mobile} {
+  @media (max-width: 900px) {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(220px, 1fr);
     gap: clamp(4px, 1dvh, 12px);
   }
 `;
@@ -118,24 +119,30 @@ export const FormRow = styled.div`
   border: 1px solid ${colors.controlBorder};
   border-radius: 12px;
   background: color-mix(in srgb, ${colors.surface} 65%, transparent);
-  button[data-ds-button] {
-    min-height: clamp(44px, 7dvh, 60px);
-    padding-inline: clamp(10px, 1.5vw, 24px);
-    font-size: clamp(12px, 1.3vw, 18px);
-    flex: 0 0 42%;
-  }
-  @media (max-width: 520px) and (max-height: 740px) {
-    input { padding-left: 10px; }
-    ${EmailLabel} > svg { display: none; }
-    button[data-ds-button] { font-size: 12px; }
-  }
-  @media (max-width: 520px) and (min-height: 741px) {
+  @media (max-width: 520px) {
     flex-direction: column;
     gap: 6px;
     border: 0;
     background: transparent;
-    button[data-ds-button] { flex: auto; font-size: 14px; }
+    button[data-ds-button] { flex: auto; }
     ${EmailLabel} { border: 1px solid ${colors.controlBorder}; border-radius: 10px; background: ${colors.surface}; }
+  }
+`;
+export const JoinButton = styled(Button)`
+  && {
+    min-height: clamp(44px, 7dvh, 60px);
+    padding-inline: clamp(12px, 1.5vw, 24px);
+    font-size: clamp(14px, 1.3vw, 18px);
+    flex: 0 0 44%;
+    justify-content: flex-end;
+    gap: clamp(12px, 1.5vw, 24px);
+    text-transform: none;
+    overflow-wrap: normal;
+  }
+  > span { margin-left: auto; }
+  && > svg { width: 1.4em; height: 1.4em; }
+  @media (max-width: 520px) {
+    && { flex: auto; font-size: 14px; }
   }
 `;
 export const Feedback = styled.div`
@@ -143,22 +150,24 @@ export const Feedback = styled.div`
   &:has([role="status"]:empty):not(:has([role="alert"])) { padding-top: 0; }
 `;
 export const Reassurance = styled.ul`
-  padding: 0;
+  box-sizing: border-box;
+  justify-self: start;
+  max-width: 100%;
+  padding: 10px 14px;
   margin: 0;
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px clamp(10px, 1.5vw, 24px);
-  font-size: clamp(11px, 1vw, 15px);
+  align-items: center;
+  gap: 8px clamp(12px, 1.5vw, 24px);
+  border: 1px solid ${colors.controlBorder};
+  border-radius: 12px;
+  background: ${colors.surface};
+  color: ${colors.heading};
+  font-size: clamp(12px, 1vw, 15px);
+  line-height: 1.4;
   li { display: flex; align-items: center; gap: 6px; }
-  :root:not(.dark) & li {
-    color: ${colors.heading};
-    background: color-mix(in srgb, ${colors.action} 10%, transparent);
-
-    border-radius: 6px;
-    box-shadow: 0 0 0 3px color-mix(in srgb, ${colors.action} 10%, transparent);
-  }
-  svg { width: 22px; height: 22px; padding: 4px; border-radius: 50%; color: ${colors.action}; background: ${colors.actionSoft}; }
+  svg { flex-shrink: 0; width: 22px; height: 22px; padding: 4px; border-radius: 50%; color: ${colors.action}; background: ${colors.actionSoft}; }
 `;
 export const Mascot = styled.div`
   min-width: 0;
@@ -167,7 +176,8 @@ export const Mascot = styled.div`
   display: flex;
   align-items: end;
   justify-content: center;
-  img { display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; object-position: center bottom; }
+  color: #171022;
+  > svg { display: block; width: 100%; height: 100%; min-height: 0; }
 `;
 export const HeroNavigationButton = styled(Button)`
   min-height: 44px;
@@ -181,4 +191,4 @@ export const HeroBrand = styled.span`
   img { width: clamp(26px, 4.5dvh, 44px); height: auto; }
   > span { font-size: clamp(20px, 3.5dvh, 32px) !important; }
 `;
-for (const component of [Surface, Nav, Logo, Actions, Layout, Copy, Badge, Title, Description, Form, EmailLabel, EmailInput, FormRow, Feedback, Reassurance, Mascot, HeroNavigationButton, HeroBrand]) component.defaultProps = { theme };
+for (const component of [Surface, Nav, Logo, Actions, Layout, Copy, Badge, Title, Description, Form, EmailLabel, EmailInput, FormRow, JoinButton, Feedback, Reassurance, Mascot, HeroNavigationButton, HeroBrand]) component.defaultProps = { theme };

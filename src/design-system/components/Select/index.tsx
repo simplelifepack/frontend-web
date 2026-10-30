@@ -1,9 +1,3 @@
-import { forwardRef } from "react";
-import { StyledSelect } from "./styles";
-import type { SelectProps } from "./types";
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  (props, ref) => <StyledSelect data-ds-control="" {...props} ref={ref} />,
-);
-Select.displayName = "Select";
-export type { SelectProps } from "./types";
-export { SelectMenu } from "./SelectMenu";
+export { SelectMenu, SelectMenu as Select } from "./SelectMenu";
+export type { SelectMenuProps as SelectProps, SelectOption } from "./SelectMenu";
+export { SearchableSelectMenu } from "./SearchableSelectMenu";

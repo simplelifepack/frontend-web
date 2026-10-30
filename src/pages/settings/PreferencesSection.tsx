@@ -115,7 +115,7 @@ export default function PreferencesSection() {
       <ListRow $divided>
         <Moon aria-hidden="true" />
         <Stack $grow>
-          <Text weight="semibold">Appearance</Text>
+          <Text weight="medium">Appearance</Text>
         </Stack>
         <ChoiceGroup aria-label="Appearance">
           {(["system", "dark", "light"] as const).map((theme) => (
@@ -134,7 +134,7 @@ export default function PreferencesSection() {
       <ListRow $divided>
         <Brain aria-hidden="true" />
         <Stack $grow $gap="s4">
-          <Text weight="semibold">AI processing</Text>
+          <Text weight="medium">AI processing</Text>
           <Text size="sm" tone="muted">
             Allow Readines to use AI to process your information, automatically
             extract details, classify records, and provide insights.
@@ -206,7 +206,7 @@ function PreferenceRow({
   return (
     <ListRow $divided>
       <Stack $grow $gap="s4">
-        <Text weight="semibold">{label}</Text>
+        <Text weight="medium">{label}</Text>
         <Text size="sm" tone="muted">
           {sub}
         </Text>

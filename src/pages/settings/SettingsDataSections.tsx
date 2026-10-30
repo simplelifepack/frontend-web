@@ -115,7 +115,7 @@ export function DeleteAccountSection() {
       ) : null}
       {step === "confirm" ? (
         <Overlay title="Schedule account deletion" onClose={() => setStep(null)}>
-          <Text as="label" size="md" weight="semibold" style={{ color: T.text }}>
+          <Text as="label" size="md" weight="medium" style={{ color: T.text }}>
             Type `delete my account` to confirm
             <Input
               autoComplete="off"

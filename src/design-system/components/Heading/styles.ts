@@ -13,6 +13,9 @@ export const StyledHeading = styled.h1<{ $size: HeadingSize }>`
       font-weight: ${({ theme }) => theme.typography.weights.semibold};
       line-height: ${({ theme }) => theme.typography.lineHeights.heading};
       color: ${({ theme }) => theme.colors.heading};
+      @media ${({ theme }) => theme.media.mobile} {
+        ${({ theme, $size }) => $size === "lg" && `font-size: ${theme.typography.heading.md};`}
+      }
     }
   }
 `;

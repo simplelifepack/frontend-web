@@ -27,9 +27,11 @@ const Surface = styled(Primitive.Content)`
 Surface.defaultProps = { theme };
 export const PopoverContent = forwardRef<
   ElementRef<typeof Primitive.Content>,
-  ComponentPropsWithoutRef<typeof Primitive.Content>
->((props, ref) => (
-  <Primitive.Portal>
+  ComponentPropsWithoutRef<typeof Primitive.Content> & {
+    container?: HTMLElement | null;
+  }
+>(({ container, ...props }, ref) => (
+  <Primitive.Portal container={container ?? undefined}>
     <Surface sideOffset={8} collisionPadding={16} {...props} ref={ref} />
   </Primitive.Portal>
 ));

@@ -1,4 +1,4 @@
-import { Heading, Text, ModalBackdrop, ModalPanel, Input, Select, Button, vars } from "@/design-system";
+import { Heading, Text, ModalBackdrop, ModalPanel, Input, SelectMenu, Button, vars } from "@/design-system";
 
 import { useEffect, useRef, useState, type DragEvent } from "react";
 import { T } from "@/constants/theme";
@@ -101,7 +101,17 @@ export default function UploadDocumentModal({ open, onClose, onSaved, scanByDefa
       {aiFailed ? <Text as="div" size="md" tone="muted">AI could not read this document. Enter the details manually or retry analysis.</Text> : null}
       {aiAvailable && aiConsent && aiFailed && files.length > 0 ? <Button variant="secondary" type="button" disabled={analyzeStatus === "loading"} onClick={() => void dispatch(analyzeDocument({ files, aiAnalysisConsent: aiAvailable && aiConsent }))}>Retry AI analysis</Button> : null}
       <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Title<Input value={title} onChange={(e) => setTitle(e.target.value)} style={inputStyle} /></Text>
-      <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Category<Select value={category} onChange={(e) => { setCategory(e.target.value); setInlineError(""); }} style={inputStyle}><option value="">Select a category</option>{categories.map((item) => <option key={item}>{item}</option>)}</Select></Text>
+      <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Category<SelectMenu
+        value={category}
+        onValueChange={(selectedValue) => {
+          setCategory(selectedValue);
+          setInlineError("");
+        }}
+        options={[
+          { value: "", label: "Select a category" },
+          ...categories.map((item) => ({ value: item, label: item })),
+        ]}
+      /></Text>
       <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Document type<Input value={documentType} onChange={(e) => setDocumentType(e.target.value)} style={inputStyle} /></Text>
       <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Unique number<Input value={uniqueNumber} onChange={(e) => setUniqueNumber(e.target.value)} style={inputStyle} /></Text>
       <Text as="label" size="md" tone="muted" style={{ color: T.muted }}>Name on document<Input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} /></Text>

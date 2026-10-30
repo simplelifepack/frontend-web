@@ -1,4 +1,4 @@
-import { vars, Text, ModalBackdrop, ModalPanel, Textarea, Input, Button } from "@/design-system";
+import { vars, Text, ModalBackdrop, ModalPanel, Textarea, Input, SearchableSelectMenu, Button } from "@/design-system";
 
 import { Loader2, Plus, Search, Trash2, X, Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -142,7 +142,7 @@ export default function CustomPackModal({
         {!drafted ? (
           <>
             <Text as="p" size="md" className="lp-custom-pack-copy">For situations the catalog does not cover.</Text>
-            <Text as="label" size="sm" weight="semibold" className="lp-custom-pack-label">What do you need documents for?</Text>
+            <Text as="label" size="sm" weight="medium" className="lp-custom-pack-label">What do you need documents for?</Text>
             <Textarea
 
               value={desc}
@@ -161,20 +161,20 @@ export default function CustomPackModal({
         ) : (
           <>
             {loading ? <Text as="div" size="md" className="lp-pack-generation-state"><Loader2 aria-hidden="true" focusable="false" size={14} className="lp-spin" />{generationMessage || "Looking up requirements..."}</Text> : null}
-            <Text as="label" size="sm" weight="semibold" className="lp-custom-pack-label">Pack name</Text>
+            <Text as="label" size="sm" weight="medium" className="lp-custom-pack-label">Pack name</Text>
             <Input  value={name} onChange={(event) => setName(event.target.value)} placeholder="Name this pack" />
-            <Text as="label" size="sm" weight="semibold" className="lp-custom-pack-label">Description</Text>
+            <Text as="label" size="sm" weight="medium" className="lp-custom-pack-label">Description</Text>
             <Textarea  value={desc} onChange={(event) => setDesc(event.target.value)} placeholder="What is this pack for?" />
-            <Text as="label" size="sm" weight="semibold" className="lp-custom-pack-label">Documents needed</Text>
+            <Text as="label" size="sm" weight="medium" className="lp-custom-pack-label">Documents needed</Text>
             <Text as="p" size="md" className="lp-custom-pack-copy">List what you were asked for, or add the actual document now.</Text>
-            <datalist id="lp-custom-pack-doc-types">{vocab.map((item) => <option key={item} value={item} />)}</datalist>
             {reqs.map((req, index) => (
               <div className="lp-custom-pack-req" key={`${index}-${req}`}>
-                <Input
-
-                  list="lp-custom-pack-doc-types"
+                <SearchableSelectMenu
+                  aria-label={`Document requirement ${index + 1}`}
+                  allowCustomValue
                   value={req}
-                  onChange={(event) => setReqs((items) => items.map((item, itemIndex) => itemIndex === index ? event.target.value : item))}
+                  onValueChange={(value) => setReqs((items) => items.map((item, itemIndex) => itemIndex === index ? value : item))}
+                  options={vocab.map(value => ({ value, label: value }))}
                   placeholder="Document name"
                 />
                 <Button size="sm" tone="danger" iconOnly variant="tertiary" type="button" onClick={() => setReqs((items) => items.filter((_, itemIndex) => itemIndex !== index))} aria-label="Remove">

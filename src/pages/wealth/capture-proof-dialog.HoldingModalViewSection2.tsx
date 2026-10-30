@@ -1,4 +1,4 @@
-import { Text, Input, Select, Checkbox } from "@/design-system";
+import { Text, Input, SelectMenu, Checkbox } from "@/design-system";
 import { useMemo, useState } from "react";
 import { api, type DocumentRecord, type WealthRecord, type WealthRecordPayload } from "@/lib/api";
 import { documentTitle } from "@/pages/documents/document-utils";
@@ -16,17 +16,14 @@ return (<div
         style={{ display: "flex", gap: "var(--space-s10)", marginTop: "var(--space-s12)" }}
       >
         <Field label="Kind">
-          <Select
-            style={inputStyle()}
+          <SelectMenu
             value={f.kind}
-            onChange={(e) => setKind(e.target.value)}
-          >
-            {["asset", "liability", "cover"].map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(selectedValue) => setKind(selectedValue)}
+            options={["asset", "liability", "cover"].map((item) => ({
+              value: item,
+              label: item,
+            }))}
+          />
         </Field>
         <Field label="Type">
           <TypeCombobox
@@ -65,15 +62,11 @@ return (<div
           />
         </Field>
         <Field label="Currency">
-          <Select
-            style={inputStyle()}
+          <SelectMenu
             value={f.currency}
-            onChange={(e) => set("currency", e.target.value)}
-          >
-            {currencies.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </Select>
+            onValueChange={(selectedValue) => set("currency", selectedValue)}
+            options={currencies.map((item) => ({ value: item, label: item }))}
+          />
         </Field>
       </div>);
 }
@@ -90,7 +83,7 @@ return (<div
             alignItems: "center",
           }}
         >
-          <Text as="label" size="md" weight="semibold">
+          <Text as="label" size="md" weight="medium">
             <Checkbox
               type="checkbox"
               checked={f.nominee}

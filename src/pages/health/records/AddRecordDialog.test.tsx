@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import AddRecordDialog from "./AddRecordDialog";
 
+HTMLElement.prototype.scrollIntoView ??= vi.fn();
+
 function healthFile() {
   return new File(["health"], "record.pdf", { type: "application/pdf" });
 }
@@ -47,9 +49,8 @@ describe("AddRecordDialog", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText(/Document type/i), {
-      target: { value: "prescription" },
-    });
+    fireEvent.keyDown(screen.getByLabelText(/Document type/i), { key: "ArrowDown" });
+    fireEvent.click(await screen.findByRole("option", { name: "Prescription" }));
     fireEvent.change(baseElement.querySelector("input[type='file']")!, {
       target: { files: [file] },
     });

@@ -181,7 +181,7 @@ export default function NotificationSettingsRow() {
     >
       <Bell aria-hidden="true" />
       <Stack $grow $gap="s4">
-        <Text weight="semibold">Notifications</Text>
+        <Text weight="medium">Notifications</Text>
         <Text size="sm" tone="muted">
           {sub}
         </Text>

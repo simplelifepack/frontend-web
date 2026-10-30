@@ -104,11 +104,7 @@ export default function DocumentBulkActions({
           aria-label="Assign selected documents"
           value=""
           placeholder={
-            busy === "assign"
-              ? "Assigning…"
-              : loadingPeople
-                ? "Loading…"
-                : "Assign to…"
+            busy === "assign" ? "Assigning…" : loadingPeople ? "Loading…" : "Assign to…"
           }
           disabled={Boolean(busy) || loadingPeople || !people.length}
           onValueChange={(assigneeId) => void runAssign(assigneeId)}

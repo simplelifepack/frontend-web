@@ -22,9 +22,7 @@
 }
 .document-context,
 .document-context * {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
 }
 .document-context-backdrop {
   background: #24223270;
@@ -46,8 +44,8 @@
   color: var(--context-purple);
 }
 .document-context .lp-document-drawer-header h2 {
-  font-size: 16.5px;
-  font-weight: 700;
+  font-size: var(--heading-sm);
+  font-weight: var(--weight-semibold);
   color: var(--context-text);
 }
 .document-context .lp-document-drawer-header p {
@@ -126,8 +124,7 @@
   font-weight: 400;
 }
 .document-context-section input,
-.document-context-section textarea,
-.document-context-section button[role="combobox"] {
+.document-context-section textarea {
   width: 100%;
   min-height: 38px;
   padding: 8px 14px;

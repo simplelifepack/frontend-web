@@ -1,4 +1,4 @@
-import { Heading, Text, ModalBackdrop, ModalPanel, Select, Button } from "@/design-system";
+import { Heading, Text, ModalBackdrop, ModalPanel, SelectMenu, Button } from "@/design-system";
 
 import { useEffect, useRef, useState, type DragEvent } from "react";
 import { FileText, Upload, X } from "lucide-react";
@@ -161,20 +161,18 @@ function AddRecordDialog({
           </div>
         )}
         {!aiProcessingEnabled ? (
-          <Text as="label" size="sm" weight="semibold" className="lp-health-document-type">
+          <Text as="label" size="sm" weight="medium" className="lp-health-document-type">
             <span>Document type *</span>
-            <Select
+            <SelectMenu
               value={type}
-              onChange={(event) =>
-                setType(event.target.value as HealthDocumentType)
+              onValueChange={(selectedValue) =>
+                setType(selectedValue as HealthDocumentType)
               }
-            >
-              {healthDocumentTypes.map((documentType) => (
-                <option key={documentType} value={documentType}>
-                  {documentTypeLabels[documentType] ?? documentType}
-                </option>
-              ))}
-            </Select>
+              options={healthDocumentTypes.map((documentType) => ({
+                value: documentType,
+                label: documentTypeLabels[documentType] ?? documentType,
+              }))}
+            />
           </Text>
         ) : null}
         {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}

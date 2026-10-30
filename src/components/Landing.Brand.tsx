@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { fade } from "./LandingVisuals";
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import styled from "styled-components";
+import { media } from "@/design-system/variables/layout";
 import { Text, Heading, ModalPanel, ModalColumns, ModalContent, ModalAside, ModalHeader, ModalBullet, ModalBulletIcon, ModalBackdrop, Button, Stack, Grid, Row, colors, spacing, vars } from "@/design-system";
 import { BrandMark, BrandWordmark } from "./BrandLogo";
 import { Check, X } from "lucide-react";
@@ -129,8 +131,36 @@ export function isExistingAccountError(error: unknown) {
 }
 
 
+const SecurityAction = styled(Button)`
+  display: none;
+  @media ${media.mobile} {
+    display: inline-flex;
+  }
+`;
+
+const AuthColumns = styled(ModalColumns)<{ $showSecurity: boolean }>`
+  @media ${media.mobile} {
+    .lp-auth-content {
+      display: ${({ $showSecurity }) => $showSecurity ? "none" : "block"};
+    }
+    .lp-auth-security {
+      display: ${({ $showSecurity }) => $showSecurity ? "flex" : "none"};
+      width: 100%;
+    }
+  }
+`;
+
  export function AuthModal(props: Parameters<typeof useAuthModalLogic>[0]) {
 const context = useAuthModalLogic(props);
+const [showSecurity, setShowSecurity] = useState(false);
+const securityToggleRef = useRef<HTMLButtonElement>(null);
+const securityBackRef = useRef<HTMLButtonElement>(null);
+const previouslyShowingSecurity = useRef(false);
+useEffect(() => {
+  if (showSecurity) securityBackRef.current?.focus();
+  else if (previouslyShowingSecurity.current) securityToggleRef.current?.focus();
+  previouslyShowingSecurity.current = showSecurity;
+}, [showSecurity]);
 const { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit, handleGoogleCredential, submitPin, verifySignupOtp, requestResetOtp, continueWithOtp, resetPassword, SEC, error, describedBy, back } = context;
 
 return ((
@@ -142,8 +172,8 @@ return ((
         size={screen === "start" ? "wide" : "compact"}
         onClick={(event) => event.stopPropagation()}
       >
-        <ModalColumns>
-          <ModalContent>
+        <AuthColumns $showSecurity={showSecurity && screen === "start"}>
+          <ModalContent className="lp-auth-content">
             <ModalHeader>
               <Text as="b" size="lg" weight="semibold" tone="heading">
                 {screen === "forgot-email"
@@ -170,7 +200,12 @@ return ((
             </ModalHeader>
 
             {screen === "start" && (
-              <AuthModalViewSection1 {...context} />
+              <>
+                <AuthModalViewSection1 {...context} />
+                <SecurityAction ref={securityToggleRef} variant="tertiary" onClick={() => setShowSecurity(true)}>
+                  How your account is protected
+                </SecurityAction>
+              </>
             )}
 
             {screen === "creds" && (
@@ -198,7 +233,10 @@ return ((
             )}
           </ModalContent>
           {screen === "start" && (
-            <ModalAside aria-label="Account security information">
+            <ModalAside className="lp-auth-security" aria-label="Account security information">
+              <SecurityAction ref={securityBackRef} variant="tertiary" onClick={() => setShowSecurity(false)}>
+                ← Back to sign in
+              </SecurityAction>
               <Text as="b" size="lg" weight="semibold" tone="heading">
                 Your documents, with you in control.
               </Text>
@@ -221,7 +259,7 @@ return ((
               </Stack>
             </ModalAside>
           )}
-        </ModalColumns>
+        </AuthColumns>
       </ModalPanel>
     </ModalBackdrop>
   ));

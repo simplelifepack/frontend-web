@@ -12,7 +12,7 @@ import {
   ModalBackdrop,
   ModalPanel,
   Input,
-  Select,
+  SelectMenu,
   Button,
 } from "@/design-system";
 import { Trash2, X } from "lucide-react";
@@ -130,32 +130,26 @@ export default function PersonSheet({
           </Field>
           <Grid>
             <Field label="Relation">
-              <Select
+              <SelectMenu
                 value={draft.relationKey}
-                onChange={(event) =>
-                  update({ relationKey: event.target.value })
-                }
-              >
-                {relationOptions.map(([value, text]) => (
-                  <option key={`${value}:${text}`} value={`${value}:${text}`}>
-                    {text}
-                  </option>
-                ))}
-              </Select>
+                onValueChange={(selectedValue) => update({ relationKey: selectedValue })}
+                options={relationOptions.map(([value, text]) => ({
+                  value: `${value}:${text}`,
+                  label: text,
+                }))}
+              />
             </Field>
             <Field label="Access">
-              <Select
+              <SelectMenu
                 value={draft.accessTypeCode}
-                onChange={(event) =>
-                  update({ accessTypeCode: event.target.value as AccessCode })
+                onValueChange={(selectedValue) =>
+                  update({ accessTypeCode: selectedValue as AccessCode })
                 }
-              >
-                {Object.entries(accessLabels).map(([value, text]) => (
-                  <option key={value} value={value}>
-                    {text}
-                  </option>
-                ))}
-              </Select>
+                options={Object.entries(accessLabels).map(([value, text]) => ({
+                  value: value,
+                  label: text,
+                }))}
+              />
             </Field>
           </Grid>
           <Grid>
@@ -170,20 +164,15 @@ export default function PersonSheet({
               />
             </Field>
             <Field label="Blood group">
-              <Select
+              <SelectMenu
                 value={draft.bloodGroup}
-                onChange={(event) =>
+                onValueChange={(selectedValue) =>
                   update({
-                    bloodGroup: event.target.value as Draft["bloodGroup"],
+                    bloodGroup: selectedValue as Draft["bloodGroup"],
                   })
                 }
-              >
-                {bloodGroups.map((blood) => (
-                  <option key={blood} value={blood}>
-                    {blood}
-                  </option>
-                ))}
-              </Select>
+                options={bloodGroups.map((blood) => ({ value: blood, label: blood }))}
+              />
             </Field>
           </Grid>
           {error && (

@@ -106,7 +106,7 @@ export const StyledButton = styled.button<{
   border-radius: ${({ theme }) => theme.radii.s10};
   font-style: normal;
   font-family: ${({ theme }) => theme.typography.family};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
+  font-weight: ${({ theme }) => theme.typography.weights.medium};
   line-height: ${({ theme }) => theme.typography.lineHeights.compact};
   text-align: center;
   text-decoration: none;

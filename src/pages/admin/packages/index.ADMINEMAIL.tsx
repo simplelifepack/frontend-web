@@ -125,7 +125,15 @@ return ((
         <aside className="lp-admin-list">
           <div className="lp-admin-tools">
             <SearchField appearance="filter" aria-label="Search packages" value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void load(1); }} placeholder="Search packages" />
-            <SelectMenu aria-label="Package category" value={category || "all"} onValueChange={(value) => setCategory(value === "all" ? "" : value)} options={[{value:"all",label:"All categories"}, ...categories.map(item => ({value:item,label:item}))]} />
+            <SelectMenu
+              aria-label="Package category"
+              value={category || "all"}
+              onValueChange={(value) => setCategory(value === "all" ? "" : value)}
+              options={[
+                { value: "all", label: "All categories" },
+                ...categories.map((item) => ({ value: item, label: item })),
+              ]}
+            />
             <Button variant="primary" type="button" onClick={() => void load(1)}>Apply</Button>
           </div>
           {loading ? <Text as="div" size="md" className="lp-admin-state"><Loader2 aria-hidden="true" focusable="false" className="lp-spin" size="var(--icon-small)" />Loading packages</Text> : null}
@@ -147,31 +155,31 @@ return ((
           <div className="lp-admin-section">
             <Heading level={2} size="md">{selected ? "Edit package" : "Add package"}</Heading>
             <div className="lp-admin-form two">
-              <Text as="label" size="sm" weight="semibold">Package name<Input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Slug<Input value={draft.slug ?? ""} onChange={(event) => setDraft({ ...draft, slug: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Category<Input value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Subtitle<Input value={draft.subtitle ?? ""} onChange={(event) => setDraft({ ...draft, subtitle: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Country<Input value={draft.country ?? ""} onChange={(event) => setDraft({ ...draft, country: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Applicability<Input value={draft.applicability ?? ""} onChange={(event) => setDraft({ ...draft, applicability: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold" className="wide">Description<Textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Aliases<Textarea value={listText(draft.aliases)} onChange={(event) => setDraft({ ...draft, aliases: textList(event.target.value) })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Keywords<Textarea value={listText(draft.keywords)} onChange={(event) => setDraft({ ...draft, keywords: textList(event.target.value) })} /></Text>
+              <Text as="label" size="sm" weight="medium">Package name<Input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Slug<Input value={draft.slug ?? ""} onChange={(event) => setDraft({ ...draft, slug: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Category<Input value={draft.category} onChange={(event) => setDraft({ ...draft, category: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Subtitle<Input value={draft.subtitle ?? ""} onChange={(event) => setDraft({ ...draft, subtitle: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Country<Input value={draft.country ?? ""} onChange={(event) => setDraft({ ...draft, country: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Applicability<Input value={draft.applicability ?? ""} onChange={(event) => setDraft({ ...draft, applicability: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium" className="wide">Description<Textarea value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Aliases<Textarea value={listText(draft.aliases)} onChange={(event) => setDraft({ ...draft, aliases: textList(event.target.value) })} /></Text>
+              <Text as="label" size="sm" weight="medium">Keywords<Textarea value={listText(draft.keywords)} onChange={(event) => setDraft({ ...draft, keywords: textList(event.target.value) })} /></Text>
             </div>
           </div>
 
           <div className="lp-admin-section">
             <div className="lp-admin-section-head"><Heading level={2} size="md">Sources</Heading><Button size="sm" variant="secondary" type="button" onClick={() => setDraft({ ...draft, sources: [...draft.sources, blankSource()] })}><Plus aria-hidden="true" focusable="false" size={15} />Source</Button></div>
             <div className="lp-admin-form two">
-              <Text as="label" size="sm" weight="semibold">Primary source name<Input value={draft.sourceName ?? ""} onChange={(event) => setDraft({ ...draft, sourceName: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Primary URL<Input value={draft.sourceUrl ?? ""} onChange={(event) => setDraft({ ...draft, sourceUrl: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Primary source title<Input value={draft.sourceTitle ?? ""} onChange={(event) => setDraft({ ...draft, sourceTitle: event.target.value })} /></Text>
-              <Text as="label" size="sm" weight="semibold">Source type<Input value={draft.sourceType ?? ""} onChange={(event) => setDraft({ ...draft, sourceType: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Primary source name<Input value={draft.sourceName ?? ""} onChange={(event) => setDraft({ ...draft, sourceName: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Primary URL<Input value={draft.sourceUrl ?? ""} onChange={(event) => setDraft({ ...draft, sourceUrl: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Primary source title<Input value={draft.sourceTitle ?? ""} onChange={(event) => setDraft({ ...draft, sourceTitle: event.target.value })} /></Text>
+              <Text as="label" size="sm" weight="medium">Source type<Input value={draft.sourceType ?? ""} onChange={(event) => setDraft({ ...draft, sourceType: event.target.value })} /></Text>
             </div>
             {draft.sources.map((source, index) => (
               <div className="lp-admin-repeat" key={`${source.url}-${index}`}>
-                <Text as="label" size="sm" weight="semibold">Display name<Input value={source.title} onChange={(event) => updateSource(index, { title: event.target.value })} /></Text>
-                <Text as="label" size="sm" weight="semibold">URL<Input value={source.url} onChange={(event) => updateSource(index, { url: event.target.value })} /></Text>
-                <Text as="label" size="sm" weight="semibold">Organization<Input value={source.name ?? source.organization ?? ""} onChange={(event) => updateSource(index, { name: event.target.value })} /></Text>
+                <Text as="label" size="sm" weight="medium">Display name<Input value={source.title} onChange={(event) => updateSource(index, { title: event.target.value })} /></Text>
+                <Text as="label" size="sm" weight="medium">URL<Input value={source.url} onChange={(event) => updateSource(index, { url: event.target.value })} /></Text>
+                <Text as="label" size="sm" weight="medium">Organization<Input value={source.name ?? source.organization ?? ""} onChange={(event) => updateSource(index, { name: event.target.value })} /></Text>
                 <Button size="sm" tone="danger" iconOnly variant="tertiary" type="button" aria-label="Remove source" onClick={() => setDraft({ ...draft, sources: draft.sources.filter((_, itemIndex) => itemIndex !== index) })}><X aria-hidden="true" focusable="false" size="var(--icon-small)" /></Button>
               </div>
             ))}
@@ -182,13 +190,13 @@ return ((
             {draft.requirements.map((requirement, index) => (
               <div className="lp-admin-requirement" key={requirement.id ?? index}>
                 <div className="lp-admin-form two">
-                  <Text as="label" size="sm" weight="semibold">Title<Input value={requirement.title} onChange={(event) => updateRequirement(index, { title: event.target.value })} /></Text>
-                  <Text as="label" size="sm" weight="semibold">Group<Input value={requirement.group} onChange={(event) => updateRequirement(index, { group: event.target.value })} /></Text>
-                  <Text as="label" size="sm" weight="semibold">Document type<Input value={requirement.documentType ?? ""} onChange={(event) => updateRequirement(index, { documentType: event.target.value })} /></Text>
-                  <Text as="label" size="sm" weight="semibold">Owner<Input value={requirement.owner} onChange={(event) => updateRequirement(index, { owner: event.target.value })} /></Text>
-                  <Text as="label" size="sm" weight="semibold" className="wide">Description<Textarea value={requirement.description ?? ""} onChange={(event) => updateRequirement(index, { description: event.target.value })} /></Text>
-                  <Text as="label" size="sm" weight="semibold">Accepted document types<Textarea value={listText(requirement.acceptedDocumentTypes)} onChange={(event) => updateRequirement(index, { acceptedDocumentTypes: textList(event.target.value) })} /></Text>
-                  <Text as="label" size="sm" weight="semibold">Alternative labels<Textarea value={listText(requirement.alternativeLabels)} onChange={(event) => updateRequirement(index, { alternativeLabels: textList(event.target.value) })} /></Text>
+                  <Text as="label" size="sm" weight="medium">Title<Input value={requirement.title} onChange={(event) => updateRequirement(index, { title: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="medium">Group<Input value={requirement.group} onChange={(event) => updateRequirement(index, { group: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="medium">Document type<Input value={requirement.documentType ?? ""} onChange={(event) => updateRequirement(index, { documentType: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="medium">Owner<Input value={requirement.owner} onChange={(event) => updateRequirement(index, { owner: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="medium" className="wide">Description<Textarea value={requirement.description ?? ""} onChange={(event) => updateRequirement(index, { description: event.target.value })} /></Text>
+                  <Text as="label" size="sm" weight="medium">Accepted document types<Textarea value={listText(requirement.acceptedDocumentTypes)} onChange={(event) => updateRequirement(index, { acceptedDocumentTypes: textList(event.target.value) })} /></Text>
+                  <Text as="label" size="sm" weight="medium">Alternative labels<Textarea value={listText(requirement.alternativeLabels)} onChange={(event) => updateRequirement(index, { alternativeLabels: textList(event.target.value) })} /></Text>
                 </div>
                 <div className="lp-admin-requirement-actions">
                   <Text as="label" size="md"><Checkbox type="checkbox" checked={requirement.required} onChange={(event) => updateRequirement(index, { required: event.target.checked })} /> Required</Text>
@@ -205,7 +213,7 @@ return ((
 
           <div className="lp-admin-section">
             <div className="lp-admin-section-head"><Heading level={2} size="md">CSV import</Heading><Button size="sm" variant="secondary" type="button" onClick={() => void downloadTemplate()}><Download aria-hidden="true" focusable="false" size={15} />Template</Button></div>
-            <Text as="label" size="sm" weight="semibold" className="lp-admin-upload"><Upload aria-hidden="true" focusable="false" size="var(--icon-small)" />Upload CSV<input type="file" accept=".csv,text/csv" onChange={(event) => void previewCsv(event.target.files?.[0])} /></Text>
+            <Text as="label" size="sm" weight="medium" className="lp-admin-upload"><Upload aria-hidden="true" focusable="false" size="var(--icon-small)" />Upload CSV<input type="file" accept=".csv,text/csv" onChange={(event) => void previewCsv(event.target.files?.[0])} /></Text>
             {csvPreview && (
               <div className="lp-admin-preview">
                 <Text as="b" size="md" weight="semibold">{csvPreview.summary.valid} valid · {csvPreview.summary.invalid} invalid</Text>

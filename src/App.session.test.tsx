@@ -104,11 +104,11 @@ describe("session restoration and entry routing", () => {
     cleanup();
     clearInMemoryAuth();
     openPage("/");
-    await screen.findByText("Signed in home");
-    expect(screen.getByTestId("path").textContent).toBe("/home");
+    await screen.findByText("Public landing");
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/auth/refresh"))).toHaveLength(0);
   });
 
-  it.each(["/", "/home"])("restores %s on reload and in a new tab with fresh auth memory", async (path) => {
+  it.each(["/home"])("restores %s on reload and in a new tab with fresh auth memory", async (path) => {
     for (let tab = 0; tab < 2; tab += 1) {
       clearInMemoryAuth();
       openPage(path);
@@ -126,7 +126,7 @@ describe("session restoration and entry routing", () => {
     expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith("/auth/refresh"))).toHaveLength(2);
   });
 
-  it.each(["/", "/home", "/login"])("keeps protected content gated while restoring the session on %s", async (path) => {
+  it.each(["/home"])("keeps protected content gated while restoring the session on %s", async (path) => {
     let resolveRefresh!: (response: Response) => void;
     refreshResponse = () => new Promise((resolve) => { resolveRefresh = resolve; });
     openPage(path);
@@ -144,28 +144,14 @@ describe("session restoration and entry routing", () => {
     expect(screen.getByTestId("path").textContent).toBe("/home");
   });
 
-  it("does not show the home skeleton before an anonymous visitor reaches the landing", async () => {
-    let resolveRefresh!: (response: Response) => void;
-    refreshResponse = () => new Promise(resolve => { resolveRefresh = resolve; });
-    openPage("/");
-    expect(screen.getByText("Public landing")).toBeTruthy();
-    expect(screen.queryByRole("status", { name: "Checking your session" })).toBeNull();
-    expect(screen.queryByText("Initializing session")).toBeNull();
-    expect(screen.queryByText("Signed in home")).toBeNull();
-    await act(async () => { resolveRefresh(json({ message: "Session expired." }, 401)); });
+  it.each(["/", "/?campaign=early-access", "/login", "/signin", "/signup"])("loads %s without any backend requests", async (path) => {
+    const store = openPage(path);
     await screen.findByText("Public landing");
-    expect(screen.queryByText("Initializing session")).toBeNull();
-    expect(screen.queryByRole("status", { name: "Checking your session" })).toBeNull();
-  });
-
-  it("keeps the public registration page usable if session restoration fails", async () => {
-    refreshResponse = async () => json({ message: "Service unavailable." }, 503);
-    const store = openPage("/");
-    expect(screen.getByText("Public landing")).toBeTruthy();
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); });
-    expect(store.getState().auth.sessionStatus).toBe("failed");
-    expect(screen.getByText("Public landing")).toBeTruthy();
-    expect(screen.queryByRole("alert")).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(store.getState().auth.sessionStatus).toBe("idle");
+    expect(screen.queryByRole("status", { name: "Checking your session" })).toBeNull();
+    expect(screen.queryByText("Initializing session")).toBeNull();
     expect(screen.queryByText("Signed in home")).toBeNull();
   });
 

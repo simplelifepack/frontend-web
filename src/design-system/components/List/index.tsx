@@ -60,7 +60,7 @@ for (const component of [ListRow, ListAction, TileAction, IconBadge])
   component.defaultProps = { theme };
 
 export const ControlSlot = styled.div`
-  width: ${({ theme }) => `calc(${theme.spacing.s40} * 4)`};
+  width: ${({ theme }) => `calc(${theme.spacing.s60} * 3)`};
   max-width: 100%;
   min-width: 0;
   @media ${({ theme }) => theme.media.mobile} {

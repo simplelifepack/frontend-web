@@ -25,9 +25,7 @@
 .documents-quick-filters,
 .documents-filters,
 .documents-table {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
 }
 .documents-quick-filters {
   gap: 8px;
@@ -104,17 +102,7 @@
 .documents-filters input::placeholder {
   color: #9b96a3;
 }
-.documents-filters > button {
-  min-height: 38px;
-  border-radius: 12px;
-  padding: 8px 16px;
-  background: var(--documents-raised);
-  border-color: var(--documents-border);
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--documents-text);
-}
+
 .documents-table {
   background: var(--documents-panel);
   border: 1px solid var(--documents-border);
@@ -259,9 +247,7 @@
 
 .lp-documents-route .documents-collection,
 .lp-documents-route .documents-collection * {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
 }
 .dark .documents-quick-filters > button {
   color: var(--documents-muted);
@@ -292,7 +278,7 @@
   margin-right: 0;
   color: var(--documents-text);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--weight-semibold);
 }
 .documents-selection-bar .documents-assign {
   width: 128px;

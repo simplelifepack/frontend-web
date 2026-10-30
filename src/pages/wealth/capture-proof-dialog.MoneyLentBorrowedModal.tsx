@@ -1,4 +1,4 @@
-import { Text, Input, Select, Button } from "@/design-system";
+import { Text, Input, SelectMenu, Button } from "@/design-system";
 import { ChevronUp, Paperclip, UploadCloud } from "lucide-react";
 import UploadDocumentModal from "@/components/UploadDocumentModal";
 import { documentTitle } from "@/pages/documents/document-utils";
@@ -109,27 +109,23 @@ return ((
           />
         </Field>
         <Field label="Currency">
-          <Select
-            style={inputStyle()}
+          <SelectMenu
             value={f.currency}
-            onChange={(e) => set("currency", e.target.value)}
-          >
-            {currencies.map((item) => (
-              <option key={item}>{item}</option>
-            ))}
-          </Select>
+            onValueChange={(selectedValue) => set("currency", selectedValue)}
+            options={currencies.map((item) => ({ value: item, label: item }))}
+          />
         </Field>
       </div>
       <div className="lp-wealth-form-row" style={{ display: "flex", gap: "var(--space-s10)" }}>
         <Field label="Which way">
-          <Select
-            style={inputStyle()}
+          <SelectMenu
             value={f.direction}
-            onChange={(e) => set("direction", e.target.value)}
-          >
-            <option value="LENT">I lent</option>
-            <option value="BORROWED">I borrowed</option>
-          </Select>
+            onValueChange={(selectedValue) => set("direction", selectedValue)}
+            options={[
+              { value: "LENT", label: "I lent" },
+              { value: "BORROWED", label: "I borrowed" },
+            ]}
+          />
         </Field>
         <Field label="Date">
           <Input

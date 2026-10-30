@@ -9,6 +9,13 @@ import {
 import { DrawerPanel, DrawerPortal } from "@/design-system";
 import SearchablePreferenceSelect from "@/pages/settings/SearchablePreferenceSelect";
 
+HTMLElement.prototype.scrollIntoView ??= vi.fn();
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 afterEach(cleanup);
 
 describe("overlays inside clipped and isolated application content", () => {
@@ -28,20 +35,20 @@ describe("overlays inside clipped and isolated application content", () => {
         />
       </div>,
     );
-    const trigger = screen.getByRole("button", { name: "Country" });
+    const trigger = screen.getByRole("combobox", { name: "Country" });
     fireEvent.click(trigger);
-    const search = await screen.findByRole("searchbox", {
+    const search = await screen.findByRole("combobox", {
       name: "Search options",
     });
     expect(container.contains(search)).toBe(false);
     fireEvent.change(search, { target: { value: "India" } });
-    expect(screen.queryByRole("button", { name: /United Kingdom/ })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: /India/ }));
+    expect(screen.queryByRole("option", { name: /United Kingdom/ })).toBeNull();
+    fireEvent.click(screen.getByRole("option", { name: /India/ }));
     expect(change).toHaveBeenCalledWith("IN");
     await waitFor(() => expect(document.activeElement).toBe(trigger));
     fireEvent.click(trigger);
-    fireEvent.keyDown(await screen.findByRole("searchbox"), { key: "Escape" });
-    await waitFor(() => expect(screen.queryByRole("searchbox")).toBeNull());
+    fireEvent.keyDown(await screen.findByRole("combobox", { name: "Search options" }), { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("combobox", { name: "Search options" })).toBeNull());
     expect(change).toHaveBeenCalledTimes(1);
   });
 

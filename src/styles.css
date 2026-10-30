@@ -476,7 +476,7 @@ body,
 }
 .lp-user-menu > span {
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-user-menu > svg {
   color: var(--lp-muted);
@@ -516,7 +516,7 @@ body,
   margin-top: 19px;
   color: var(--lp-heading);
   font-size: var(--heading-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-home-stat > span:last-child {
   color: var(--lp-muted);
@@ -712,7 +712,7 @@ body,
   border-bottom: var(--border-s1) solid var(--border, var(--lp-border));
   color: var(--lp-muted);
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
@@ -1056,14 +1056,14 @@ body,
   flex: 1;
   min-width: 0;
 }
-.lp-doc-toolbar select {
+.lp-doc-toolbar [data-ds-select] {
   flex: 0 1 142px;
   min-width: 106px;
 }
-.lp-doc-toolbar select[aria-label="Person"] {
+.lp-doc-toolbar [data-ds-select][aria-label="Person"] {
   flex-basis: 160px;
 }
-.lp-doc-toolbar select[aria-label="Sort"] {
+.lp-doc-toolbar [data-ds-select][aria-label="Sort"] {
   flex-basis: 155px;
 }
 .lp-document-add-actions {
@@ -1281,7 +1281,7 @@ body,
   overflow: hidden;
   color: var(--lp-heading);
   font-size: var(--text-lg);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: var(--line-body);
 }
 .lp-pack-result-copy strong svg {
@@ -3147,7 +3147,7 @@ button.lp-pack-check-row:hover {
   padding: var(--space-s24);
   color: var(--lp-muted);
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   text-align: center;
 }
 .lp-health-document-footer {
@@ -4201,7 +4201,7 @@ button.lp-pack-check-row:hover {
   color: var(--lp-muted);
   padding: 7px var(--space-s10);
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: var(--line-body);
 }
 .lp-reading-test-grid button.active {
@@ -4359,7 +4359,7 @@ button.lp-pack-check-row:hover {
   align-items: center;
   gap: var(--space-s8);
   color: var(--lp-heading);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-wealth-card-title span {
   margin-left: auto;
@@ -4416,7 +4416,7 @@ button.lp-pack-check-row:hover {
   align-items: center;
   gap: var(--space-s8);
   color: var(--lp-heading);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-wealth-summary-title svg {
   color: var(--lp-readiness);
@@ -4578,7 +4578,7 @@ button.lp-pack-check-row:hover {
   justify-content: space-between;
   padding: var(--space-s14) var(--space-s16);
   color: var(--lp-text);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-wealth-panel-head b {
   min-width: 28px;
@@ -4706,7 +4706,7 @@ button.lp-pack-check-row:hover {
   font-style: normal;
   letter-spacing: 0;
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-wealth-attention-row em::before {
   content: "";
@@ -4734,7 +4734,7 @@ button.lp-pack-check-row:hover {
   color: var(--lp-action);
   white-space: nowrap;
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-wealth-attention-row small {
   display: block;
@@ -4776,7 +4776,7 @@ button.lp-pack-check-row:hover {
   color: var(--lp-text);
   text-align: right;
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-wealth-record-row strong.negative {
   color: var(--lp-coral);
@@ -4824,7 +4824,7 @@ button.lp-pack-check-row:hover {
   color: var(--lp-coral);
   text-align: center;
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   font-style: normal;
 }
 .lp-wealth-status.ok {
@@ -4879,7 +4879,7 @@ button.lp-pack-check-row:hover {
   margin-left: auto;
   color: var(--lp-muted);
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-wealth-score,
 .lp-wealth-progress i,
@@ -5019,7 +5019,7 @@ button.lp-pack-check-row:hover {
   margin-top: 0;
   color: var(--lp-muted);
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
@@ -5119,7 +5119,7 @@ button.lp-pack-check-row:hover {
 .lp-vault-doc-row b {
   color: var(--lp-text);
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: var(--line-body);
 }
 .lp-vault-doc-row small {
@@ -5159,7 +5159,7 @@ button.lp-pack-check-row:hover {
 .lp-money-proof b {
   color: var(--lp-text);
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-money-proof small {
   color: var(--lp-muted);
@@ -5270,7 +5270,7 @@ button.lp-pack-check-row:hover {
   padding: var(--space-s8) var(--space-s10);
   text-align: left;
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: var(--line-body);
 }
 .lp-type-menu button:hover {
@@ -5431,7 +5431,7 @@ button.lp-pack-check-row:hover {
   background: none;
   color: var(--lp-readiness);
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-capture-dialog .lp-sos-foot {
   flex-shrink: 0;
@@ -5676,7 +5676,7 @@ button.lp-pack-check-row:hover {
   background: var(--lp-raised);
   color: var(--lp-mint);
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   font-style: normal;
 }
 .lp-sos-group {
@@ -5827,7 +5827,7 @@ button.lp-pack-check-row:hover {
   margin-top: var(--space-s14);
   color: var(--lp-heading);
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 .lp-trust-stats p {
   margin: 5px 0 0;
@@ -5868,7 +5868,7 @@ button.lp-pack-check-row:hover {
 .lp-trust-member small {
   color: var(--lp-muted);
 }
-.lp-trust-member select {
+.lp-trust-member [data-ds-select] {
   min-width: 160px;
 }
 
@@ -6243,7 +6243,7 @@ textarea {
   .lp-wname {
     min-width: 0 !important;
   }
-  .lp-wrow > select {
+  .lp-wrow > [data-ds-select] {
     margin-left: 48px;
   }
   .lp-wchips {
@@ -6375,7 +6375,7 @@ textarea {
   .lp-doc-toolbar {
     flex-wrap: wrap;
   }
-  .lp-doc-toolbar select {
+  .lp-doc-toolbar [data-ds-select] {
     flex: 1 1 calc(50% - 8px);
   }
   .lp-account-dropdown {
@@ -6394,7 +6394,7 @@ textarea {
   .lp-trust-member {
     flex-wrap: wrap;
   }
-  .lp-trust-member select {
+  .lp-trust-member [data-ds-select] {
     width: 100%;
   }
 }
@@ -6646,7 +6646,7 @@ textarea {
   margin: 0;
   color: var(--lp-mint);
   font-size: var(--text-lg);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   line-height: var(--line-body);
 }
 
@@ -6711,7 +6711,7 @@ textarea {
 .lp-wealth-debt-link b {
   color: var(--lp-heading);
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 
 .lp-wealth-debt-link svg {
@@ -6855,7 +6855,7 @@ textarea {
   color: var(--lp-heading);
   text-align: right;
   font-size: var(--text-md);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
 }
 
 .lp-wealth-record-row .lp-wchips {
@@ -6878,7 +6878,7 @@ textarea {
   padding: var(--space-s6) 9px;
   background: color-mix(in srgb, var(--lp-coral) 14%, transparent);
   font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
+  font-weight: var(--weight-semibold);
   white-space: nowrap;
 }
 
@@ -7367,4 +7367,15 @@ textarea {
 .lp-route button:where(:not([data-ds-button]):not([data-ds-control])):disabled {
   cursor: not-allowed !important;
   opacity: 0.48;
+}
+
+/* Keep native form text readable and avoid automatic zoom on narrow screens. */
+@media (--mobile) {
+  html .lp-route :is(input, select, textarea, [data-ds-select]) {
+    font-size: var(--text-lg);
+  }
+}
+
+.lp-route :is(b, strong) {
+  font-weight: var(--weight-semibold);
 }

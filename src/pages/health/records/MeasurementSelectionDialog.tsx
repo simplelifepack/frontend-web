@@ -1,4 +1,4 @@
-import { Heading, Text, ModalBackdrop, ModalPanel, Select, SearchField, Button } from "@/design-system";
+import { Heading, Text, ModalBackdrop, ModalPanel, SelectMenu, SearchField, Button } from "@/design-system";
 
 import { useState } from "react";
 import { Check, X } from "lucide-react";
@@ -108,18 +108,16 @@ function MeasurementSelectionDialog({
         <Heading level={3} size="sm">Correct details</Heading>
         <Text as="label" size="md" className="lp-health-document-type lp-health-correct-type">
           <span>Document type</span>
-          <Select
+          <SelectMenu
             value={documentType}
-            onChange={(event) =>
-              setDocumentType(event.target.value as HealthDocumentType)
+            onValueChange={(selectedValue) =>
+              setDocumentType(selectedValue as HealthDocumentType)
             }
-          >
-            {healthDocumentTypes.map((type) => (
-              <option key={type} value={type}>
-                {documentTypeLabels[type] ?? type}
-              </option>
-            ))}
-          </Select>
+            options={healthDocumentTypes.map((type) => ({
+              value: type,
+              label: documentTypeLabels[type] ?? type,
+            }))}
+          />
         </Text>
         <Heading level={3} size="sm">Choose what you want to track</Heading>
         <div className="lp-health-toolbar compact">

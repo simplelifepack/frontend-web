@@ -60,7 +60,7 @@ export const ModalAside = styled(Stack)`
   padding: ${({ theme }) =>
     `calc(${theme.spacing.s24} + ${theme.spacing.s2}) ${theme.spacing.s22}`};
   gap: ${({ theme }) => theme.spacing.s14};
-  @media ${({ theme }) => theme.media.tablet} {
+  @media ${({ theme }) => theme.media.mobile} {
     display: none;
   }
 `;

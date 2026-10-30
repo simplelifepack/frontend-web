@@ -1,4 +1,4 @@
-import { Heading, Text, ChoiceGroup, Choice, ModalPanel, ModalBackdrop, Input, Select, Textarea, Button } from "@/design-system";
+import { Heading, Text, ChoiceGroup, Choice, ModalPanel, ModalBackdrop, Input, SelectMenu, Textarea, Button } from "@/design-system";
 import { X } from "lucide-react";
 import { reminderTypeOptions, reminderFrequencyOptions } from "./HealthDialog.HealthDialogKind";
 import { ReadingDialog } from "./HealthDialog.ReadingDialog";
@@ -65,7 +65,7 @@ return ((
             }}
             className="lp-health-form lp-health-reminder-form"
           >
-            <Text as="label" size="sm" weight="semibold" className="lp-health-reminder-title">
+            <Text as="label" size="sm" weight="medium" className="lp-health-reminder-title">
               Title
               <Input
                 required
@@ -85,7 +85,7 @@ return ((
                 ))}
               </ChoiceGroup>
             </fieldset>
-            <Text as="label" size="sm" weight="semibold" className="lp-health-reminder-due">
+            <Text as="label" size="sm" weight="medium" className="lp-health-reminder-due">
               Due
               <Input
                 required
@@ -119,28 +119,17 @@ return ((
             }}
             className="lp-health-form lp-health-profile-form"
           >
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Blood group
-              <Select
+              <SelectMenu
                 value={bloodGroup}
-                onChange={(e) => setBloodGroup(e.target.value)}
-              >
-                {[
-                  "Unknown",
-                  "A+",
-                  "A-",
-                  "B+",
-                  "B-",
-                  "AB+",
-                  "AB-",
-                  "O+",
-                  "O-",
-                ].map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </Select>
+                onValueChange={(selectedValue) => setBloodGroup(selectedValue)}
+                options={["Unknown", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
+                  (v) => ({ value: v, label: v }),
+                )}
+              />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Conditions
               <Textarea
                 value={conditions}
@@ -149,7 +138,7 @@ return ((
                 placeholder="e.g. asthma, diabetes"
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Allergies
               <Textarea
                 value={allergies}
@@ -158,7 +147,7 @@ return ((
                 placeholder="e.g. penicillin, peanuts"
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Emergency contact name
               <Input
                 value={emergencyContactName}
@@ -166,7 +155,7 @@ return ((
                 maxLength={120}
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Emergency contact phone
               <Input
                 value={emergencyContactPhone}
@@ -175,7 +164,7 @@ return ((
                 inputMode="tel"
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Primary doctor
               <Input
                 value={primaryDoctor}
@@ -183,7 +172,7 @@ return ((
                 maxLength={160}
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Insurance provider
               <Input
                 value={insuranceProvider}
@@ -191,7 +180,7 @@ return ((
                 maxLength={160}
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Policy number
               <Input
                 value={insurancePolicyNumber}

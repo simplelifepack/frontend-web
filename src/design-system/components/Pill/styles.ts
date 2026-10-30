@@ -7,7 +7,7 @@ export const Status = styled.span<{ $tone: PillTone }>`
   white-space: nowrap;
   border-radius: ${({ theme }) => theme.radii.pill};
   padding: ${({ theme }) => theme.spacing.s3} ${({ theme }) => theme.spacing.s9};
-  font: ${({ theme }) => theme.typography.weights.bold}
+  font: ${({ theme }) => theme.typography.weights.medium}
     ${({ theme }) => theme.typography.text.sm} /
     ${({ theme }) => theme.typography.lineHeights.body}
     ${({ theme }) => theme.typography.family};

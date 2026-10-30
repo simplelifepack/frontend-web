@@ -67,9 +67,13 @@
   color: var(--packages-text);
 }
 .lp-packages-route .packages-card-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 12px;
 }
 .lp-packages-route .packages-card {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  text-align: left;
   min-height: 88px;
   padding: 16px;
   gap: 16px;
@@ -103,6 +107,8 @@
   font-size: 16px;
   font-weight: 500;
   line-height: 1.35;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 .lp-packages-route .packages-card-copy > [data-ds-text] {
   font-size: 12px;
@@ -127,9 +133,7 @@
 .lp-packages-route .packages-search-panel *,
 .lp-packages-route .packages-category-pills *,
 .lp-packages-route .packages-card * {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
 }
 
 .lp-packages-route .packages-card circle:first-child {

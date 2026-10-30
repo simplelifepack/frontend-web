@@ -1,7 +1,7 @@
 import { primaryPalette } from "@/design-system/variables/colors";
 import {
   typography,
-  poppinsFontFaces,
+  interFontFaces,
   typographyVariables,
 } from "@/design-system/variables/typography";
 
@@ -13,7 +13,7 @@ export function renderErrorPage(): string {
     <title>This page didn't load</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      ${poppinsFontFaces}
+      ${interFontFaces}
       ${typographyVariables}
       :root { color-scheme: light dark; --bg: #fafafa; --text: #111827; --muted: #4b5563; --panel: #ffffff; --border: #d1d5db; --primary: ${primaryPalette.light.base}; --primary-text: ${primaryPalette.light.text}; }
       @media (prefers-color-scheme: dark) { :root { --bg: #0b1220; --text: #ffffff; --muted: #8a97ae; --panel: #131c2e; --border: #27324a; --primary: ${primaryPalette.dark.base}; --primary-text: ${primaryPalette.dark.text}; } }

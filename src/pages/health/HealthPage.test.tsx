@@ -19,6 +19,7 @@ import type {
   HealthRecordDetail,
 } from "@/lib/api.types";
 import HealthPage from "./index";
+HTMLElement.prototype.scrollIntoView ??= vi.fn();
 it("renders, switches profiles, and opens exact records with duplicate type and date", async () => {
     vi.mocked(preferencesApi.get).mockResolvedValue({
       country: "IN",
@@ -120,9 +121,8 @@ it("renders, switches profiles, and opens exact records with duplicate type and 
     const correctionDialog = screen.getByRole("dialog", {
       name: "Choose measurements to track",
     });
-    fireEvent.change(within(correctionDialog).getByLabelText("Document type"), {
-      target: { value: "prescription" },
-    });
+    fireEvent.keyDown(within(correctionDialog).getByLabelText("Document type"), { key: "ArrowDown" });
+    fireEvent.click(await screen.findByRole("option", { name: "Prescription" }));
     fireEvent.click(
       within(correctionDialog).getByRole("button", { name: "Save tracking" }),
     );

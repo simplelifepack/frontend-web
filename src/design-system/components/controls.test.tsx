@@ -31,7 +31,7 @@ afterEach(() => {
 
 describe("shared controls in product forms", () => {
   it.each([lightTheme, darkTheme])(
-    "keeps native refs, values and form submission in $mode",
+    "keeps input refs, values and form submission in $mode",
     (theme) => {
       const input = createRef<HTMLInputElement>();
       const submit = vi.fn((event) => event.preventDefault());
@@ -46,10 +46,10 @@ describe("shared controls in product forms", () => {
               required
             />
             <Textarea aria-label="Notes" name="notes" defaultValue="Details" />
-            <Select aria-label="Category" name="category" defaultValue="two">
-              <option value="one">One</option>
-              <option value="two">Two</option>
-            </Select>
+            <Select aria-label="Category" name="category" value="two" options={[
+              { value: "one", label: "One" },
+              { value: "two", label: "Two" },
+            ]} />
             <Checkbox aria-label="Consent" name="consent" defaultChecked />
             <Radio
               aria-label="First"

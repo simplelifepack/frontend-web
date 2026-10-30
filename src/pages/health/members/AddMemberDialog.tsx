@@ -1,4 +1,4 @@
-import { Heading, Text, ModalBackdrop, ModalPanel, Input, Select, Button } from "@/design-system";
+import { Heading, Text, ModalBackdrop, ModalPanel, Input, SelectMenu, Button } from "@/design-system";
 
 import { useState } from "react";
 import { X } from "lucide-react";
@@ -80,7 +80,7 @@ function AddMemberDialog({
           </Button>
         </header>
         <div className="lp-health-form">
-          <Text as="label" size="sm" weight="semibold">
+          <Text as="label" size="sm" weight="medium">
             <span>Name</span>
             <Input
               value={name}
@@ -90,31 +90,28 @@ function AddMemberDialog({
             />
             {errors.name ? <small>{errors.name}</small> : null}
           </Text>
-          <Text as="label" size="sm" weight="semibold">
+          <Text as="label" size="sm" weight="medium">
             <span>Relation</span>
-            <Select
+            <SelectMenu
               value={relation}
-              onChange={(event) => setRelation(event.target.value)}
+              onValueChange={(selectedValue) => setRelation(selectedValue)}
               aria-invalid={Boolean(errors.relation)}
-            >
-              <option value="">Select relation</option>
-              {[
-                "Spouse",
-                "Mother",
-                "Father",
-                "Son",
-                "Daughter",
-                "Brother",
-                "Sister",
-                "Grandfather",
-                "Grandmother",
-                "Other",
-              ].map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </Select>
+              options={[
+                { value: "", label: "Select relation" },
+                ...[
+                  "Spouse",
+                  "Mother",
+                  "Father",
+                  "Son",
+                  "Daughter",
+                  "Brother",
+                  "Sister",
+                  "Grandfather",
+                  "Grandmother",
+                  "Other",
+                ].map((option) => ({ value: option, label: option })),
+              ]}
+            />
             {relation === "Other" ? (
               <Input
                 value={customRelation}
@@ -124,24 +121,25 @@ function AddMemberDialog({
             ) : null}
             {errors.relation ? <small>{errors.relation}</small> : null}
           </Text>
-          <Text as="label" size="sm" weight="semibold">
+          <Text as="label" size="sm" weight="medium">
             <span>Blood group</span>
-            <Select
+            <SelectMenu
               value={bloodGroup}
-              onChange={(event) => setBloodGroup(event.target.value)}
-            >
-              <option>A+</option>
-              <option>A-</option>
-              <option>B+</option>
-              <option>B-</option>
-              <option>AB+</option>
-              <option>AB-</option>
-              <option>O+</option>
-              <option>O-</option>
-              <option>Unknown</option>
-            </Select>
+              onValueChange={(selectedValue) => setBloodGroup(selectedValue)}
+              options={[
+                { value: "A+", label: "A+" },
+                { value: "A-", label: "A-" },
+                { value: "B+", label: "B+" },
+                { value: "B-", label: "B-" },
+                { value: "AB+", label: "AB+" },
+                { value: "AB-", label: "AB-" },
+                { value: "O+", label: "O+" },
+                { value: "O-", label: "O-" },
+                { value: "Unknown", label: "Unknown" },
+              ]}
+            />
           </Text>
-          <Text as="label" size="sm" weight="semibold">
+          <Text as="label" size="sm" weight="medium">
             <span>Date of birth</span>
             <Input
               value={dateOfBirth}

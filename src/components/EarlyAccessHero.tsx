@@ -6,7 +6,7 @@ import {
   type FormEvent,
 } from "react";
 import { ArrowRight, Check, Mail, Moon, Sun } from "lucide-react";
-import { Button, Text, colors } from "@/design-system";
+import { Text, colors } from "@/design-system";
 import {
   getAppliedAppearance,
   persistTheme,
@@ -34,6 +34,7 @@ import {
   Mascot,
   HeroNavigationButton,
   HeroBrand,
+  JoinButton,
 } from "./EarlyAccessHero.styles";
 
 export function EarlyAccessHero() {
@@ -160,19 +161,19 @@ export function EarlyAccessHero() {
                 value={website}
                 onChange={(event) => setWebsite(event.target.value)}
               />
-              <Button
+              <JoinButton
                 type="submit"
                 variant="primary"
                 size="lg"
                 disabled={busy || !!message}
               >
-                {busy
+                <span>{busy
                   ? "Joining…"
                   : message
                     ? "You’re on the list"
-                    : "Join Early Access"}
+                    : "Join early access"}</span>
                 <ArrowRight aria-hidden="true" />
-              </Button>
+              </JoinButton>
             </FormRow>
             <Feedback id="early-access-feedback">
               {error && (
@@ -198,14 +199,30 @@ export function EarlyAccessHero() {
           <EarlyAccessOffer />
         </Copy>
         <Mascot>
-          <img
-            src="/images/early-access-squirrel.png"
-            alt="Purple squirrel with tufted ears, brown eyes, a cream-striped tail, holding a branded document folder"
-            width="1024"
-            height="1536"
-            fetchPriority="high"
-            decoding="async"
-          />
+          <svg
+            viewBox="0 0 1024 1536"
+            preserveAspectRatio="xMidYMax meet"
+            role="img"
+            aria-label="Purple squirrel standing on the floor, holding a document folder with the Readines logo"
+          >
+            <defs>
+              <radialGradient id="mascot-ground-shadow">
+                <stop stopColor="currentColor" stopOpacity="0.3" />
+                <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="480" cy="1495" rx="385" ry="38" fill="url(#mascot-ground-shadow)" />
+            <image href="/images/early-access-squirrel.png" width="1024" height="1536" />
+            {/* Use the actual brand asset over the illustrated folder's distorted mark. */}
+            <image
+              href="/icons/favicon.svg"
+              x="228"
+              y="918"
+              width="204"
+              height="204"
+              transform="rotate(8 330 1020)"
+            />
+          </svg>
         </Mascot>
       </Layout>
     </Surface>

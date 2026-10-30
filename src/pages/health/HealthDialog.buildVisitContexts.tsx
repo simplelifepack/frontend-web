@@ -1,4 +1,4 @@
-import { typography, poppinsFontFaces, typographyVariables } from "@/design-system/variables/typography";
+import { typography, interFontFaces, typographyVariables } from "@/design-system/variables/typography";
 import type { DocumentRecord, HealthMember, HealthRecord } from "@/lib/api.types";
 import { type VisitContext, type VisitDocument } from "./HealthDialog.HealthDialogKind";
 import { humanRecordType } from "./HealthDialog.documentDetail";
@@ -95,7 +95,7 @@ export function exportEmergencyCardPdf(html: string) {
   popup.document.close();
   popup.focus();
   void Promise.all(Object.values(typography.weights).map((weight) =>
-    popup.document.fonts.load(`${weight} ${typography.text.md} Poppins`),
+    popup.document.fonts.load(`${weight} ${typography.text.md} Inter`),
   )).catch(() => undefined).then(() => popup.print());
 }
 
@@ -129,7 +129,7 @@ export function buildEmergencyCardHtml(rows: string[][], generatedDate: string) 
   <meta charset="utf-8" />
   <title>Emergency card</title>
   <style>
-    ${poppinsFontFaces}
+    ${interFontFaces}
     ${typographyVariables}
     * { box-sizing: border-box; }
     body { margin: 0; padding: 24px; background: #eef0f3; color: #1B2431; font-family: ${typography.family}; font-size: ${typography.text.md}; line-height: ${typography.lineHeights.body}; }

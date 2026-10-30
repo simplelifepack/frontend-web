@@ -79,7 +79,7 @@ export function inputStyle(): CSSProperties {
 
 
 export function labelStyle(): CSSProperties {
-  return { display: "block", marginBottom: 5, color: css.muted, fontSize: "var(--text-sm)", fontWeight: "var(--weight-bold)", letterSpacing: 0.5, textTransform: "uppercase", fontVariantNumeric: "tabular-nums" };
+  return { display: "block", marginBottom: 5, color: css.muted, fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)", letterSpacing: 0.5, textTransform: "uppercase", fontVariantNumeric: "tabular-nums" };
 }
 
 

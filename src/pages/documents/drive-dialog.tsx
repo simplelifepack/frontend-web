@@ -1,4 +1,4 @@
-import { Button } from "@/design-system";
+import { Button , SelectMenu} from "@/design-system";
 import { useCallback, useEffect, useState } from "react";
 import { Check, Cloud, X } from "lucide-react";
 
@@ -165,11 +165,18 @@ export default function DriveDialog({ open, onClose, onStatusChange, onDocuments
             </div>
             <label style={{ display: "grid", gap: 5, marginTop: 14, color: T.muted, fontSize: "var(--text-sm)" }}>
               When unique number or checksum matches
-              <select value={duplicateAction} disabled={status.scanning} onChange={(event) => setDuplicateAction(event.target.value as typeof duplicateAction)} style={{ padding: "9px 10px", borderRadius: 9, border: `1px solid ${T.border}`, background: T.panel, color: T.white }}>
-                <option value="ignore">Ignore</option>
-                <option value="replace">Replace</option>
-                <option value="keep_both">Keep Both</option>
-              </select>
+              <SelectMenu
+                value={duplicateAction}
+                disabled={status.scanning}
+                onValueChange={(selectedValue) =>
+                  setDuplicateAction(selectedValue as typeof duplicateAction)
+                }
+                options={[
+                  { value: "ignore", label: "Ignore" },
+                  { value: "replace", label: "Replace" },
+                  { value: "keep_both", label: "Keep Both" },
+                ]}
+              />
             </label>
           </div>
         )}

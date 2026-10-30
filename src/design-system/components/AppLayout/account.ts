@@ -30,6 +30,6 @@ export const AccountInitial = styled.span`
   border-radius: ${({ theme }) => theme.radii.pill};
   background: ${({ theme }) => theme.colors.readinessSoft};
   color: ${({ theme }) => theme.colors.readiness};
-  font-weight: ${({ theme }) => theme.typography.weights.semibold};
+  font-weight: ${({ theme }) => theme.typography.weights.medium};
 `;
 AccountTrigger.defaultProps = AccountInitial.defaultProps = { theme };

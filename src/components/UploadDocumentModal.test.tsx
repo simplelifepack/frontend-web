@@ -7,10 +7,16 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { AnalyzeDocumentResponse } from "@/lib/api";
 import { analyzeDocument, saveDocument } from "@/store/slices/documentsSlice";
 import UploadDocumentModal from "./UploadDocumentModal";
+
+beforeAll(() => { HTMLElement.prototype.scrollIntoView = vi.fn(); });
+async function chooseCategory(value: string) {
+  fireEvent.keyDown(screen.getByRole("combobox", { name: "Category" }), { key: "ArrowDown" });
+  fireEvent.click(await screen.findByRole("option", { name: value }));
+}
 
 let pendingAnalysis: AnalyzeDocumentResponse | null = null;
 const dispatch = vi.fn((action: { kind: string }) =>
@@ -107,7 +113,7 @@ describe("manual document upload review", () => {
     const view = renderModal("/documents");
     view.showReview({ ...analysis, document: { ...analysis.document, extractedText: "discard failed content", fields: { issuer: "discard" } }, warnings: [{ code: "AI_ANALYSIS_UNAVAILABLE", message: "Unavailable" }] });
     expect(screen.getByText(/AI could not read this document/)).toBeTruthy();
-    fireEvent.change(screen.getByLabelText("Category"), { target: { value: "Identity" } });
+    await chooseCategory("Identity" );
     fireEvent.click(screen.getByRole("button", { name: "Confirm & Save" }));
     await waitFor(() => expect(view.onClose).toHaveBeenCalledOnce());
     const payload = vi.mocked(saveDocument).mock.calls[0]![0];
@@ -150,9 +156,7 @@ describe("manual document upload review", () => {
         "Please select a category.",
       );
       expect(saveDocument).not.toHaveBeenCalled();
-      fireEvent.change(screen.getByLabelText("Category"), {
-        target: { value: category },
-      });
+      await chooseCategory(category );
       fireEvent.click(screen.getByRole("button", { name: "Confirm & Save" }));
       await waitFor(() => expect(view.onClose).toHaveBeenCalledOnce());
       const payload = vi.mocked(saveDocument).mock.calls[0]![0];
@@ -171,9 +175,7 @@ describe("manual document upload review", () => {
   it("keeps optional PAN number and AI-consent metadata distinct", async () => {
     const manual = renderModal("/documents");
     manual.showReview({ ...analysis, warnings: [{ code: "AI_PROCESSING_DISABLED", message: "AI processing is disabled for this account." }] });
-    fireEvent.change(screen.getByLabelText("Category"), {
-      target: { value: "Identity" },
-    });
+    await chooseCategory("Identity" );
     fireEvent.change(screen.getByLabelText("Document type"), {
       target: { value: "PAN" },
     });

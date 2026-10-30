@@ -170,5 +170,22 @@ function FullApplication() {
 }
 
 export default function App() {
+  const location = useLocation();
+  const publicEntry = usesEarlyAccessLanding(window.location.hostname)
+    && ["/", "/login", "/signin", "/signup"].includes(location.pathname);
+
+  // Mount the public page outside app initialization: even a background session
+  // refresh contacts the backend and can trigger further authenticated requests.
+  if (publicEntry) {
+    return (
+      <Routes>
+        <Route path="/" element={<TempLandingRoute />} />
+        <Route path="/login" element={<Navigate to="/" replace state={{ authMode: "signin" }} />} />
+        <Route path="/signin" element={<Navigate to="/" replace state={{ authMode: "signin" }} />} />
+        <Route path="/signup" element={<Navigate to="/" replace state={{ authMode: "signup" }} />} />
+      </Routes>
+    );
+  }
+
   return <DigiLockerReturnGate><FullApplication /></DigiLockerReturnGate>;
 }

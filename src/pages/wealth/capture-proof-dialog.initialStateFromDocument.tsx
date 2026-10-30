@@ -1,6 +1,5 @@
-import { Text, Input } from "@/design-system";
+import { SearchableSelectMenu } from "@/design-system";
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
 import { type DocumentRecord } from "@/lib/api";
 import { documentTitle } from "@/pages/documents/document-utils";
 import { kindFromDocument, typeFromDocument, valueFromDocumentFields, holdingTypeSuggestions } from "./capture-proof-dialog.Mode";
@@ -87,69 +86,22 @@ export function TypeCombobox({
   onChange: (value: string) => void;
   onOtherQuery?: (value: string) => void;
 }) {
-  const [query, setQuery] = useState(value === "Other" ? "" : value);
-  const [open, setOpen] = useState(false);
-  const options = suggestionsForKind(kind);
-  const needle = normalizeTypeName(query);
-  const filtered = options.filter(
-    (option) =>
-      option === "Other" || normalizeTypeName(option).includes(needle),
-  );
-  const matches = filtered.filter((option) => option !== "Other");
-  const shown = [...matches, "Other"];
-  const choose = (option: string) => {
-    onChange(option);
-    if (option === "Other") onOtherQuery?.(query === "Other" ? "" : query);
-    setQuery(option === "Other" ? "Other" : option);
-    setOpen(false);
-  };
+  const [query, setQuery] = useState("");
   return (
-    <div className="lp-type-combobox">
-      <Input
-        aria-label="Type"
-        autoComplete="off"
-        value={open ? query : value}
-        onBlur={() => window.setTimeout(() => setOpen(false), 120)}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => {
-          setQuery(value === "Other" ? "" : value);
-          setOpen(true);
-        }}
-        placeholder="Select or enter type..."
-      />
-      <button
-        type="button"
-        aria-label="Show type options"
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={() => {
-          setQuery(value === "Other" ? "" : value);
-          setOpen((current) => !current);
-        }}
-      >
-        <ChevronDown aria-hidden="true" focusable="false" size="var(--icon-small)" />
-      </button>
-      {open ? (
-        <div   className="lp-type-menu">
-          {matches.length ? null : (
-            <Text as="div" size="md" weight="semibold" className="lp-type-no-match">No matching types</Text>
-          )}
-          {shown.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                choose(option);
-              }}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      ) : null}
-    </div>
+    <SearchableSelectMenu
+      aria-label="Type"
+      value={value}
+      placeholder="Select or enter type..."
+      onSearchChange={setQuery}
+      onValueChange={(option) => {
+        onChange(option);
+        if (option === "Other") onOtherQuery?.(query);
+      }}
+      options={suggestionsForKind(kind).map(option => ({
+        value: option,
+        label: option,
+        alwaysVisible: option === "Other",
+      }))}
+    />
   );
 }

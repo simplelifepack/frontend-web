@@ -1,4 +1,4 @@
-import { Text, Heading, Input, Select, Textarea, Button } from "@/design-system";
+import { Text, Heading, Input, SelectMenu, Textarea, Button } from "@/design-system";
 import { useMemo, useState } from "react";
 import { Trash2, UploadCloud } from "lucide-react";
 import UploadDocumentModal from "@/components/UploadDocumentModal";
@@ -28,7 +28,7 @@ return ((
         onClose={onClose}
       />
       <HoldingModalViewSection1 {...context} />
-      <Text as="label" size="sm" weight="semibold" style={labelStyle()}>Name</Text>
+      <Text as="label" size="sm" weight="medium" style={labelStyle()}>Name</Text>
       <Input
         style={inputStyle()}
         value={f.name}
@@ -38,7 +38,7 @@ return ((
       <HoldingModalViewSection2 {...context} />
       {typeChoice === "Other" ? (
         <div className="lp-other-type-field">
-          <Text as="label" size="sm" weight="semibold" style={labelStyle()}>Other type</Text>
+          <Text as="label" size="sm" weight="medium" style={labelStyle()}>Other type</Text>
           <Input
             style={inputStyle()}
             value={otherType}
@@ -71,17 +71,14 @@ return ((
       <HoldingModalViewSection3 {...context} />
       <div className="lp-holding-owner">
         <Field label="Owner">
-          <Select
-            style={inputStyle()}
+          <SelectMenu
             value={f.memberId}
-            onChange={(e) => set("memberId", e.target.value)}
-          >
-            {ownerOptions.map((owner) => (
-              <option key={owner.id} value={owner.id}>
-                {owner.name}
-              </option>
-            ))}
-          </Select>
+            onValueChange={(selectedValue) => set("memberId", selectedValue)}
+            options={ownerOptions.map((owner) => ({
+              value: owner.id,
+              label: owner.name,
+            }))}
+          />
         </Field>
       </div>
       {f.kind === "cover" ? (
@@ -99,7 +96,7 @@ return ((
         />
       ) : null}
       <div className="lp-holding-access">
-        <Text as="label" size="sm" weight="semibold" style={labelStyle()}>
+        <Text as="label" size="sm" weight="medium" style={labelStyle()}>
           {f.kind === "liability"
             ? "Closure instructions for the family"
             : "Access instructions for the family"}

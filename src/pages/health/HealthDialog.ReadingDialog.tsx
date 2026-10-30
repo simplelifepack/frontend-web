@@ -138,7 +138,7 @@ export function ReadingDialog({
             </Button>
             {custom ? (
               <div className="lp-reading-custom">
-                <Text as="label" size="sm" weight="semibold">
+                <Text as="label" size="sm" weight="medium">
                   Test name
                   <Input
                     value={customName}
@@ -147,7 +147,7 @@ export function ReadingDialog({
                     placeholder="as printed"
                   />
                 </Text>
-                <Text as="label" size="sm" weight="semibold">
+                <Text as="label" size="sm" weight="medium">
                   Unit
                   <Input
                     value={unit}
@@ -160,7 +160,7 @@ export function ReadingDialog({
             ) : null}
           </section>
           <div className="lp-reading-field-grid">
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Value ({testUnit})
               <Input
                 required
@@ -169,7 +169,7 @@ export function ReadingDialog({
                 onChange={(event) => setValue(event.target.value)}
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Date
               <Input
                 required
@@ -178,7 +178,7 @@ export function ReadingDialog({
                 onChange={(event) => setDate(event.target.value)}
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Range low (optional)
               <Input
                 inputMode="decimal"
@@ -187,7 +187,7 @@ export function ReadingDialog({
                 placeholder="as printed"
               />
             </Text>
-            <Text as="label" size="sm" weight="semibold">
+            <Text as="label" size="sm" weight="medium">
               Range high (optional)
               <Input
                 inputMode="decimal"

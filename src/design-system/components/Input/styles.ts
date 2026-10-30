@@ -15,7 +15,7 @@ export const fieldStyles = css`
   padding: ${({ theme }) => theme.spacing.s8}
     ${({ theme }) => theme.spacing.s10};
   font-style: normal;
-  font-weight: ${({ theme }) => theme.typography.weights.medium};
+  font-weight: ${({ theme }) => theme.typography.weights.regular};
   font-family: ${({ theme }) => theme.typography.family};
   font-size: ${({ theme }) => theme.typography.text.md};
   line-height: ${({ theme }) => theme.typography.lineHeights.body};

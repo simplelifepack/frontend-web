@@ -9,7 +9,7 @@ const Offer = styled.aside`
 `;
 const Card = styled.div`
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(100px, 0.8fr) minmax(0, 1.4fr);
   align-items: center;
   column-gap: clamp(10px, 1.5vw, 24px);
   row-gap: 8px;

@@ -1,5 +1,5 @@
 export const typography = {
-  family: '"Poppins", sans-serif',
+  family: '"Inter", sans-serif',
   chartLabel: "8px",
   text: { sm: "12px", md: "14px", lg: "16px" },
   heading: { sm: "18px", md: "22px", lg: "28px", xl: "clamp(32px, 5vw, 56px)" },
@@ -8,19 +8,13 @@ export const typography = {
 } as const;
 
 // Shared by the app document and the standalone printable emergency-card document.
-export const poppinsFontFaces = (
-  [
-    [400, "regular"],
-    [500, "medium"],
-    [600, "semibold"],
-    [700, "bold"],
-  ] as const
-)
-  .map(
-    ([weight, file]) =>
-      `@font-face { font-family: "Poppins"; font-style: normal; font-weight: ${weight}; font-display: swap; src: url("/fonts/poppins/${file}.ttf") format("truetype"); }`,
-  )
-  .join("\n");
+export const interFontFaces = `@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter/InterVariable.woff2") format("woff2");
+}`;
 
 export const typographyVariables = `:root {
  --font-sans: ${typography.family};

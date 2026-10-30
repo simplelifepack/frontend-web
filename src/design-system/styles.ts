@@ -1,7 +1,7 @@
 import { createGlobalStyle } from "styled-components";
 import {
   typography,
-  poppinsFontFaces,
+  interFontFaces,
   typographyVariables,
 } from "./variables/typography";
 import { semanticColorVariables } from "./variables/colors";
@@ -14,7 +14,7 @@ const declarations = (
     .map(([name, value]) => `--${prefix}-${name}: ${value};`)
     .join("\n");
 export const GlobalTypography = createGlobalStyle`
-  ${poppinsFontFaces}
+  ${interFontFaces}
   ${typographyVariables}
   ${semanticColorVariables}
   :root {

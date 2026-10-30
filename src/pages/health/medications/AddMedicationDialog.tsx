@@ -88,11 +88,11 @@ function AddMedicationDialog({
           </Button>
         </header>
         <div className="lp-health-form-grid lp-health-medication-form">
-          <Text as="label" size="sm" weight="semibold" className="lp-health-med-name">
+          <Text as="label" size="sm" weight="medium" className="lp-health-med-name">
             <span>Name</span>
             <Input value={form.name} onChange={(event) => update("name", event.target.value)} placeholder="e.g. Metformin" />
           </Text>
-          <Text as="label" size="sm" weight="semibold" className="lp-health-med-dose">
+          <Text as="label" size="sm" weight="medium" className="lp-health-med-dose">
             <span>Dose</span>
             <Input value={form.dose} onChange={(event) => update("dose", event.target.value)} placeholder="500 mg" />
           </Text>
@@ -106,7 +106,7 @@ function AddMedicationDialog({
               ))}
             </ChoiceGroup>
           </fieldset>
-          <Text as="label" size="sm" weight="semibold" className="lp-health-med-repeat">
+          <Text as="label" size="sm" weight="medium" className="lp-health-med-repeat">
             <span>Repeat runs out</span>
             <Input type="date" value={form.repeatRunsOut} onChange={(event) => update("repeatRunsOut", event.target.value)} placeholder="dd/mm/yyyy" />
           </Text>

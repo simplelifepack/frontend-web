@@ -1,4 +1,4 @@
-import { Stack, Grid, Heading, Field, ModalHeader, Text, Select, ModalBackdrop, ModalPanel, Input, Button } from "@/design-system";
+import { Stack, Grid, Heading, Field, ModalHeader, Text, SelectMenu, ModalBackdrop, ModalPanel, Input, Button } from "@/design-system";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { X } from "lucide-react";
@@ -99,38 +99,32 @@ export function MemberModal({
           </Field>
           <Grid>
             <Field label="Relation">
-              <Select
+              <SelectMenu
                 value={draft.relation}
-                onChange={(event) =>
+                onValueChange={(selectedValue) =>
                   update({
-                    relation: event.target
-                      .value as TrustMemberPayload["relation"],
+                    relation: selectedValue as TrustMemberPayload["relation"],
                   })
                 }
-              >
-                {relations.map((relation) => (
-                  <option key={relation} value={relation}>
-                    {labelize(relation)}
-                  </option>
-                ))}
-              </Select>
+                options={relations.map((relation) => ({
+                  value: relation,
+                  label: labelize(relation),
+                }))}
+              />
             </Field>
             <Field label="Access">
-              <Select
+              <SelectMenu
                 value={draft.accessTypeCode}
-                onChange={(event) =>
+                onValueChange={(selectedValue) =>
                   update({
-                    accessTypeCode: event.target
-                      .value as TrustMemberPayload["accessTypeCode"],
+                    accessTypeCode: selectedValue as TrustMemberPayload["accessTypeCode"],
                   })
                 }
-              >
-                {accessTypes.map((accessType) => (
-                  <option key={accessType} value={accessType}>
-                    {accessLabels[accessType]}
-                  </option>
-                ))}
-              </Select>
+                options={accessTypes.map((accessType) => ({
+                  value: accessType,
+                  label: accessLabels[accessType],
+                }))}
+              />
             </Field>
           </Grid>
           {draft.relation === "OTHER" && (
@@ -156,21 +150,15 @@ export function MemberModal({
               />
             </Field>
             <Field label="Blood group">
-              <Select
+              <SelectMenu
                 value={draft.bloodGroup}
-                onChange={(event) =>
+                onValueChange={(selectedValue) =>
                   update({
-                    bloodGroup: event.target
-                      .value as TrustMemberPayload["bloodGroup"],
+                    bloodGroup: selectedValue as TrustMemberPayload["bloodGroup"],
                   })
                 }
-              >
-                {bloodGroups.map((blood) => (
-                  <option key={blood} value={blood}>
-                    {blood}
-                  </option>
-                ))}
-              </Select>
+                options={bloodGroups.map((blood) => ({ value: blood, label: blood }))}
+              />
             </Field>
           </Grid>
           {!initial && (

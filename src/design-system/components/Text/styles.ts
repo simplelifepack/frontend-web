@@ -26,7 +26,7 @@ export const StyledText = styled.span<{
         })[$tone]};
       & strong,
       & b {
-        font-weight: ${({ theme }) => theme.typography.weights.bold};
+        font-weight: ${({ theme }) => theme.typography.weights.semibold};
       }
       & em {
         font-style: normal;

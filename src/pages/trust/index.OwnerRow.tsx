@@ -1,4 +1,4 @@
-import { Stack, IconBadge, ListRow, ControlSlot, Text, Select, Button } from "@/design-system";
+import { Stack, IconBadge, ListRow, ControlSlot, Text, SelectMenu, Button } from "@/design-system";
 import { KeyRound, Pencil, X } from "lucide-react";
 import { type TrustCenterResponse, type TrustMember, type TrustMemberPayload } from "@/lib/api";
 import { accessTypes, accessLabels } from "./index.relations";
@@ -15,9 +15,12 @@ export function OwnerRow({ owner }: { owner: TrustCenterResponse["owner"] }) {
         </Text>
       </Stack>
       <ControlSlot>
-        <Select disabled value="OWNER" aria-label="Owner access">
-          <option>Owner</option>
-        </Select>
+        <SelectMenu
+          disabled
+          value="OWNER"
+          aria-label="Owner access"
+          options={[{ value: "OWNER", label: "Owner" }]}
+        />
       </ControlSlot>
     </ListRow>
   );
@@ -57,19 +60,17 @@ export function MemberRow({
         </Text>
       </Stack>
       <ControlSlot>
-        <Select
+        <SelectMenu
           value={member.accessType.code}
-          onChange={(event) =>
-            onChange(event.target.value as TrustMemberPayload["accessTypeCode"])
+          onValueChange={(selectedValue) =>
+            onChange(selectedValue as TrustMemberPayload["accessTypeCode"])
           }
           aria-label={`${member.name} access`}
-        >
-          {accessTypes.map((accessType) => (
-            <option key={accessType} value={accessType}>
-              {accessLabels[accessType]}
-            </option>
-          ))}
-        </Select>
+          options={accessTypes.map((accessType) => ({
+            value: accessType,
+            label: accessLabels[accessType],
+          }))}
+        />
       </ControlSlot>
       <Button
         size="sm"
