@@ -42,3 +42,20 @@ it("does not couple independently cancellable GET requests through deduplication
   await Promise.all([request("/cancel-test",{signal:new AbortController().signal}),request("/cancel-test",{signal:new AbortController().signal})]);
   expect(fetchMock).toHaveBeenCalledTimes(2);
 });
+
+it("bounds a stalled session restoration request and aborts its network work", async () => {
+  vi.useFakeTimers();
+  try {
+    let signal: AbortSignal | undefined;
+    vi.stubGlobal("fetch", vi.fn((_url, options) => {
+      signal = options.signal;
+      return new Promise((_resolve, reject) => signal?.addEventListener("abort", () => reject(signal?.reason), { once: true }));
+    }));
+    const { api } = await import("./api");
+    const pending = api.auth.refresh();
+    const rejected = expect(pending).rejects.toMatchObject({ name: "TimeoutError" });
+    await vi.advanceTimersByTimeAsync(20_000);
+    await rejected;
+    expect(signal?.aborted).toBe(true);
+  } finally { vi.useRealTimers(); }
+});

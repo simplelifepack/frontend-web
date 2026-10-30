@@ -21,6 +21,7 @@ type RequestOptions = {
   requiresAuth?: boolean;
   retryOnUnauthorized?: boolean;
   signal?: AbortSignal;
+  timeoutMs?: number;
 };
 
 const DEFAULT_GET_DEDUPE_MS = 500;
@@ -82,14 +83,19 @@ async function performRequest<T>(path: string, options: RequestOptions = {}) {
     const token = getAccessToken();
     if (token) headers.Authorization = `Bearer ${token}`;
   }
-  const response = await fetch(`${API_URL}${path}`, {
-    method: options.method ?? "GET",
-    headers,
-    body: body as BodyInit | undefined,
-    credentials: "include",
-    signal: options.signal,
-  });
-  const data = (await response.json().catch(() => ({}))) as { code?: string; message?: string };
+  const timeout = options.timeoutMs ? new AbortController() : undefined;
+  const timer = timeout ? setTimeout(() => timeout.abort(new DOMException("Session check timed out. Please retry.", "TimeoutError")), options.timeoutMs) : undefined;
+  const signal = timeout ? (options.signal ? AbortSignal.any([options.signal, timeout.signal]) : timeout.signal) : options.signal;
+  let response: Response;
+  let data: { code?: string; message?: string };
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      method: options.method ?? "GET", headers, body: body as BodyInit | undefined,
+      credentials: "include", signal,
+    });
+    data = (await response.json().catch(() => ({}))) as { code?: string; message?: string };
+    signal?.throwIfAborted();
+  } finally { if (timer !== undefined) clearTimeout(timer); }
   if (options.requiresAuth && generation !== getAuthGeneration()) throw new DOMException("Session ended.", "AbortError");
   if (
     response.status === 401 &&
