@@ -11,19 +11,19 @@ export const documentsApi = {
   preview: (id: string, signal?: AbortSignal) => downloadBlob(`/documents/${encodeURIComponent(id)}/preview`, { requiresAuth: true, signal }),
   download: (id: string) => downloadBlob(`/documents/${encodeURIComponent(id)}/download`, { requiresAuth: true }),
   bulkDownload: (ids: string[]) => downloadBlob("/documents/bulk-download", { method: "POST", body: { ids }, requiresAuth: true }),
-  analyze: async (files: File[], aiAnalysisConsent = false) =>
+  analyze: async (files: File[]) =>
     request<AnalyzeDocumentResponse>("/documents/analyze", {
-      method: "POST", body: await buildEncryptedDocumentFormData(files, aiAnalysisConsent, request), requiresAuth: true,
+      method: "POST", body: await buildEncryptedDocumentFormData(files, request), requiresAuth: true,
     }),
   save: (payload: SaveDocumentPayload) =>
     request<{ document: DocumentRecord }>("/documents", { method: "POST", body: payload, requiresAuth: true }),
-  upload: async (files: File[], aiAnalysisConsent = false) =>
+  upload: async (files: File[]) =>
     request<UploadDocumentResponse>("/documents/upload", {
-      method: "POST", body: await buildEncryptedDocumentFormData(files, aiAnalysisConsent, request), requiresAuth: true,
+      method: "POST", body: await buildEncryptedDocumentFormData(files, request), requiresAuth: true,
     }),
   addPageFiles: async (id: string, files: File[]) =>
     request<{ document: DocumentRecord }>(`/documents/${encodeURIComponent(id)}/pages`, {
-      method: "POST", body: await buildEncryptedDocumentFormData(files, false, request), requiresAuth: true,
+      method: "POST", body: await buildEncryptedDocumentFormData(files, request), requiresAuth: true,
     }),
   reorderPages: (id: string, pageIds: string[]) =>
     request<{ document: DocumentRecord }>(`/documents/${encodeURIComponent(id)}/pages/order`, { method: "PATCH", body: { pageIds }, requiresAuth: true }),

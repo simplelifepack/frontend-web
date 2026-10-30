@@ -1,13 +1,11 @@
 import {
   Stack,
-  Row,
   ListRow,
   ListAction,
   Text,
   ChoiceGroup,
   Choice,
   Switch,
-  Button,
 } from "@/design-system";
 
 import { Brain, Moon, Sun } from "lucide-react";
@@ -23,7 +21,6 @@ import {
   persistTheme,
   type ThemePreference,
 } from "@/lib/theme";
-import { Overlay, Section } from "./settings-ui";
 import NotificationSettingsRow from "./NotificationSettingsRow";
 import SearchablePreferenceSelect from "./SearchablePreferenceSelect";
 import { countryOptions, currencyOptions } from "./preference-options";
@@ -40,7 +37,6 @@ export default function PreferencesSection() {
   const [preferences, setPreferences] =
     useState<UserPreferences>(emptyPreferences);
   const [saving, setSaving] = useState<string | null>(null);
-  const [confirmAiOff, setConfirmAiOff] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -145,51 +141,10 @@ export default function PreferencesSection() {
           checked={preferences.aiProcessingEnabled}
           disabled={saving === "aiProcessingEnabled"}
           onCheckedChange={(checked) => {
-            if (!checked) setConfirmAiOff(true);
-            else
-              void update({ aiProcessingEnabled: true }, "aiProcessingEnabled");
+            void update({ aiProcessingEnabled: checked }, "aiProcessingEnabled");
           }}
         />
       </ListRow>
-      {confirmAiOff && (
-        <Overlay
-          title="Turn off AI processing?"
-          onClose={() => setConfirmAiOff(false)}
-        >
-          <Stack $gap="s16">
-            <Text as="p">
-              Readines will stop using AI to process your information across the
-              app. Documents and records won't be automatically read,
-              classified, or analyzed, and AI-generated insights will be
-              unavailable.
-            </Text>
-            <Text as="p" tone="muted">
-              You'll need to enter relevant information manually.
-            </Text>
-            <Row>
-              <Button
-                variant="secondary"
-                onClick={() => setConfirmAiOff(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                tone="danger"
-                variant="primary"
-                onClick={() => {
-                  setConfirmAiOff(false);
-                  void update(
-                    { aiProcessingEnabled: false },
-                    "aiProcessingEnabled",
-                  );
-                }}
-              >
-                Turn off AI
-              </Button>
-            </Row>
-          </Stack>
-        </Overlay>
-      )}
     </Section>
   );
 }

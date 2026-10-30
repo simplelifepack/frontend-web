@@ -90,8 +90,8 @@ function renderModal(route: string) {
 }
 
 async function selectAI() {
-  await waitFor(() => expect(screen.getByRole("checkbox")).toBeTruthy());
-  fireEvent.click(screen.getByRole("checkbox"));
+  await waitFor(() => expect(screen.getByText("AI processing follows your Settings preference.")).toBeTruthy());
+  expect(screen.queryByRole("checkbox")).toBeNull();
 }
 
 afterEach(() => {
@@ -130,7 +130,7 @@ describe("manual document upload review", () => {
     fireEvent.change(input, { target: { files: [pdf] } });
     expect(screen.getByText("statement.pdf")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Continue with 1 page" }));
-    expect(analyzeDocument).toHaveBeenCalledWith({ files: [pdf], aiAnalysisConsent: true });
+    expect(analyzeDocument).toHaveBeenCalledWith({ files: [pdf] });
 
     const dropped = new File(["%PDF-1.4\n%%EOF"], "drop.pdf", { type: "application/pdf" });
     fireEvent.drop(screen.getByTestId("document-drop-zone"), { dataTransfer: { files: [dropped] } });

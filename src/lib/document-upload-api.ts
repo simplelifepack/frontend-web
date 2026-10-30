@@ -2,7 +2,6 @@ import type { PublicEncryptionKey } from "./document-envelope";
 import { validateImageUploadBatch } from "./document-file-validation";
 import {
   encryptDocumentForUpload,
-  toEncryptedDocumentFormData,
   toEncryptedDocumentsFormData,
 } from "./document-hybrid-encryption";
 
@@ -37,11 +36,10 @@ function getDocumentEncryptionKey(request: AuthenticatedRequest) {
 
 export async function buildEncryptedDocumentFormData(
   files: File[],
-  aiAnalysisConsent: boolean,
   request: AuthenticatedRequest,
 ) {
   validateImageUploadBatch(files);
   const key = await getDocumentEncryptionKey(request);
   const envelopes = await Promise.all(files.map((file) => encryptDocumentForUpload(file, key)));
-  return toEncryptedDocumentsFormData(envelopes, aiAnalysisConsent);
+  return toEncryptedDocumentsFormData(envelopes);
 }

@@ -43,16 +43,14 @@ export const fetchDocumentById = createAsyncThunk("documents/fetchDocumentById",
 
 export const uploadDocument = createAsyncThunk("documents/uploadDocument", async (input: {
   files: File[];
-  aiAnalysisConsent?: boolean;
 }) => {
-  return api.documents.upload(input.files, input.aiAnalysisConsent);
+  return api.documents.upload(input.files);
 });
 
 export const analyzeDocument = createAsyncThunk("documents/analyzeDocument", async (input: {
   files: File[];
-  aiAnalysisConsent?: boolean;
 }) => {
-  return api.documents.analyze(input.files, input.aiAnalysisConsent);
+  return api.documents.analyze(input.files);
 });
 
 export const saveDocument = createAsyncThunk(

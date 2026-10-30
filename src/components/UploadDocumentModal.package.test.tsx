@@ -18,11 +18,11 @@ it.each([["Unknown", "Identity", "Other", "Other", 0], ["PAN", "Identity", "PAN"
   const onSaved = vi.fn(), onClose = vi.fn();
   const ui = () => <UploadDocumentModal open scanByDefault unknownAsOther onSaved={onSaved} onClose={onClose} />;
   const view = render(ui());
-  await waitFor(() => expect((screen.getByRole("checkbox") as HTMLInputElement).checked).toBe(true));
+  await waitFor(() => expect(screen.getByText("AI processing follows your Settings preference.")).toBeTruthy());
   const file = new File(["%PDF-1.4 synthetic"], "extra.pdf", { type: "application/pdf" });
   fireEvent.change(view.baseElement.querySelector('input[type="file"]')!, { target: { files: [file] } });
   fireEvent.click(screen.getByRole("button", { name: "Scan document" }));
-  expect(actions.analyze).toHaveBeenCalledWith({ files: [file], aiAnalysisConsent: true });
+  expect(actions.analyze).toHaveBeenCalledWith({ files: [file] });
   state.pending = analysis(String(detected), String(category)); view.rerender(ui());
   await waitFor(() => expect((screen.getByLabelText("Document type") as HTMLInputElement).value).toBe(expectedType));
   fireEvent.click(screen.getByRole("button", { name: "Confirm & Save" }));

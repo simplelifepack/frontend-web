@@ -101,7 +101,6 @@ export async function encryptDocumentForUpload(
 
 export function toEncryptedDocumentFormData(
   envelope: EncryptedDocumentEnvelope,
-  aiAnalysisConsent: boolean,
 ) {
   const formData = new FormData();
   formData.append("encryptedFile", envelope.file.encryptedBytes, "document.bin");
@@ -117,11 +116,10 @@ export function toEncryptedDocumentFormData(
   formData.append("originalSize", String(envelope.originalMetadata.size));
   formData.append("originalSha256", envelope.originalMetadata.sha256);
   formData.append("encryptedSha256", envelope.file.encryptedSha256);
-  formData.append("aiAnalysisConsent", String(aiAnalysisConsent));
   return formData;
 }
 
-export function toEncryptedDocumentsFormData(envelopes: EncryptedDocumentEnvelope[], aiAnalysisConsent: boolean) {
+export function toEncryptedDocumentsFormData(envelopes: EncryptedDocumentEnvelope[]) {
   const formData = new FormData();
   envelopes.forEach((envelope) => formData.append("encryptedFiles", envelope.file.encryptedBytes, "document.bin"));
   formData.append("envelopes", JSON.stringify(envelopes.map((envelope) => ({
@@ -131,6 +129,5 @@ export function toEncryptedDocumentsFormData(envelopes: EncryptedDocumentEnvelop
     originalMimeType: envelope.originalMetadata.mimeType, originalSize: envelope.originalMetadata.size,
     originalSha256: envelope.originalMetadata.sha256, encryptedSha256: envelope.file.encryptedSha256,
   }))));
-  formData.append("aiAnalysisConsent", String(aiAnalysisConsent));
   return formData;
 }

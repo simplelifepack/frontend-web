@@ -79,17 +79,17 @@ describe("client-side document hybrid encryption", () => {
     ]);
     expect(decrypted).toEqual(Buffer.from(pngBytes));
 
-    const formData = toEncryptedDocumentFormData(envelope, false);
+    const formData = toEncryptedDocumentFormData(envelope);
     expect(formData.get("encryptedFile")).toBeInstanceOf(Blob);
     expect(formData.has("file")).toBe(false);
     expect(formData.get("originalFilename")).toBe("identity.png");
 
-    const multiFormData = toEncryptedDocumentsFormData([envelope, envelope], true);
+    const multiFormData = toEncryptedDocumentsFormData([envelope, envelope]);
     expect(multiFormData.getAll("encryptedFiles")).toHaveLength(2);
     const metadata = JSON.parse(String(multiFormData.get("envelopes")));
     expect(metadata).toHaveLength(2);
     expect(metadata[0].originalFilename).toBe("identity.png");
-    expect(multiFormData.get("aiAnalysisConsent")).toBe("true");
+    expect(multiFormData.get("aiAnalysisConsent")).toBeNull();
   });
 
   it("rejects mismatched and empty files before encryption", async () => {
