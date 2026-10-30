@@ -99,7 +99,7 @@ export const reorderDocumentPages = createAsyncThunk("documents/reorderDocumentP
 );
 
 export const replaceDocumentPage = createAsyncThunk("documents/replaceDocumentPage", async (input: { documentId: string; pageId: string; file: File }, { dispatch }) => {
-  const analysis = await api.documents.upload([input.file], false);
+  const analysis = await api.documents.upload([input.file]);
   const tempFileId = analysis.files[0]?.tempFileId;
   if (!tempFileId) throw new Error("Unable to prepare replacement page.");
   const response = await api.documents.replacePage(input.documentId, input.pageId, tempFileId);

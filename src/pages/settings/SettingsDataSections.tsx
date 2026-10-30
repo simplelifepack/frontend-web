@@ -1,11 +1,12 @@
 import { Text, Input, Button } from "@/design-system";
 
 import { Download, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
 import { T } from "@/constants/theme";
+import { abortableDelay } from "@/lib/abortable-delay";
 import { api } from "@/lib/api";
 import { useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
@@ -21,32 +22,43 @@ function downloadBlobFile(blob: Blob, fileName: string) {
 }
 
 export function AccountDataSection() {
+  const pending = useRef<AbortController | null>(null);
+  useEffect(() => () => { pending.current?.abort(); }, []);
   const [exporting, setExporting] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
   const startExport = async () => {
-    if (exporting) return;
+    if (pending.current) return;
+    const controller = new AbortController();
+    pending.current = controller;
     setExporting(true);
     try {
-      const job = await api.account.requestExport();
+      const job = await api.account.requestExport(controller.signal);
+      controller.signal.throwIfAborted();
       toast.info("Preparing your Readines export.");
       for (let attempt = 0; attempt < 20; attempt += 1) {
-        const latest = await api.account.exportStatus(job.id);
+        const latest = await api.account.exportStatus(job.id, controller.signal);
+        controller.signal.throwIfAborted();
         if (latest.status === "READY") {
-          const { blob, fileName } = await api.account.downloadExport(job.id);
+          const { blob, fileName } = await api.account.downloadExport(job.id, controller.signal);
+          controller.signal.throwIfAborted();
           downloadBlobFile(blob, fileName);
           toast.success("Export ready");
           return;
         }
         if (latest.status === "FAILED") throw new Error(latest.errorMessage || "Export failed.");
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await abortableDelay(1500, controller.signal);
       }
       toast.info("Export is still preparing. Try again in a moment.");
     } catch (error) {
+      if (controller.signal.aborted) return;
       toast.error(error instanceof Error ? error.message : "Export could not be prepared.");
     } finally {
-      setExporting(false);
-      setExportOpen(false);
+      pending.current = null;
+      if (!controller.signal.aborted) {
+        setExporting(false);
+        setExportOpen(false);
+      }
     }
   };
 

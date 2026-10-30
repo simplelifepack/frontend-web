@@ -17,7 +17,7 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
   const createRecord = async (payload: { file: File; type?: HealthDocumentType }) => {
     setMessage("Processing health record...");
     try {
-      const analysis = await api.documents.analyze([payload.file], true);
+      const analysis = await api.documents.analyze([payload.file]);
       const aiDisabled = analysis.warnings.some(
         (warning) => warning.code === "AI_PROCESSING_DISABLED",
       );

@@ -1,0 +1,20 @@
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+import { AccountDataSection } from "./SettingsDataSections";
+import { api } from "@/lib/api";
+vi.mock("@/lib/api", () => ({ api: { account: { requestExport: vi.fn(), exportStatus: vi.fn(), downloadExport: vi.fn() } } }));
+vi.mock("sonner", () => ({ toast: { info: vi.fn(), error: vi.fn(), success: vi.fn() } }));
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.resetAllMocks(); });
+it("stops polling and avoids export downloads after leaving settings", async () => {
+  vi.useFakeTimers();
+  vi.mocked(api.account.requestExport).mockResolvedValue({ id: "export-a", status: "PENDING" });
+  vi.mocked(api.account.exportStatus).mockResolvedValue({ id: "export-a", status: "PENDING" });
+  const view = render(<AccountDataSection />);
+  fireEvent.click(screen.getByText("Export all data"));
+  await act(async () => fireEvent.click(screen.getByText("Prepare ZIP")));
+  expect(api.account.exportStatus).toHaveBeenCalledTimes(1);
+  view.unmount();
+  await act(async () => { await vi.advanceTimersByTimeAsync(3000); });
+  expect(api.account.exportStatus).toHaveBeenCalledTimes(1);
+  expect(api.account.downloadExport).not.toHaveBeenCalled();
+});

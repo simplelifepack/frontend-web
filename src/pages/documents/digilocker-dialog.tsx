@@ -91,11 +91,13 @@ function AccountDigiLockerDialog({ userId }: { userId: string }) {
     if (!open || !id || importing || !["IMPORTING", "PENDING"].includes(session?.status ?? "")) return;
     const controller = new AbortController();
     let active = true;
+    let inFlight = false;
     let delay = 1500;
     let timer: ReturnType<typeof setTimeout>;
     const generation = importGeneration.current;
     const poll = async () => {
-      if (document.hidden || !active) return;
+      if (document.hidden || !active || inFlight) return;
+      inFlight = true;
       try {
         const next = await digilocker.session(id, controller.signal);
         if (!active || generation !== importGeneration.current) return;
@@ -116,6 +118,7 @@ function AccountDigiLockerDialog({ userId }: { userId: string }) {
         delay = Math.min(30_000, Math.max(delay * 2, (error as { retryAfterMs?: number }).retryAfterMs ?? 0));
         setMessage("Unable to refresh DigiLocker progress. Retrying automatically. You can refresh status or reconnect.");
       }
+      finally { inFlight = false; }
       if (active && !document.hidden) timer = setTimeout(() => void poll(), delay);
     };
     const visibility = () => { clearTimeout(timer); if (!document.hidden) void poll(); };

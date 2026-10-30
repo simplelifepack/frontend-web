@@ -1,5 +1,6 @@
 import {
   Stack,
+  Row,
   ListRow,
   ListAction,
   Text,
@@ -21,6 +22,7 @@ import {
   persistTheme,
   type ThemePreference,
 } from "@/lib/theme";
+import { Section } from "./settings-ui";
 import NotificationSettingsRow from "./NotificationSettingsRow";
 import SearchablePreferenceSelect from "./SearchablePreferenceSelect";
 import { countryOptions, currencyOptions } from "./preference-options";
@@ -109,22 +111,24 @@ export default function PreferencesSection() {
         }
       />
       <ListRow $divided>
-        <Moon aria-hidden="true" />
         <Stack $grow>
           <Text weight="medium">Appearance</Text>
+          <Row $gap="s8">
+            <Moon aria-hidden="true" />
+            <ChoiceGroup aria-label="Appearance">
+              {(["system", "dark", "light"] as const).map((theme) => (
+                <Choice
+                  key={theme}
+                  aria-pressed={preferences.appearance === theme}
+                  onClick={() => changeAppearance(theme)}
+                >
+                  {theme === "system" ? "System" : theme === "dark" ? "Dark" : "Light"}
+                </Choice>
+              ))}
+            </ChoiceGroup>
+            <Sun aria-hidden="true" />
+          </Row>
         </Stack>
-        <ChoiceGroup aria-label="Appearance">
-          {(["system", "dark", "light"] as const).map((theme) => (
-            <Choice
-              key={theme}
-              aria-pressed={preferences.appearance === theme}
-              onClick={() => changeAppearance(theme)}
-            >
-              {theme === "system" ? "System" : theme === "dark" ? "Dark" : "Light"}
-            </Choice>
-          ))}
-        </ChoiceGroup>
-        <Sun aria-hidden="true" />
       </ListRow>
       <NotificationSettingsRow />
       <ListRow $divided>

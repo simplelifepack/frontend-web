@@ -190,7 +190,7 @@ describe("shared Button behavior", () => {
     );
     const button = screen.getByRole("button", { name: "Delete record" });
     expect(getComputedStyle(button).getPropertyValue("--button-accent")).toBe(
-      theme.colors.coral,
+      "var(--color-action-destructive-default)",
     );
     expect(button.getAttribute("data-button-variant")).toBe("primary");
     expect(button.hasAttribute("tone")).toBe(false);

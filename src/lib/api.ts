@@ -91,7 +91,7 @@ export const api = {
     disconnect: () => request<void>("/api/integrations/drive", { method: "DELETE", requiresAuth: true }),
   },
   documents: documentsApi,
-  account: { requestExport: () => request<{ id: string; status: string; expiresAt?: string | null }>("/api/account/export", { method: "POST", requiresAuth: true }), exportStatus: (jobId: string) => request<{ id: string; status: string; expiresAt?: string | null; errorMessage?: string | null }>(`/api/account/export/${encodeURIComponent(jobId)}`, { requiresAuth: true, dedupeMs: 0 }), downloadExport: (jobId: string) => downloadBlob(`/api/account/export/${encodeURIComponent(jobId)}/download`, { requiresAuth: true }), scheduleDeletion: (phrase: string) => request<{ message: string; scheduledDeletionAt: string }>("/api/account/deletion", { method: "POST", body: { phrase }, requiresAuth: true }) },
+  account: { requestExport: (signal?: AbortSignal) => request<{ id: string; status: string; expiresAt?: string | null }>("/api/account/export", { method: "POST", requiresAuth: true, signal }), exportStatus: (jobId: string, signal?: AbortSignal) => request<{ id: string; status: string; expiresAt?: string | null; errorMessage?: string | null }>(`/api/account/export/${encodeURIComponent(jobId)}`, { requiresAuth: true, dedupeMs: 0, signal }), downloadExport: (jobId: string, signal?: AbortSignal) => downloadBlob(`/api/account/export/${encodeURIComponent(jobId)}/download`, { requiresAuth: true, signal }), scheduleDeletion: (phrase: string) => request<{ message: string; scheduledDeletionAt: string }>("/api/account/deletion", { method: "POST", body: { phrase }, requiresAuth: true }) },
   usage: () => request<AccountUsage>("/api/bootstrap/usage", { requiresAuth: true, dedupeMs: 0 }),
   bootstrap: () => request<BootstrapResponse>("/api/bootstrap", { requiresAuth: true }),
   search: (query: string, limit = 5, signal?: AbortSignal) =>
@@ -191,14 +191,15 @@ export const api = {
         body: { packageType, documentLabels },
         requiresAuth: true,
       }),
-    createCustomGenerationJob: (packageType: string, documentLabels: string[]) =>
+    createCustomGenerationJob: (packageType: string, documentLabels: string[], signal?: AbortSignal) =>
       request<CustomPackageGenerationJobResponse>("/api/packages/custom/generation-jobs", {
         method: "POST",
         body: { packageType, documentLabels },
         requiresAuth: true,
+        signal,
       }),
-    getCustomGenerationJob: (jobId: string) =>
-      request<CustomPackageGenerationJobResponse>(`/api/packages/custom/generation-jobs/${encodeURIComponent(jobId)}`, { requiresAuth: true }),
+    getCustomGenerationJob: (jobId: string, signal?: AbortSignal) =>
+      request<CustomPackageGenerationJobResponse>(`/api/packages/custom/generation-jobs/${encodeURIComponent(jobId)}`, { requiresAuth: true, signal }),
     createCustom: (payload: CustomPackPayload) =>
       request<{ package: PackSummary }>("/api/packages/custom", { method: "POST", body: payload, requiresAuth: true }),
     updateCustom: (slug: string, payload: CustomPackPayload) =>

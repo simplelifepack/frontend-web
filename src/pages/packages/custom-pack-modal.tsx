@@ -1,8 +1,9 @@
 import { vars, Text, ModalBackdrop, ModalPanel, Textarea, Input, SearchableSelectMenu, Button } from "@/design-system";
 
 import { Loader2, Plus, Search, Trash2, X, Pencil } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { abortableDelay } from "@/lib/abortable-delay";
 import UploadDocumentModal from "@/components/UploadDocumentModal";
 import { T } from "@/constants/theme";
 import { api, type CustomPackPayload, type DocumentRecord, type PackSummary, type VerificationSource } from "@/lib/api";
@@ -23,6 +24,8 @@ export default function CustomPackModal({
   onSave,
   supportedDocumentTypes,
 }: CustomPackModalProps) {
+  const generation = useRef<AbortController | null>(null);
+  useEffect(() => () => { generation.current?.abort(); }, []);
   const [desc, setDesc] = useState(initialDescription);
   const [name, setName] = useState("");
   const [reqs, setReqs] = useState<string[]>([]);
@@ -57,17 +60,22 @@ export default function CustomPackModal({
   const lookup = async () => {
     const query = desc.trim();
     if (!query || loading) return;
+    const controller = new AbortController();
+    generation.current = controller;
     setLoading(true);
     setError(null);
     setDrafted(true);
     if (!name.trim()) setName(query.replace(/^documents?\s+(needed|required|requested)\s+(for|by)\s+/i, "").slice(0, 80));
     try {
-      const created = await api.packages.createCustomGenerationJob(query, documentLabels);
+      const created = await api.packages.createCustomGenerationJob(query, documentLabels, controller.signal);
+      controller.signal.throwIfAborted();
       let job = created.job;
       setGenerationMessage(job.statusMessage);
       while (!job.draft && job.status !== "failed") {
-        if (job.status === "queued") await new Promise((resolve) => setTimeout(resolve, 1500));
-        const response = await api.packages.getCustomGenerationJob(job.id);
+        await abortableDelay(1500, controller.signal);
+        controller.signal.throwIfAborted();
+        const response = await api.packages.getCustomGenerationJob(job.id, controller.signal);
+        controller.signal.throwIfAborted();
         job = response.job;
         setGenerationMessage(job.statusMessage);
       }
@@ -82,11 +90,14 @@ export default function CustomPackModal({
       });
       if (job.disclaimer) setDisclaimer(job.disclaimer);
     } catch (lookupError) {
+      if (controller.signal.aborted) return;
       setReqs((current) => current.length ? current : [""]);
       setError(lookupError instanceof Error ? lookupError.message : "Could not look this up right now. You can still add the documents yourself.");
     } finally {
-      setGenerationMessage("");
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setGenerationMessage("");
+        setLoading(false);
+      }
     }
   };
 

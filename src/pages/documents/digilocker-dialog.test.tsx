@@ -207,3 +207,15 @@ it("defers background polling until the document becomes visible", async () => {
     await waitFor(()=>expect(digilocker.session).toHaveBeenCalledTimes(2));
   } finally { hidden.mockRestore(); }
 });
+it("does not overlap progress requests when visibility changes during a poll", async () => {
+  const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+  try {
+    vi.mocked(digilocker.session).mockResolvedValueOnce({ id: "session-a", status: "IMPORTING", expiresAt: null, progress: [] });
+    vi.mocked(digilocker.session).mockImplementation(() => new Promise(() => {}));
+    await connected();
+    await waitFor(() => expect(digilocker.session).toHaveBeenCalledTimes(2));
+    hidden.mockReturnValue(true); fireEvent(document, new Event("visibilitychange"));
+    hidden.mockReturnValue(false); fireEvent(document, new Event("visibilitychange"));
+    expect(digilocker.session).toHaveBeenCalledTimes(2);
+  } finally { hidden.mockRestore(); }
+});

@@ -76,7 +76,7 @@ export default function RecordActionsDialog({ mode, record, onClose, onDeleted, 
     setError(null);
     try {
       const domain = classifyWealthRecord(record);
-      const analysis = await api.documents.analyze(files, false);
+      const analysis = await api.documents.analyze(files);
       const primary = analysis.files[0]!;
       const saved = await api.documents.save({
         tempFileIds: analysis.files.map((item) => item.tempFileId),
@@ -143,7 +143,7 @@ export default function RecordActionsDialog({ mode, record, onClose, onDeleted, 
       );
       if (files.length) {
         const domain = classifyWealthRecord(updated);
-        const analysis = await api.documents.analyze(files, false);
+        const analysis = await api.documents.analyze(files);
         const primary = analysis.files[0]!;
         const saved = await api.documents.save({
           tempFileIds: analysis.files.map((item) => item.tempFileId),
