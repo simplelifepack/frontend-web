@@ -107,7 +107,14 @@ export function calculatePackReadiness(requirements: PackageRequirement[], docum
       .filter((document) => ownerMatches(requirement, document))
       .filter((document) => documentRequirementTypes(document).some((type) => accepted.has(type)))
       .filter((document) => metadataMatches(requirement, document, now))
-      .sort((left, right) => right.confidence - left.confidence)[0];
+       .sort((left, right) => {
+        const exact = (document: DocumentRecord) => Number(accepted.has(usableDocumentType(document)));
+        const breadth = (document: DocumentRecord) => new Set(documentRequirementTypes(document).filter(type => !accepted.has(type))).size;
+        return exact(right) - exact(left)
+          || breadth(left) - breadth(right)
+          || right.confidence - left.confidence
+          || left.id.localeCompare(right.id);
+      })[0];
     return { ...requirement, assignmentSource: matched ? "AUTO" : null, status: matched ? "ready" : "missing", ...(matched ? { matchedDocument: toMatchedDocument(matched) } : {}) };
   });
   const required = derived.filter((requirement) => requirement.required);

@@ -107,3 +107,9 @@ it("uses Aadhaar for generic identity/address requirements and preserves specifi
   );
   expect(result.requirements.map(item => item.status)).toEqual(["ready", "ready", "missing", "missing"]);
 });
+
+it("selects exact types and narrower matches before confidence, independent of list order", () => {
+  const docs = [document("driving_licence", { id: "licence", confidence: 99 }), document("aadhaar", { id: "aadhaar" }), document("pan", { id: "pan" })];
+  const slots = ["driving_licence", "address_proof", "identity_proof"].map(type => ({ id: type, title: type, required: true, acceptedDocumentTypes: [type] }));
+  for (const candidates of [docs, [...docs].reverse()]) expect(calculatePackReadiness(slots, candidates).requirements.map(item => item.matchedDocument?.id)).toEqual(["licence", "aadhaar", "aadhaar"]);
+});
