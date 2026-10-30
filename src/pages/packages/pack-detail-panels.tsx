@@ -87,6 +87,7 @@ export function RequirementSections({
                 </span>
                 <span>
                   {slot.title}
+                  <small>{documentName(document, slot.matchedDocument?.displayName || slot.matchedDocument?.originalName)}</small>
                   {typeof slot.metadata?.condition === "string" ? (
                     <small>{slot.metadata.condition}</small>
                   ) : null}

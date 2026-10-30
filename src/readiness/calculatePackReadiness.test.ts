@@ -99,3 +99,11 @@ describe("calculatePackReadiness", () => {
     expect(result?.assignmentSource).toBe("AUTO");
   });
 });
+
+it("uses Aadhaar for generic identity/address requirements and preserves specific document requirements", () => {
+  const result = calculatePackReadiness(
+    ["identity_document", "address_proof", "pan", "passport"].map(type => ({ id: type, title: type, required: true, acceptedDocumentTypes: [type] })),
+    [document("aadhaar", { ownershipStatus: "verified", capabilities: ["aadhaar"] })],
+  );
+  expect(result.requirements.map(item => item.status)).toEqual(["ready", "ready", "missing", "missing"]);
+});

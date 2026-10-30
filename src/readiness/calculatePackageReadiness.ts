@@ -19,6 +19,7 @@ export function normalizeRequirementValue(value: string | null | undefined) {
   const aliases: Record<string, string> = {
     driving_license: "driving_licence",
     aadhar: "aadhaar",
+    identity_document: "identity_proof",
     aadhaar_card: "aadhaar",
     photograph: "photo",
     recent_photograph: "photo",
