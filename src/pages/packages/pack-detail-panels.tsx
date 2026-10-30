@@ -1,6 +1,7 @@
 import { Heading, Text, Button, Checkbox } from "@/design-system";
 
 import type { DocumentRecord, PackSummary } from "@/lib/api";
+import { documentMatchesRequirement } from "@/readiness/calculatePackageReadiness";
 import type { DerivedRequirement } from "@/readiness/calculatePackageReadiness";
 import {
   AlertTriangle,
@@ -75,6 +76,7 @@ export function RequirementSections({
           const document = documents.find(
             (item) => item.id === slot.matchedDocument?.id,
           );
+          const alternatives = documents.filter(item => item.id !== slot.matchedDocument?.id && documentMatchesRequirement(slot, item));
           return (
             <div className="lp-pack-check-row-wrap" key={slot.id}>
               <button
@@ -88,6 +90,7 @@ export function RequirementSections({
                 <span>
                   {slot.title}
                   <small>{documentName(document, slot.matchedDocument?.displayName || slot.matchedDocument?.originalName)}</small>
+                  {alternatives.length ? <small>Also available: {alternatives.map(item => documentName(item)).join(", ")}</small> : null}
                   {typeof slot.metadata?.condition === "string" ? (
                     <small>{slot.metadata.condition}</small>
                   ) : null}
