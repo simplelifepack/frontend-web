@@ -13,7 +13,7 @@ function pendingSession(userId: string) {
   sessionStorage.removeItem(`${SESSION_KEY}.owner`);
   return sessionStorage.getItem(sessionKey(userId));
 }
-const CONSENT_TEXT = "ReadiNes will securely copy your selected DigiLocker documents into your account. These copies will be encrypted and processed using our existing AI document management system.";
+const CONSENT_TEXT = "Readines will securely copy your selected DigiLocker documents into your account. These copies will be encrypted. Your existing AI processing preference applies.";
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : "DigiLocker could not complete the request.";
 
 export default function DigiLockerDialog() {
