@@ -1,6 +1,7 @@
+import { darkColorTokens as colors } from "@/design-system/variables/colorTokens";
 import { Check } from "lucide-react";
 
-const wrap = "rounded-2xl bg-[#0B0E24] p-5 min-h-[260px] relative overflow-hidden";
+const wrap = "rounded-2xl bg-[var(--color-surface-inverse)] p-5 min-h-[260px] relative overflow-hidden";
 
 function PackagesVisual() {
   const rows: Array<[string, boolean]> = [
@@ -23,9 +24,9 @@ function PackagesVisual() {
         >
           <span
             className="grid place-items-center rounded-md"
-            style={{ width: 20, height: 20, background: ok ? "#1e3a2f" : "#3a2a1e" }}
+            style={{ width: 20, height: 20, background: ok ? colors["status-success-surface"] : colors["status-warning-surface"] }}
           >
-            {ok ? <Check aria-hidden="true" focusable="false" size={12} color="#2FB68A" /> : <span className="text-seal text-[12px]">!</span>}
+            {ok ? <Check aria-hidden="true" focusable="false" size={12} color={colors["status-success-icon"]} /> : <span className="text-seal text-[12px]">!</span>}
           </span>
           <span className="text-white/80 text-[14px]">{label}</span>
         </div>
@@ -51,7 +52,7 @@ function HealthVisual() {
           key={index}
           className="flex items-center gap-3 py-2.5 border-t border-white/5 first:border-0"
         >
-          <span className="w-2 h-2 rounded-full" style={{ background: "#E0508F" }} />
+          <span className="w-2 h-2 rounded-full" style={{ background: colors["person-4"] }} />
           <span className="text-white/80 text-[14px] flex-1">{name}</span>
           <span className="text-white/40 text-[12px]">{date}</span>
         </div>
@@ -71,9 +72,9 @@ function HealthVisual() {
 
 function ReadyVisual() {
   const rows: Array<[string, string, string]> = [
-    ["Vehicle insurance", "10d", "#D98A2B"],
-    ["Health insurance", "53d", "#ffffff"],
-    ["Rental agreement", "expired", "#E04A4F"],
+    ["Vehicle insurance", "10d", colors["status-warning-icon"]],
+    ["Health insurance", "53d", colors["text-primary"]],
+    ["Rental agreement", "expired", colors["status-danger-icon"]],
   ];
 
   return (

@@ -1,24 +1,24 @@
-import { primaryPalette } from "./colors";
+import { lightColorTokens as colors } from "./colorTokens";
 
-// Public surfaces share the app’s lavender action palette.
+// Public surfaces use the supplied light palette.
 export const landingBrand = {
-  paper: "#F3EBDA",
-  paperDeep: "#EDE3CF",
-  panel: "#FFFFFF",
-  panel2: "#FAF3E7",
-  border: "#E3D8C2",
-  ink: "#221E17",
-  body: "#4C443A",
-  muted: "#897E6D",
-  action: primaryPalette.light.base,
-  actionText: primaryPalette.light.text,
-  actionHover: primaryPalette.light.hover,
-  actionSoft: primaryPalette.soft,
-  emerald: "#1F9D66",
-  clay: "#B85C42",
-  red: "#C24A34",
-  blue: "#4F79C7",
-  purple: "#8467C4",
-  pink: "#C25A86",
-  teal: primaryPalette.light.base,
-};
+  paper: colors["surface-canvas"],
+  paperDeep: colors["surface-secondary"],
+  panel: colors["surface-default"],
+  panel2: colors["surface-inset"],
+  border: colors["border-default"],
+  ink: colors["text-heading"],
+  body: colors["text-primary"],
+  muted: colors["text-secondary"],
+  action: colors["action-primary-default"],
+  actionText: colors["text-on-brand"],
+  actionHover: colors["action-primary-hover"],
+  actionSoft: colors["surface-brand-tint"],
+  emerald: colors["status-success-icon"],
+  clay: colors["status-warning-icon"],
+  red: colors["status-danger-icon"],
+  blue: colors["status-info-icon"],
+  purple: colors["person-2"],
+  pink: colors["person-4"],
+  teal: colors["person-3"],
+} as const;

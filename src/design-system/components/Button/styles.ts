@@ -10,19 +10,32 @@ const variants = {
       background: var(--button-accent-hover);
       border-color: var(--button-accent-hover);
     }
+    &:not(:disabled):not([aria-disabled="true"]):active {
+      background: var(--button-accent-pressed);
+      border-color: var(--button-accent-pressed);
+    }
+    &:disabled,
+    &[aria-disabled="true"] {
+      background: var(--button-accent-disabled);
+      border-color: var(--button-accent-disabled);
+      color: var(--color-text-disabled);
+    }
   `,
   secondary: css`
-    background: ${({ theme }) => theme.colors.raised};
+    background: var(--color-action-secondary-default);
     border-color: var(--button-border);
     color: var(--button-text);
     &:not(:disabled):not([aria-disabled="true"]):hover {
-      background: var(--button-soft);
+      background: var(--color-action-secondary-hover);
       border-color: var(--button-accent);
+    }
+    &:not(:disabled):not([aria-disabled="true"]):active {
+      background: var(--color-action-secondary-pressed);
     }
   `,
   tertiary: css`
     background: transparent;
-    color: var(--button-accent);
+    color: var(--button-interactive-text);
     &:not(:disabled):not([aria-disabled="true"]):hover {
       background: var(--button-soft);
     }
@@ -65,20 +78,22 @@ const sizes = {
 const tones = {
   neutral: css`
     --button-accent: ${({ theme }) => theme.colors.action};
-    --button-accent-hover: ${({ theme }) => theme.colors.actionHover};
+    --button-interactive-text: var(--color-text-interactive);
+    --button-accent-hover: var(--color-action-primary-hover);
+    --button-accent-pressed: var(--color-action-primary-pressed);
+    --button-accent-disabled: var(--color-action-primary-disabled);
     --button-on-accent: ${({ theme }) => theme.colors.actionText};
     --button-text: ${({ theme }) => theme.colors.text};
     --button-border: ${({ theme }) => theme.colors.border};
     --button-soft: ${({ theme }) => theme.colors.actionSoft};
   `,
   danger: css`
-    --button-accent: ${({ theme }) => theme.colors.coral};
-    --button-accent-hover: color-mix(
-      in srgb,
-      ${({ theme }) => theme.colors.coral} ${({ theme }) => theme.vars.mix.p86},
-      ${({ theme }) => theme.colors.text}
-    );
-    --button-on-accent: ${({ theme }) => theme.colors.navy};
+    --button-interactive-text: var(--color-text-destructive);
+    --button-accent: var(--color-action-destructive-default);
+    --button-accent-hover: var(--color-action-destructive-hover);
+    --button-accent-pressed: var(--color-action-destructive-pressed);
+    --button-accent-disabled: var(--color-action-destructive-disabled);
+    --button-on-accent: var(--color-text-on-brand);
     --button-text: ${({ theme }) => theme.colors.coral};
     --button-border: ${({ theme }) => theme.colors.coralBorder};
     --button-soft: ${({ theme }) => theme.colors.coralSoft};
@@ -140,12 +155,21 @@ export const StyledButton = styled.button<{
   }
   &:focus-visible {
     outline: ${({ theme }) => theme.vars.borderWidths.s2} solid
-      ${({ theme }) => theme.colors.action};
+      var(--color-focus-ring-default);
     outline-offset: ${({ theme }) => theme.spacing.s3};
   }
   &:disabled,
   &[aria-disabled="true"] {
-    opacity: ${({ theme }) => theme.vars.opacity.p50};
+    opacity: 1;
+    color: var(--color-text-disabled);
+    ${({ $variant }) =>
+      $variant !== "primary" &&
+      css`
+        background: ${$variant === "tertiary"
+          ? "var(--color-action-tertiary-disabled)"
+          : "var(--color-action-secondary-disabled)"};
+        border-color: var(--color-border-disabled);
+      `}
     cursor: not-allowed;
   }
   @media (prefers-reduced-motion: reduce) {

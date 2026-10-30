@@ -96,7 +96,7 @@ export function MomentCard({ m, i }: { m: (typeof MOMENTS)[number]; i: number })
                   width: 44,
                   height: 4,
                   borderRadius: 4,
-                  background: "#E8DFCA",
+                  background: C.panel2,
                   overflow: "hidden",
                   display: "inline-block",
                 }}

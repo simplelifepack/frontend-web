@@ -5,22 +5,22 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-ink: #0e1525;
-  --color-inkdeep: #0b0e24;
-  --color-paper: #f5f2ea;
+  --color-ink: var(--color-text-heading);
+  --color-inkdeep: var(--color-surface-inverse);
+  --color-paper: var(--color-surface-canvas);
   --color-seal: var(--lp-action);
-  --color-verified: #2fb68a;
-  --color-brand: #5b5bf5;
-  --color-brand-2: #8a6bf4;
-  --color-ok: #0e9f6e;
-  --color-warn: #d98a18;
-  --color-bad: #e04a4f;
-  --color-night: #0a0e1f;
-  --color-night-2: #0e1430;
-  --color-aurora-indigo: #6366f1;
-  --color-aurora-violet: #a78bfa;
-  --color-aurora-cyan: #22d3ee;
-  --color-ready-mint: #5be5a0;
+  --color-verified: var(--color-status-success-icon);
+  --color-brand: var(--color-action-primary-default);
+  --color-brand-2: var(--color-action-primary-hover);
+  --color-ok: var(--color-status-success-icon);
+  --color-warn: var(--color-status-warning-icon);
+  --color-bad: var(--color-status-danger-icon);
+  --color-night: var(--color-surface-inverse);
+  --color-night-2: var(--color-surface-secondary);
+  --color-aurora-indigo: var(--color-status-info-icon);
+  --color-aurora-violet: var(--color-action-primary-hover);
+  --color-aurora-cyan: var(--color-person-3);
+  --color-ready-mint: var(--color-status-success-icon);
   --shadow-soft:
     0 1px 2px color-mix(in srgb, var(--lp-navy) 4%, transparent),
     0 8px 24px color-mix(in srgb, var(--lp-navy) 6%, transparent);
@@ -33,8 +33,7 @@
  * The @theme inline block maps CSS custom properties to Tailwind utility
  * classes (e.g. --color-primary -> bg-primary, text-primary).
  *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
+ * The :root and .dark blocks consume the supplied semantic color tokens.
  *
  * To add a new semantic color:
  * 1. Add the variable to :root (light value) and .dark (dark value)
@@ -86,32 +85,32 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #f2f3f5;
-  --foreground: #1b2431;
-  --card: #ffffff;
-  --card-foreground: #1b2431;
-  --popover: #ffffff;
-  --popover-foreground: #1b2431;
+  --background: var(--color-surface-canvas);
+  --foreground: var(--color-text-heading);
+  --card: var(--color-surface-default);
+  --card-foreground: var(--color-text-heading);
+  --popover: var(--color-surface-default);
+  --popover-foreground: var(--color-text-heading);
   --primary: var(--lp-action);
   --primary-foreground: var(--lp-action-text);
-  --secondary: #eaecf0;
-  --secondary-foreground: #1b2431;
-  --muted: #eaecf0;
-  --muted-foreground: #5e6674;
-  --accent: #eaecf0;
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: #e3e6ea;
-  --input: #e3e6ea;
+  --secondary: var(--color-surface-secondary);
+  --secondary-foreground: var(--color-text-heading);
+  --muted: var(--color-surface-secondary);
+  --muted-foreground: var(--color-text-secondary);
+  --accent: var(--color-surface-secondary);
+  --accent-foreground: var(--color-text-primary);
+  --destructive: var(--color-action-destructive-default);
+  --destructive-foreground: var(--color-text-on-brand);
+  --border: var(--color-border-default);
+  --input: var(--color-border-default);
   --ring: var(--lp-action);
-  --sidebar: #f2f3f5;
-  --sidebar-foreground: #1b2431;
+  --sidebar: var(--color-surface-canvas);
+  --sidebar-foreground: var(--color-text-heading);
   --sidebar-primary: var(--lp-action);
   --sidebar-primary-foreground: var(--lp-action-text);
-  --sidebar-accent: #eaecf0;
-  --sidebar-accent-foreground: #1b2431;
-  --sidebar-border: #e3e6ea;
+  --sidebar-accent: var(--color-surface-secondary);
+  --sidebar-accent-foreground: var(--color-text-heading);
+  --sidebar-border: var(--color-border-default);
   --sidebar-ring: var(--lp-action);
   color-scheme: light;
 }
@@ -131,8 +130,8 @@
   --muted-foreground: var(--lp-muted);
   --accent: var(--lp-raised);
   --accent-foreground: var(--lp-text);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --destructive: var(--color-action-destructive-default);
+  --destructive-foreground: var(--color-text-on-brand);
   --border: var(--lp-border);
   --input: var(--lp-border);
   --ring: var(--lp-action);
@@ -388,7 +387,7 @@ body,
   border: var(--border-s1) solid var(--lp-border);
   border-radius: var(--radius-surface);
   background: var(--lp-panel);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 18px 44px var(--color-shadow-strong);
 }
 
 .lp-global-search-state {
@@ -680,7 +679,7 @@ body,
 .lp-most-ready b {
   color: var(--lp-text);
 }
-.lp-collection-surface { background: #f7f7fb; }
+.lp-collection-surface { background: var(--color-surface-canvas); }
 .dark .lp-collection-surface { background: var(--lp-navy); }
 .lp-documents-route {
   padding-top: 5px;

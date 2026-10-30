@@ -176,7 +176,7 @@ export const Mascot = styled.div`
   display: flex;
   align-items: end;
   justify-content: center;
-  color: #171022;
+  color: ${colors.actionText};
   > svg { display: block; width: 100%; height: 100%; min-height: 0; }
 `;
 export const HeroNavigationButton = styled(Button)`

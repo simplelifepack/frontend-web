@@ -1,10 +1,10 @@
 .lp-packages-route {
-  --packages-progress: #a47400;
-  --packages-danger: #cf3040;
-  --packages-panel: #fff;
-  --packages-border: #e6e5ee;
-  --packages-text: #302b3c;
-  --packages-muted: #777185;
+  --packages-progress: var(--color-status-warning-icon);
+  --packages-danger: var(--color-status-danger-icon);
+  --packages-panel: var(--color-surface-default);
+  --packages-border: var(--color-border-default);
+  --packages-text: var(--color-text-primary);
+  --packages-muted: var(--color-text-secondary);
 }
 .dark .lp-packages-route {
   --packages-progress: var(--lp-readiness);
@@ -44,7 +44,7 @@
   color: var(--packages-text);
 }
 .lp-packages-route .lp-pack-search input::placeholder {
-  color: #9b96a3;
+  color: var(--color-text-tertiary);
 }
 .lp-packages-route .packages-category-pills {
   gap: 8px;

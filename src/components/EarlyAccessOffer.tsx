@@ -22,7 +22,7 @@ const Card = styled.div`
     background: color-mix(in srgb, ${colors.heading} 9%, transparent);
   }
   @media ${({ theme }) => theme.media.compact} {
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 2fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
     padding: 10px 12px;
   }

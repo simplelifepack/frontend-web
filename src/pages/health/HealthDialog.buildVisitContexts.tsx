@@ -1,3 +1,4 @@
+import { lightColorTokens as colors } from "@/design-system/variables/colorTokens";
 import { typography, interFontFaces, typographyVariables } from "@/design-system/variables/typography";
 import type { DocumentRecord, HealthMember, HealthRecord } from "@/lib/api.types";
 import { type VisitContext, type VisitDocument } from "./HealthDialog.HealthDialogKind";
@@ -132,16 +133,16 @@ export function buildEmergencyCardHtml(rows: string[][], generatedDate: string) 
     ${interFontFaces}
     ${typographyVariables}
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 24px; background: #eef0f3; color: #1B2431; font-family: ${typography.family}; font-size: ${typography.text.md}; line-height: ${typography.lineHeights.body}; }
-    .paper { max-width: 560px; margin: 0 auto; overflow: hidden; border: 1px solid #E3E6EA; border-radius: 10px; background: #fff; }
-    .band { display: flex; justify-content: space-between; align-items: center; padding: 18px 16px; background: #c9181f; color: #fff; }
+    body { margin: 0; padding: 24px; background: ${colors["surface-canvas"]}; color: ${colors["text-primary"]}; font-family: ${typography.family}; font-size: ${typography.text.md}; line-height: ${typography.lineHeights.body}; }
+    .paper { max-width: 560px; margin: 0 auto; overflow: hidden; border: 1px solid ${colors["border-default"]}; border-radius: 10px; background: ${colors["surface-default"]}; }
+    .band { display: flex; justify-content: space-between; align-items: center; padding: 18px 16px; background: ${colors["action-destructive-default"]}; color: ${colors["surface-default"]}; }
     .band b { font-size: var(--text-md); font-weight: var(--weight-bold); letter-spacing: 1px; text-transform: uppercase; }
     .band span { font-size: var(--text-sm); font-weight: var(--weight-bold); }
     dl { display: grid; margin: 0; padding: 8px 16px 12px; }
     dl div { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 12px; padding: 9px 0; }
-    dt { color: #5E6674; font-size: var(--text-sm); line-height: var(--line-body); }
-    dd { margin: 0; color: #1B2431; font-size: var(--text-md); font-weight: var(--weight-bold); line-height: var(--line-body); }
-    footer { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid #E3E6EA; color: #5E6674; font-size: var(--text-sm); }
+    dt { color: ${colors["text-secondary"]}; font-size: var(--text-sm); line-height: var(--line-body); }
+    dd { margin: 0; color: ${colors["text-primary"]}; font-size: var(--text-md); font-weight: var(--weight-bold); line-height: var(--line-body); }
+    footer { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid ${colors["border-default"]}; color: ${colors["text-secondary"]}; font-size: var(--text-sm); }
   </style>
 </head>
 <body>

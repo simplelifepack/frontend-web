@@ -1,3 +1,4 @@
+import { lightColorTokens as colors } from "@/design-system/variables/colorTokens";
 import type { CSSProperties } from "react";
 import styled from "styled-components";
 
@@ -25,9 +26,9 @@ type BrandWordmarkProps = {
   tick?: boolean;
 };
 
-const BRAND_ACCENT = "#D9A441";
-const BRAND_CHARCOAL = "#1E242B";
-const BRAND_CREAM = "#F3EEE2";
+const BRAND_ACCENT = "var(--lp-action)";
+const BRAND_CHARCOAL = colors["text-heading"];
+const BRAND_CREAM = colors["surface-canvas"];
 
 export function BrandMark({ size = 36, title = "Readines" }: BrandMarkProps) {
   return (
@@ -117,6 +118,6 @@ export const BRAND = {
     accent: BRAND_ACCENT,
     charcoal: BRAND_CHARCOAL,
     cream: BRAND_CREAM,
-    paper: "#FAF7F0",
+    paper: colors["surface-default"],
   },
 };

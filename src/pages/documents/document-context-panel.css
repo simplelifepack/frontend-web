@@ -1,16 +1,16 @@
 .document-context {
-  --context-bg: #f7f7fb;
-  --context-raised: #efedf5;
-  --context-border: #e5e4ed;
-  --context-text: #302b3c;
-  --context-muted: #777185;
+  --context-bg: var(--color-surface-canvas);
+  --context-raised: var(--color-surface-secondary);
+  --context-border: var(--color-border-default);
+  --context-text: var(--color-text-primary);
+  --context-muted: var(--color-text-secondary);
   --context-purple: var(--lp-action);
   width: min(430px, 100vw);
   min-height: 0;
   background: var(--context-bg);
   border-color: var(--context-border);
   color: var(--context-text);
-  box-shadow: -15px 0 40px #28233220;
+  box-shadow: -15px 0 40px var(--color-shadow-soft);
 }
 .dark .document-context {
   --context-bg: var(--lp-navy);
@@ -25,7 +25,7 @@
   font-family: var(--font-sans);
 }
 .document-context-backdrop {
-  background: #24223270;
+  background: var(--color-overlay-backdrop);
 }
 .document-context .lp-document-drawer-header {
   flex: 0 0 auto;
@@ -74,20 +74,20 @@
   margin-top: 16px;
   padding: 11px 16px;
   border-radius: 12px;
-  color: #1c974d;
-  border-color: #a9d1b8;
-  background: #22954c12;
+  color: var(--color-status-success-text);
+  border-color: var(--color-status-success-border);
+  background: var(--color-status-success-surface);
   gap: 12px;
 }
 .document-context .lp-document-drawer-expiry[data-state="soon"] {
-  color: #a47400;
-  border-color: #d9c89d;
-  background: #a4740010;
+  color: var(--color-status-warning-icon);
+  border-color: var(--color-status-warning-border);
+  background: var(--color-status-warning-surface);
 }
 .document-context .lp-document-drawer-expiry[data-state="expired"] {
-  color: #cf3040;
-  border-color: #e4a9b1;
-  background: #cf304010;
+  color: var(--color-status-danger-icon);
+  border-color: var(--color-status-danger-border);
+  background: var(--color-status-danger-surface);
 }
 .document-context .lp-document-drawer-expiry > span {
   font-size: 14px;
@@ -115,7 +115,7 @@
   font-size: 12px;
 }
 .document-context .lp-document-drawer-fact > span {
-  color: #686174;
+  color: var(--color-text-secondary);
   font-size: 12px;
 }
 .document-context .lp-document-drawer-fact > strong {
@@ -148,7 +148,7 @@
   resize: vertical;
 }
 .document-context-section textarea::placeholder {
-  color: #928c9c;
+  color: var(--color-text-tertiary);
 }
 .document-context-package {
   display: flex;
@@ -167,9 +167,9 @@
 }
 .document-context-package > span:last-child {
   padding: 4px 12px;
-  border: 1px solid #c6c2ce;
-  background: #e5e3eb;
-  color: #625b6e;
+  border: 1px solid var(--color-border-emphasis);
+  background: var(--color-surface-secondary);
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
@@ -200,7 +200,7 @@
 }
 .document-context .lp-document-drawer-footer > button:last-child {
   width: 48px;
-  border-color: #edb0b8;
-  color: #dc3648;
+  border-color: var(--color-status-danger-border);
+  color: var(--color-status-danger-icon);
   background: transparent;
 }

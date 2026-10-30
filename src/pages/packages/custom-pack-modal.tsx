@@ -225,7 +225,7 @@ const backdrop = {
   position: "fixed",
   inset: 0,
   zIndex: "var(--layer-overlay)",
-  background: "var(--lpv-scrim, rgba(18,22,30,.38))",
+  background: "var(--color-overlay-backdrop)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",

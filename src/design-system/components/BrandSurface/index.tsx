@@ -1,3 +1,4 @@
+import { lightColorTokens } from "../../variables/colorTokens";
 import { approvedLandingStyles } from "./legacy";
 import styled from "styled-components";
 import { theme } from "../../variables/theme";
@@ -15,6 +16,9 @@ import { Surface as CardSurface } from "../Card/styles";
 
 /** Approved public brand scope. Never applies palette overrides to the authenticated shell. */
 export const BrandSurface = styled.div`
+  ${Object.entries(lightColorTokens)
+    .map(([name, value]) => `--color-${name}: ${value};`)
+    .join("\n")}
   --lp-navy: ${C.paper};
   --lp-panel: ${C.panel};
   --lp-raised: ${C.panel2};
@@ -63,7 +67,7 @@ export const BrandSurface = styled.div`
   ${CardSurface} {
     border-color: ${C.border};
     border-radius: 18px;
-    box-shadow: 0 12px 30px rgba(80, 60, 30, 0.07);
+    box-shadow: 0 12px 30px ${lightColorTokens["shadow-soft"]};
   }
   ${Content} {
     color: ${C.body};

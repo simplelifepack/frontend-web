@@ -1,14 +1,14 @@
 .package-detail-backdrop {
-  background: #24223270;
+  background: var(--color-overlay-backdrop);
   backdrop-filter: none;
 }
 .lp-pack-drawer {
-  --pack-surface: #fff;
-  --pack-background: #f7f7fb;
-  --pack-raised: #efedf5;
-  --pack-border: #e6e5ee;
-  --pack-text: #302b3c;
-  --pack-muted: #777185;
+  --pack-surface: var(--color-surface-default);
+  --pack-background: var(--color-surface-canvas);
+  --pack-raised: var(--color-surface-secondary);
+  --pack-border: var(--color-border-default);
+  --pack-text: var(--color-text-primary);
+  --pack-muted: var(--color-text-secondary);
   position: fixed;
   inset: 0 0 0 auto;
   width: min(450px, 100vw);
@@ -139,7 +139,7 @@
   border: 1px solid var(--pack-border);
   border-radius: 12px;
   background: var(--pack-surface);
-  box-shadow: 0 1px 2px #211b2b12;
+  box-shadow: 0 1px 2px var(--color-shadow-soft);
   margin: 0 0 12px;
 }
 .lp-pack-drawer .lp-pack-check-card h3 {

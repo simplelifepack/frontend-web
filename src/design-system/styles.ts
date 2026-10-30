@@ -27,7 +27,7 @@ export const GlobalTypography = createGlobalStyle`
     ${declarations("icon", vars.icons)}
   }
   :where(button, a, input, select, textarea, [tabindex]):focus-visible {
-    outline: ${vars.borderWidths.s2} solid var(--lp-action);
+    outline: ${vars.borderWidths.s2} solid var(--color-focus-ring-default);
     outline-offset: ${spacing.s3};
   }
   .lucide { stroke-width: ${vars.icons.stroke}; flex-shrink: 0; }
