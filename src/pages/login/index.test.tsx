@@ -17,7 +17,6 @@ import LoginPage from "./index";
 vi.mock("@/lib/api", () => ({
   api: { auth: { login: vi.fn(), loginWithPin: vi.fn() } },
 }));
-vi.mock("@/components/GoogleSignInButton", () => ({ default: () => null }));
 
 afterEach(() => {
   cleanup();

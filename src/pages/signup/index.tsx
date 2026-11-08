@@ -5,8 +5,6 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { signup } from "@/store/slices/authSlice";
-import { googleLogin } from "@/store/slices/authSlice";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 import { api } from "@/lib/api";
 
 function signupErrorMessage(error: unknown) {
@@ -58,34 +56,13 @@ export default function SignupPage() {
     }
   };
 
-  const handleGoogleCredential = async (credential: string) => {
-    if (isSubmitting) return;
-    setError("");
-    setIsSubmitting(true);
-    try {
-      await dispatch(googleLogin({ credential })).unwrap();
-      navigate("/", { replace: true });
-    } catch {
-      setError(navigator.onLine ? "We could not authenticate that Google account." : "Check your connection and try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="mx-auto max-w-md">
       <div className="lg:hidden"><BrandLogo height={64} /></div>
       <h2 className="mt-4 text-3xl font-semibold text-[var(--lp-heading)]">Create account</h2>
       <p className="mt-2 text-sm text-[var(--lp-muted)]">Set up your Readines login.</p>
 
-      <div className="mt-8">
-        <GoogleSignInButton disabled={isSubmitting} onCredential={handleGoogleCredential} onError={setError} />
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wider text-[var(--lp-faint)]">
-          <span className="h-px flex-1 bg-[var(--lp-border)]" /> or <span className="h-px flex-1 bg-[var(--lp-border)]" />
-        </div>
-      </div>
-
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
         <label className="block">
           <span className="mb-2 block text-sm text-[var(--lp-text)]">Name</span>
           <input

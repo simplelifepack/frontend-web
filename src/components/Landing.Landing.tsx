@@ -7,7 +7,7 @@ import { Text, Heading, Button, Container, Section, Row, Center, Content } from 
 import { clearBillingIntent } from "@/lib/billing-api";
 import { api } from "@/lib/api";
 import { useAppDispatch } from "@/store/hooks";
-import { googleLogin, login } from "@/store/slices/authSlice";
+import { login } from "@/store/slices/authSlice";
 import { toast } from "sonner";
 import { ArrowRight } from "lucide-react";
 import { Brand, AuthModal, isExistingAccountError } from "./Landing.Brand";
@@ -174,27 +174,5 @@ export function useAuthModalState({
       setSubmitting(false);
     }
   };
-  const handleGoogleCredential = async (credential: string) => {
-    if (submitting) return;
-    setErr("");
-    setSubmitting(true);
-    try {
-      const result = await dispatch(googleLogin({ credential })).unwrap();
-      if (result.deletionCancelled) {
-        toast.success(
-          "Welcome back. Your account deletion request has been cancelled.",
-        );
-      }
-      onAuthed(mode === "signup", result.user.name);
-    } catch {
-      setErr(
-        navigator.onLine
-          ? "We could not authenticate that Google account."
-          : "Check your connection and try again.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
-return { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit, handleGoogleCredential };
+return { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit };
 }

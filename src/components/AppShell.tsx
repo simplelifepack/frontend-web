@@ -65,8 +65,10 @@ export default function AppShell({ children }: AppShellProps) {
 
   useEffect(() => {
     const showNewProfile = (event: Event) => {
-      const member = (event as CustomEvent<{ createdMember?: { id: string; name: string } }>).detail?.createdMember;
+      const detail = (event as CustomEvent<{ createdMember?: { id: string; name: string }; memberId?: string }>).detail;
+      const member = detail?.createdMember;
       if (member) navigate("/health", { state: { newHealthProfileId: member.id, newHealthProfileName: member.name } });
+      else if (detail?.memberId) navigate(`/health?member=${encodeURIComponent(detail.memberId)}&tab=Records`);
     };
     window.addEventListener("readiness:health-updated", showNewProfile);
     return () => window.removeEventListener("readiness:health-updated", showNewProfile);

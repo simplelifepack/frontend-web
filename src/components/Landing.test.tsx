@@ -25,9 +25,6 @@ vi.mock("@/lib/billing-api", () => ({
   selectBillingPlan: vi.fn(), requestBillingCheckout: vi.fn(), clearBillingIntent: vi.fn(),
 }));
 vi.mock("@/store/hooks", () => ({ useAppDispatch: () => vi.fn() }));
-vi.mock("./GoogleSignInButton", () => ({
-  default: () => <button>Google sign in</button>,
-}));
 const requestSignupOtp = vi.fn().mockResolvedValue({ message: "Code sent" });
 const forgotPasswordOtp = vi.fn().mockResolvedValue({ message: "Code sent" });
 const resetPasswordOtp = vi

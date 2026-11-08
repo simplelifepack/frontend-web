@@ -42,10 +42,10 @@ export const documentsApi = {
   },
   save: async (payload: SaveDocumentPayload) => {
     const generation = getAuthGeneration();
-    const saved = await request<{ document: DocumentRecord; healthRecord?: HealthProcessResponse | null }>("/documents", { method: "POST", body: payload, requiresAuth: true });
+    const saved = await request<{ document: DocumentRecord; healthRecord?: HealthProcessResponse | null; replayed?: boolean }>("/documents", { method: "POST", body: payload, requiresAuth: true });
     if (generation === getAuthGeneration()) {
       invalidateRequests("GET:/api/health");
-      if (saved.healthRecord && typeof window !== "undefined") {
+      if (!saved.replayed && saved.healthRecord && typeof window !== "undefined") {
         const createdMember = "createdMember" in saved.healthRecord ? saved.healthRecord.createdMember : undefined;
         const memberId = "memberId" in saved.healthRecord ? saved.healthRecord.memberId : undefined;
         window.dispatchEvent(new CustomEvent("readiness:health-updated", { detail: { createdMember, memberId } }));

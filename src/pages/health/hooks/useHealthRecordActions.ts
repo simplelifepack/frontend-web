@@ -44,10 +44,8 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
         duplicateAction: "keep_both",
         userConfirmedUnknown: true,
       });
-      const record = saved.healthRecord ?? await api.health.createRecord({
-        documentId: saved.document.id,
-        ...(payload.type ? { type: payload.type } : {}),
-      });
+      const record = saved.healthRecord;
+      if (!record) throw new Error("The document was saved without a Health record.");
       setShowAddRecord(false);
       if (isMemberResolution(record)) {
         setMemberResolution(record);

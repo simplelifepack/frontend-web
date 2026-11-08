@@ -63,11 +63,6 @@ export const signup = createAsyncThunk(
   async (payload: { name: string; email: string; password: string; otp: string }) => api.auth.signup(payload),
 );
 
-export const googleLogin = createAsyncThunk(
-  "auth/googleLogin",
-  async (payload: { credential: string }) => api.auth.google(payload),
-);
-
 export const forgotPassword = createAsyncThunk(
   "auth/forgotPassword",
   async (payload: { email: string }) => api.auth.forgotPassword(payload),
@@ -144,22 +139,6 @@ const authSlice = createSlice({
       .addCase(signup.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message ?? "Unable to sign up.";
-      })
-      .addCase(googleLogin.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
-      })
-      .addCase(googleLogin.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.token = action.payload.accessToken ?? action.payload.token;
-        state.user = action.payload.user;
-        setAccessToken(state.token);
-        state.sessionStatus = "authenticated";
-        state.initialized = false;
-      })
-      .addCase(googleLogin.rejected, (state) => {
-        state.status = "failed";
-        state.error = "Unable to sign in with Google.";
       })
       .addCase(fetchMe.pending, (state) => {
         state.status = "loading";

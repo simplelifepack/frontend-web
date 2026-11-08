@@ -1,11 +1,10 @@
 import { Text, ChoiceGroup, Choice, ModalOptions, ModalForm, ModalActions, PasswordInput, Input, Button, Stack, Center } from "@/design-system";
-import GoogleSignInButton from "./GoogleSignInButton";
 import { ArrowRight } from "lucide-react";
 import { useAuthModalLogic } from "./Landing.useAuthModalLogic";
 
 
 export function AuthModalViewSection1(context: ReturnType<typeof useAuthModalLogic>) {
-const { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit, handleGoogleCredential, submitPin, verifySignupOtp, requestResetOtp, continueWithOtp, resetPassword, SEC, error, describedBy, back } = context;
+const { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit, submitPin, verifySignupOtp, requestResetOtp, continueWithOtp, resetPassword, SEC, error, describedBy, back } = context;
 return (<Stack $gap="s14">
                 <ChoiceGroup fullWidth aria-label="Account action">
                   {(["signin", "signup"] as const).map((value) => (
@@ -22,11 +21,7 @@ return (<Stack $gap="s14">
                   ))}
                 </ChoiceGroup>
                 <ModalOptions>
-                  <GoogleSignInButton
-                    disabled={submitting}
-                    onCredential={handleGoogleCredential}
-                    onError={setErr}
-                  />
+
                   <Button
                     fullWidth
                     variant="primary"
@@ -74,7 +69,7 @@ return (<Stack $gap="s14">
 
 
 export function AuthModalViewSection2(context: ReturnType<typeof useAuthModalLogic>) {
-const { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit, handleGoogleCredential, submitPin, verifySignupOtp, requestResetOtp, continueWithOtp, resetPassword, SEC, error, describedBy, back } = context;
+const { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit, submitPin, verifySignupOtp, requestResetOtp, continueWithOtp, resetPassword, SEC, error, describedBy, back } = context;
 return (<ModalForm>
                 {mode === "signup" && (
                   <Input
@@ -143,7 +138,7 @@ return (<ModalForm>
 
 
 export function AuthModalViewSection3(context: ReturnType<typeof useAuthModalLogic>) {
-const { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit, handleGoogleCredential, submitPin, verifySignupOtp, requestResetOtp, continueWithOtp, resetPassword, SEC, error, describedBy, back } = context;
+const { initMode, onClose, onAuthed, dispatch, mode, setMode, screen, setScreen, name, setName, email, setEmail, pw, setPw, pw2, setPw2, pin, setPin, err, setErr, otp, setOtp, resetPw, setResetPw, resetPw2, setResetPw2, submitting, setSubmitting, passwordRule, submit, submitPin, verifySignupOtp, requestResetOtp, continueWithOtp, resetPassword, SEC, error, describedBy, back } = context;
 return (<ModalForm>
                 <Input
                   type="email"

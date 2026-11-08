@@ -38,8 +38,6 @@ export const api = {
       request<AuthResponse>("/auth/login", { method: "POST", body: payload }),
     loginWithPin: (payload: { email: string; pin: string }) =>
       request<AuthResponse>("/auth/login/pin", { method: "POST", body: payload }),
-    google: (payload: { credential: string }) =>
-      request<AuthResponse>("/auth/google", { method: "POST", body: payload }),
     refresh: () => request<AuthResponse>("/auth/refresh", { method: "POST", timeoutMs: 20_000 }),
     logout: () => request<ForgotPasswordResponse>("/auth/logout", { method: "POST" }),
     logoutAll: () => request<ForgotPasswordResponse>("/auth/logout-all", { method: "POST", requiresAuth: true }),

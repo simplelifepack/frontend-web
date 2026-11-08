@@ -23,7 +23,6 @@ vi.mock("@/lib/waitlist-api", () => ({
 vi.mock("@/lib/api", () => ({ api: { auth: {} } }));
 vi.mock("@/lib/billing-api", () => ({ clearBillingIntent: vi.fn() }));
 vi.mock("@/store/hooks", () => ({ useAppDispatch: () => vi.fn() }));
-vi.mock("./GoogleSignInButton", () => ({ default: () => null }));
 
 beforeEach(() => {
   challenge.mockResolvedValue({ token: "signed-challenge", difficulty: 12 });

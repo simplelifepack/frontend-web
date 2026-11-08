@@ -6,8 +6,6 @@ import { toast } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login, loginWithPin } from "@/store/slices/authSlice";
-import { googleLogin } from "@/store/slices/authSlice";
-import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
@@ -46,37 +44,13 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleCredential = async (credential: string) => {
-    if (isSubmitting) return;
-    setError("");
-    setIsSubmitting(true);
-    try {
-      const result = await dispatch(googleLogin({ credential })).unwrap();
-      if (result.deletionCancelled) {
-        toast.success("Welcome back. Your account deletion request has been cancelled.");
-      }
-      navigate(from, { replace: true });
-    } catch {
-      setError(navigator.onLine ? "We could not authenticate that Google account." : "Check your connection and try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="mx-auto max-w-md">
       <div className="lg:hidden"><BrandLogo height={64} /></div>
       <h2 className="mt-4 text-3xl font-semibold text-[var(--lp-heading)]">Log in</h2>
-      <p className="mt-2 text-sm text-[var(--lp-muted)]">Use your password, Google account, or R-pin to continue.</p>
+      <p className="mt-2 text-sm text-[var(--lp-muted)]">Use your email and password or R-pin to continue.</p>
 
-      <div className="mt-8">
-        <GoogleSignInButton disabled={isSubmitting} onCredential={handleGoogleCredential} onError={setError} />
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wider text-[var(--lp-faint)]">
-          <span className="h-px flex-1 bg-[var(--lp-border)]" /> or <span className="h-px flex-1 bg-[var(--lp-border)]" />
-        </div>
-      </div>
-
-      <div className="mb-5 grid grid-cols-2 gap-2 rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-panel)] p-1">
+      <div className="mt-8 mb-5 grid grid-cols-2 gap-2 rounded-2xl border border-[var(--lp-border)] bg-[var(--lp-panel)] p-1">
         <button
           type="button"
           onClick={() => setMode("password")}

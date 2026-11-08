@@ -86,6 +86,10 @@ function AddRecordDialog({
       if (aiProcessingEnabled) {
         const scanned = analysis ?? await api.documents.analyze([file]);
         if (!analysis) setAnalysis(scanned);
+        if (scanned.document.category !== "Medical" && scanned.warnings.length === 0) {
+          setError("This file was not identified as a Health document. Upload it in Documents.");
+          return;
+        }
         if (scanned.document.healthExtraction) {
           await onCreate({ file, type: scanned.document.healthExtraction.documentType, analysis: scanned });
         } else if (!review) {
