@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { api } from "@/lib/api";
 import type { DocumentRecord, HealthMember, HealthRecord } from "@/lib/api.types";
 import { type VisitDocument } from "./HealthDialog.HealthDialogKind";
-import { buildVisitContexts, visitAppointmentDate, visitChooserGroups, visitDate } from "./HealthDialog.buildVisitContexts";
+import { buildVisitContexts, visitChooserGroups, visitDate } from "./HealthDialog.buildVisitContexts";
 import { safeFileName, humanRecordType, appendSuffix, safeFileStem } from "./HealthDialog.documentDetail";
 
 
@@ -56,18 +56,18 @@ export function useVisitPackDialogLogic({
     contexts.find((context) => context.id === selectedContextId) ??
     contexts[0] ??
     null;
-  const matching = useMemo<VisitDocument[]>(() => {
-    if (!selectedContext) return [];
-    const allowed = new Set(selectedContext.recordIds);
+  const { matching, otherDocuments } = useMemo(() => {
+    const allowed = new Set(selectedContext?.recordIds);
     const documentById = new Map(
       documents.map((document) => [document.id, document]),
     );
-    return records
-      .filter((record) => allowed.has(record.id))
-      .map((record) => ({
-        record,
-        document: documentById.get(record.documentId),
-      }));
+    const matching: VisitDocument[] = [];
+    const otherDocuments: VisitDocument[] = [];
+    for (const record of records) {
+      const group = allowed.has(record.id) ? matching : otherDocuments;
+      group.push({ record, document: documentById.get(record.documentId) });
+    }
+    return { matching, otherDocuments };
   }, [documents, records, selectedContext]);
 
   useEffect(() => {
@@ -81,8 +81,7 @@ export function useVisitPackDialogLogic({
   useEffect(() => {
     setSelectedIds(new Set(matching.map((item) => item.record.id)));
   }, [selectedContextId, matching]);
-  const selected = matching.filter((item) => selectedIds.has(item.record.id));
-  const appointmentDate = visitAppointmentDate(matching);
+  const selected = [...matching, ...otherDocuments].filter((item) => selectedIds.has(item.record.id));
   const chooserGroups = useMemo(
     () => visitChooserGroups(contexts, selectedContext?.id ?? "", chooserQuery),
     [chooserQuery, contexts, selectedContext?.id],
@@ -134,5 +133,5 @@ export function useVisitPackDialogLogic({
       setDownloading(false);
     }
   };
-return { member, records, onClose, onViewDocument, documents, setDocuments, selectedContextId, setSelectedContextId, selectedIds, setSelectedIds, loading, setLoading, downloading, setDownloading, error, setError, choosingVisit, setChoosingVisit, chooserQuery, setChooserQuery, contexts, selectedContext, matching, selected, appointmentDate, chooserGroups, toggle, download };
+return { member, records, onClose, onViewDocument, documents, setDocuments, selectedContextId, setSelectedContextId, selectedIds, setSelectedIds, loading, setLoading, downloading, setDownloading, error, setError, choosingVisit, setChoosingVisit, chooserQuery, setChooserQuery, contexts, selectedContext, matching, otherDocuments, selected, chooserGroups, toggle, download };
 }

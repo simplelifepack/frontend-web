@@ -18,6 +18,7 @@ import {
   HeartPulse,
   Plus,
   Pencil,
+  Trash2,
   ShieldAlert,
   ShieldCheck,
   Stethoscope,
@@ -41,6 +42,7 @@ export default function HealthPageHeader({
   medicationCount,
   onSelectMember,
   onAddMember,
+  onDeleteMember,
   onPrepareVisit,
   onDialog,
   onTab,
@@ -54,6 +56,7 @@ export default function HealthPageHeader({
   medicationCount: number;
   onSelectMember: (id: string) => void;
   onAddMember: () => void;
+  onDeleteMember: (member: HealthMember) => void;
   onPrepareVisit: () => void;
   onDialog: (dialog: HealthDialogKind) => void;
   onTab: (tab: HealthTab) => void;
@@ -114,15 +117,23 @@ export default function HealthPageHeader({
                     </Text>
                   </Stack>
                 </Row>
-                <Button
-                  variant="tertiary"
-                  size="sm"
-                  type="button"
-                  onClick={() => onDialog("profile")}
-                >
-                  <Pencil aria-hidden="true" />
-                  Edit profile
-                </Button>
+                <Row>
+                  <Button
+                    variant="tertiary"
+                    size="sm"
+                    type="button"
+                    onClick={() => onDialog("profile")}
+                  >
+                    <Pencil aria-hidden="true" />
+                    Edit profile
+                  </Button>
+                  {selectedMember.relation !== "Myself" ? (
+                    <Button tone="danger" variant="tertiary" size="sm" type="button" onClick={() => onDeleteMember(selectedMember)}>
+                      <Trash2 aria-hidden="true" />
+                      Delete profile
+                    </Button>
+                  ) : null}
+                </Row>
               </Row>
               <Grid $columns={4}>
                 <Button

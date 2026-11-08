@@ -12,7 +12,6 @@
     "test:search": "tsx ../tests/hybrid-search.test.ts",
     "test:google-auth": "vitest run src/components/GoogleSignInButton.test.tsx",
     "test:auth-storage": "vitest run src/store/slices/authStorage.test.ts",
-    "test:gmail": "vitest run src/store/slices/documentsSlice.gmail.test.ts",
     "test:readiness": "vitest run src/readiness/calculatePackageReadiness.test.ts",
     "test:requirements-cache": "vitest run src/readiness/requirementsCache.test.ts",
     "test:package-catalogue": "vitest run src/store/slices/packagesSlice.catalogue.test.ts src/packages/packageCatalogueSearch.test.ts",

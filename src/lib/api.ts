@@ -7,8 +7,7 @@ import type {
   AuthResponse, AuthUser, BootstrapResponse, CustomPackageGenerationJobResponse, CustomPackDraftResponse,
   CustomPackPayload,
   DynamicFormCategory, DynamicFormSchema, DynamicFormSubtype,
-  DriveScanResult, DriveStatus, ForgotPasswordResponse,
-  GmailCandidate, GmailImportResult, GmailStatus,
+  ForgotPasswordResponse,
   GlobalSearchResponse,
   PackSummary, PackageListQuery, PackageListResponse,
   PackageLookup, PackageSearchOrGenerateResponse, ResetPasswordResponse,
@@ -69,26 +68,6 @@ export const api = {
     resetPin: (payload: { otp: string; newPin: string }) =>
       request<ForgotPasswordResponse>("/auth/account/pin/reset/verify", { method: "POST", body: payload, requiresAuth: true }),
     me: () => request<{ user: AuthUser }>("/auth/me", { requiresAuth: true }),
-  },
-  gmail: {
-    status: (force = false) =>
-      request<GmailStatus>("/api/integrations/gmail/status", {
-        dedupeMs: force ? 0 : 2_000,
-        requiresAuth: true,
-      }),
-    authorize: () => request<{ authorizationUrl: string }>("/api/integrations/gmail/authorize", { method: "POST", requiresAuth: true }),
-    scan: (full = false) => request<{ discovered: number; relevant: number; needsReview: number; ignored: number; lastScannedAt: string }>("/api/integrations/gmail/scan", { method: "POST", body: { full }, requiresAuth: true }),
-    candidates: () => request<{ candidates: GmailCandidate[] }>("/api/integrations/gmail/candidates", { requiresAuth: true }),
-    dismiss: (id: string) => request<void>(`/api/integrations/gmail/candidates/${encodeURIComponent(id)}/dismiss`, { method: "POST", requiresAuth: true }),
-    import: (candidateIds: string[]) => request<{ results: GmailImportResult[] }>("/api/integrations/gmail/import", { method: "POST", body: { candidateIds }, requiresAuth: true }),
-    disconnect: () => request<void>("/api/integrations/gmail", { method: "DELETE", requiresAuth: true }),
-  },
-  drive: {
-    status: () => request<DriveStatus>("/api/integrations/drive/status", { dedupeMs: 5_000, requiresAuth: true }),
-    authorize: () => request<{ authorizationUrl: string }>("/api/integrations/drive/authorize", { method: "POST", requiresAuth: true }),
-    scan: (full = false, duplicateAction: "replace" | "keep_both" | "ignore" = "ignore") =>
-      request<DriveScanResult>("/api/integrations/drive/scan", { method: "POST", body: { full, duplicateAction }, requiresAuth: true }),
-    disconnect: () => request<void>("/api/integrations/drive", { method: "DELETE", requiresAuth: true }),
   },
   documents: documentsApi,
   account: { requestExport: (signal?: AbortSignal) => request<{ id: string; status: string; expiresAt?: string | null }>("/api/account/export", { method: "POST", requiresAuth: true, signal }), exportStatus: (jobId: string, signal?: AbortSignal) => request<{ id: string; status: string; expiresAt?: string | null; errorMessage?: string | null }>(`/api/account/export/${encodeURIComponent(jobId)}`, { requiresAuth: true, dedupeMs: 0, signal }), downloadExport: (jobId: string, signal?: AbortSignal) => downloadBlob(`/api/account/export/${encodeURIComponent(jobId)}/download`, { requiresAuth: true, signal }), scheduleDeletion: (phrase: string) => request<{ message: string; scheduledDeletionAt: string }>("/api/account/deletion", { method: "POST", body: { phrase }, requiresAuth: true }) },

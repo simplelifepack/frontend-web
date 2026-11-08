@@ -185,7 +185,7 @@ export function ProofModal({
             <UploadCloud aria-hidden="true" focusable="false" size="var(--icon-regular)" />
           </span>
           <span>
-            <b>Scan or upload a new document</b>
+            <b>Upload a new document</b>
             <small>
               Statement, policy, or deed. It is filed in Documents and opened
               here.

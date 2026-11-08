@@ -1,3 +1,4 @@
+import type { HealthProfileInput } from "./health-upload.types";
 import { request } from "./http-client";
 import { invalidateRequests } from "./request-deduper";
 import type {
@@ -7,6 +8,7 @@ import type {
   HealthMeasurement,
   HealthMedication,
   HealthMember,
+  HealthMemberResolution,
   HealthOverview,
   HealthProcessResponse,
   HealthRecord,
@@ -35,15 +37,18 @@ export const healthApi = {
   createReminder: (payload: { memberId: string; title: string; type: "appointment" | "medicine" | "refill" | "other"; dueDate: string; frequency: "once" | "daily" | "weekly" | "monthly" }) =>
     mutateHealth(() => request("/api/health/reminders", { method: "POST", body: payload, requiresAuth: true })),
   members: () => request<HealthMember[]>("/api/health/members", { requiresAuth: true, dedupeMs: 5_000 }),
-  createMember: (payload: { name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null }) =>
+  createMember: (payload: HealthProfileInput) =>
     mutateHealth(() => request<HealthMember>("/api/health/members", { method: "POST", body: payload, requiresAuth: true })),
-  updateMember: (memberId: string, payload: Partial<{ name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null; conditions?: string | null; allergies?: string | null; emergencyContactName?: string | null; emergencyContactPhone?: string | null; primaryDoctor?: string | null; insuranceProvider?: string | null; insurancePolicyNumber?: string | null }>) =>
+  updateMember: (memberId: string, payload: Partial<{ name: string; relation: string; age?: number | null; gender?: string | null; bloodGroup?: string | null; dateOfBirth?: string | null; conditions?: string | null; allergies?: string | null; emergencyContactName?: string | null; emergencyContactPhone?: string | null; primaryDoctor?: string | null; insuranceProvider?: string | null; insurancePolicyNumber?: string | null }>) =>
     mutateHealth(() => request<HealthMember>(`/api/health/members/${encodeURIComponent(memberId)}`, { method: "PATCH", body: payload, requiresAuth: true })),
   deleteMember: (memberId: string) => mutateHealth(() => request<void>(`/api/health/members/${encodeURIComponent(memberId)}`, { method: "DELETE", requiresAuth: true })),
   overview: (memberId: string) => request<HealthOverview>(`/api/health/members/${encodeURIComponent(memberId)}/overview`, { requiresAuth: true, dedupeMs: 5_000 }),
   records: (memberId: string) => request<HealthRecord[]>(`/api/health/members/${encodeURIComponent(memberId)}/records`, { requiresAuth: true, dedupeMs: 5_000 }),
-  createRecord: (payload: { memberId?: string; documentId: string; type?: "lab_report" | "medical_report" | "prescription" }) =>
+  pendingRecords: () => request<HealthMemberResolution[]>("/api/health/records/pending", { requiresAuth: true, dedupeMs: 1_000 }),
+  createRecord: (payload: { newMember?: HealthProfileInput; memberId?: string; documentId: string; type?: "lab_report" | "medical_report" | "prescription" }) =>
     mutateHealth(() => request<HealthProcessResponse>("/api/health/records", { method: "POST", body: payload, requiresAuth: true })),
+  reanalyzeRecord: (recordId: string) =>
+    mutateHealth(() => request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}/reprocess`, { method: "POST", requiresAuth: true })),
   updateRecord: (recordId: string, payload: { type?: "lab_report" | "medical_report" | "prescription" }) =>
     mutateHealth(() => request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}`, { method: "PATCH", body: payload, requiresAuth: true })),
   record: (recordId: string) => request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}`, { requiresAuth: true, dedupeMs: 5_000 }),

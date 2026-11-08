@@ -1,3 +1,4 @@
+import type { HealthExtraction, HealthUploadReview, HealthUploadMatch } from "./health-upload.types";
 /* eslint-disable max-lines */
 export type AuthUser = {
   accountTier?: "free" | "paid";
@@ -91,37 +92,6 @@ export type DocumentRecord = {
   pages?: DocumentPage[];
 };
 
-export type DriveStatus = {
-  connected: boolean;
-  account: string | null;
-  scanStatus: "idle" | "scanning" | "completed" | "failed";
-  lastScannedAt: string | null;
-  lastSuccessfulSync: string | null;
-  scanning: boolean;
-  phase: string | null;
-  processed: number;
-  total: number;
-  indexedCount: number;
-  error: string | null;
-};
-
-export type DriveScanResult = {
-  discovered: number;
-  processed: number;
-  imported: number;
-  skipped: number;
-  failed: number;
-  indexed: number;
-  updated: number;
-  unchanged: number;
-  ignored: number;
-  duplicate: number;
-  duplicate_kept: number;
-  indexedCount: number;
-  lastSuccessfulSync: string;
-  message: string;
-};
-
 export type Evidence = {
   label: string;
   text: string;
@@ -181,6 +151,7 @@ export type DocumentAnalysis = {
 };
 
 export type DocumentAIResult = {
+  healthExtraction?: HealthExtraction | null;
   category: "Identity" | "Employment" | "Finance" | "Insurance" | "Property" | "Medical" | "Education" | "Travel" | "Vehicle" | "Legal" | "Photo" | "Other";
   documentType: string;
   uniqueNumber: string | null;
@@ -191,6 +162,7 @@ export type DocumentAIResult = {
 };
 
 export type AnalyzeDocumentResponse = {
+  healthProfileMatch?: HealthUploadMatch;
   success: true;
   document: DocumentAIResult & {
     title: string;
@@ -205,13 +177,14 @@ export type AnalyzeDocumentResponse = {
   warnings: Array<{ code: string; message: string }>;
 };
 
-export type { GmailCandidate, GmailImportResult, GmailStatus } from "./gmail.types";
 
 export type UploadDocumentResponse = AnalyzeDocumentResponse & {
   document?: DocumentRecord;
 };
 
 export type HealthMember = {
+  age?: number | null;
+  gender?: string | null;
   id: string;
   name: string;
   relation: string;
@@ -322,6 +295,8 @@ export type HealthHomeAttention = {
 };
 
 export type HealthMemberResolution = {
+  documentName?: string;
+  processingError?: string | null;
   type: "lab_report" | "medical_report" | "prescription";
   documentId: string;
   processingStatus: "awaiting_profile_match";
@@ -330,6 +305,11 @@ export type HealthMemberResolution = {
     dateOfBirth?: string | null;
     age?: number | null;
     gender?: string | null;
+    relation?: string | null;
+    bloodGroup?: string | null;
+    conditions?: string | null;
+    allergies?: string | null;
+    identityConflicting?: boolean;
   } | null;
   memberMatch: {
     status: "missing" | "unmatched" | "ambiguous";
@@ -342,6 +322,7 @@ export type HealthProcessResponse =
   | (HealthRecordDetail & {
       patient?: HealthMemberResolution["patient"];
       matchedMember?: HealthMember | null;
+      createdMember?: HealthMember;
     })
   | HealthMemberResolution;
 
@@ -436,6 +417,7 @@ export type HealthMedication = {
 };
 
 export type SaveDocumentPayload = {
+  healthReview?: HealthUploadReview;
   tempFileIds: string[];
   originalName: string;
   mimeType: string;

@@ -1,10 +1,10 @@
-import { Text, Card } from "@/design-system";
+import type { HealthMember } from "@/lib/api.types";
+import { Text, Card, Button } from "@/design-system";
 
-import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { api } from "@/lib/api";
-import { preferencesApi } from "@/lib/preferences-api";
 import HealthPageHeader from "./components/HealthPageHeader";
 import HealthDialog from "./HealthDialog";
 import { useHealthPage } from "./hooks/useHealthPage";
@@ -22,8 +22,8 @@ import Records from "./records/Records";
 
 export default function HealthPage() {
   const location = useLocation();
-  const [aiProcessingEnabled, setAiProcessingEnabled] = useState(true);
-  const handledDeepLink = useRef("");
+  const navigate = useNavigate();
+  const [profileToDelete, setProfileToDelete] = useState<HealthMember | null>(null);
   const {
     healthDialog,
     setHealthDialog,
@@ -52,6 +52,7 @@ export default function HealthPage() {
     setMemberPrefill,
     processedRecord,
     setProcessedRecord,
+    pendingRecords,
     memberResolution,
     setMemberResolution,
     deleteRecord,
@@ -75,34 +76,10 @@ export default function HealthPage() {
     openHealthRecord,
     untrackMetric,
     createMember,
-  } = useHealthPage();
-  useEffect(() => {
-    let cancelled = false;
-    const refreshPreferences = () => {
-      void preferencesApi.get().then((preferences) => {
-        if (!cancelled) setAiProcessingEnabled(preferences.aiProcessingEnabled);
-      });
-    };
-    refreshPreferences();
-    window.addEventListener("readiness-preferences-changed", refreshPreferences);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("readiness-preferences-changed", refreshPreferences);
-    };
-  }, []);
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const memberId = params.get("member");
-    const tab = params.get("tab");
-    if (memberId && members.some((member) => member.id === memberId)) setSelectedMemberId(memberId);
-    if (tab === "Overview" || tab === "Trends" || tab === "Timeline" || tab === "Medications" || tab === "Records") setActiveTab(tab);
-    const recordId = params.get("record");
-    const key = `${memberId ?? ""}:${tab ?? ""}:${recordId ?? ""}`;
-    if (recordId && handledDeepLink.current !== key) {
-      handledDeepLink.current = key;
-      void openHealthRecord(recordId);
-    }
-  }, [location.search, members, openHealthRecord, setActiveTab, setSelectedMemberId]);
+    aiProcessingEnabled,
+    newProfileId,
+    newProfileName,
+  } = useHealthPage(location);
   return (
     <div   className="lp-route lp-health-route">
       <HealthPageHeader
@@ -115,11 +92,26 @@ export default function HealthPage() {
         medicationCount={records.reduce((sum, record) => sum + record.medicationCount, 0)}
         onSelectMember={setSelectedMemberId}
         onAddMember={() => setShowAddMember(true)}
+        onDeleteMember={setProfileToDelete}
         onPrepareVisit={() => setHealthDialog("visit")}
         onDialog={setHealthDialog}
         onTab={setActiveTab}
       />
 
+      {newProfileName ? (
+        <Card>
+          <Text as="p" role="status">New health profile created for {newProfileName}.</Text>
+          <Button variant="tertiary" type="button" onClick={() => navigate(location.pathname + location.search, { replace: true, state: { newHealthProfileId: newProfileId } })}>Dismiss</Button>
+        </Card>
+      ) : null}
+      {pendingRecords.length > 0 && !memberResolution ? (
+        <Card>
+          <Text as="p">{pendingRecords.length === 1 ? "One health report needs a profile." : `${pendingRecords.length} health reports need a profile.`}</Text>
+          <Button variant="tertiary" type="button" onClick={() => setMemberResolution(pendingRecords[0]!)}>
+            Review assignment
+          </Button>
+        </Card>
+      ) : null}
       {message && activeTab !== "Overview" ? (
         <div className="lp-health-insight">
           <Text size="md">{message}</Text>
@@ -175,6 +167,7 @@ export default function HealthPage() {
           member={selectedMember}
           onClose={() => setIsRecordModalOpen(false)}
           onViewOriginal={viewOriginalDocument}
+          onReanalyze={aiProcessingEnabled ? async record => setSelectedRecord(await api.health.reanalyzeRecord(record.id)) : undefined}
           onCorrectDetails={(record) => {
             setIsRecordModalOpen(false);
             setProcessedRecord(record);
@@ -230,6 +223,17 @@ export default function HealthPage() {
           }}
         />
       ) : null}
+      {profileToDelete ? (
+        <DeleteRecordDialog
+          profileName={profileToDelete.name}
+          onClose={() => setProfileToDelete(null)}
+          onConfirm={async () => {
+            await api.health.deleteMember(profileToDelete.id);
+            setProfileToDelete(null);
+            await refreshMembers();
+          }}
+        />
+      ) : null}
       {deleteRecord ? (
         <DeleteRecordDialog onClose={() => setDeleteRecord(null)} onConfirm={() => removeRecord(deleteRecord.id)} />
       ) : null}
@@ -239,7 +243,7 @@ export default function HealthPage() {
           members={members}
           onClose={() => setMemberResolution(null)}
           onCreateProfile={() => {
-            setMemberPrefill({ name: memberResolution.patient?.name ?? "", dateOfBirth: memberResolution.patient?.dateOfBirth ?? null });
+            setMemberPrefill({ ...memberResolution.patient, name: memberResolution.patient?.name ?? "" });
             setShowAddMember(true);
           }}
           onConfirm={confirmMemberResolution}

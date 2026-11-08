@@ -114,7 +114,6 @@ export const comparison = [
   ],
   ["Documents, Health, Wealth, and family access", "Included", "Included"],
   [
-    "Gmail and Google Drive imports",
     "Connect from Documents",
     "Connect from Documents",
   ],

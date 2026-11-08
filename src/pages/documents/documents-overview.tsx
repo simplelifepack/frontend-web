@@ -11,7 +11,7 @@ import {
   Card,
 } from "@/design-system";
 
-import { Camera, ChevronDown, UploadCloud } from "lucide-react";
+import { ChevronDown, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -117,14 +117,6 @@ export default function DocumentsOverview({
               <ChevronDown aria-hidden="true" focusable="false" size={15} />
             </Button>
             <DigiLockerDialog />
-            <Button variant="secondary" type="button" onClick={openUpload}>
-              <Camera
-                aria-hidden="true"
-                focusable="false"
-                size="var(--icon-small)"
-              />{" "}
-              Scan
-            </Button>
           </Row>
         }
       />

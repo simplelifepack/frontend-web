@@ -1,3 +1,7 @@
+import { api } from "@/lib/api";
+import type { AnalyzeDocumentResponse } from "@/lib/api.types";
+import { initialHealthReview, reviewedHealthPayload, type HealthUploadReview as MedicalReview } from "@/lib/health-upload.types";
+import HealthUploadReview from "@/components/HealthUploadReview";
 import { Heading, Text, ModalBackdrop, ModalPanel, SelectMenu, Button } from "@/design-system";
 
 import { useEffect, useRef, useState, type DragEvent } from "react";
@@ -16,10 +20,15 @@ function AddRecordDialog({
   aiProcessingEnabled: boolean;
   onCreate: (payload: {
     file: File;
+    analysis?: AnalyzeDocumentResponse;
+    healthReview?: MedicalReview;
     type?: HealthDocumentType;
   }) => Promise<void>;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const inFlight = useRef(false);
+  const [analysis, setAnalysis] = useState<AnalyzeDocumentResponse | null>(null);
+  const [review, setReview] = useState<MedicalReview | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [type, setType] = useState<HealthDocumentType>("lab_report");
@@ -49,7 +58,9 @@ function AddRecordDialog({
   }, []);
 
   const selectFile = (candidate: File | null) => {
-    if (!candidate) return;
+    if (!candidate || inFlight.current) return;
+    setAnalysis(null);
+    setReview(null);
     if (!isSupportedHealthFile(candidate)) {
       setError("Only images and PDF files are supported.");
       setFile(null);
@@ -67,17 +78,32 @@ function AddRecordDialog({
   };
 
   const process = async () => {
-    if (!file || (!aiProcessingEnabled && !type) || processing) return;
+    if (!file || (!aiProcessingEnabled && !type) || inFlight.current) return;
+    inFlight.current = true;
     setProcessing(true);
     setError("");
     try {
-      await onCreate({ file, type: aiProcessingEnabled ? undefined : type });
+      if (aiProcessingEnabled) {
+        const scanned = analysis ?? await api.documents.analyze([file]);
+        if (!analysis) setAnalysis(scanned);
+        if (scanned.document.healthExtraction) {
+          await onCreate({ file, type: scanned.document.healthExtraction.documentType, analysis: scanned });
+        } else if (!review) {
+          setReview(initialHealthReview(undefined, undefined, "medical_report"));
+        } else {
+          await onCreate({ file, type: review.extraction.documentType, analysis: scanned, healthReview: reviewedHealthPayload(review) });
+        }
+      } else {
+        await onCreate({ file, type });
+      }
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : "Unable to process health record. Try again.",
       );
+    } finally {
+      inFlight.current = false;
       setProcessing(false);
     }
   };
@@ -87,17 +113,17 @@ function AddRecordDialog({
 
       style={{ zIndex: "var(--layer-drawer)" }}
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (!inFlight.current && event.target === event.currentTarget) onClose();
       }}
     >
-      <ModalPanel onDismiss={onClose}
-        className="lp-health-add-dialog"
+      <ModalPanel onDismiss={() => { if (!inFlight.current) onClose(); }}
+        className="lp-health-add-dialog lp-health-upload-dialog"
         role="dialog"
         aria-modal="true"
       >
         <header className="lp-health-dialog-head">
           <Heading level={2} size="md">Add health record</Heading>
-          <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
+          <Button size="sm" iconOnly variant="tertiary" type="button" disabled={processing} onClick={onClose} aria-label="Close">
             <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
           </Button>
         </header>
@@ -114,7 +140,7 @@ function AddRecordDialog({
             className={
               dragActive ? "lp-health-dropzone active" : "lp-health-dropzone"
             }
-            onClick={() => inputRef.current?.click()}
+            disabled={processing} onClick={() => inputRef.current?.click()}
             onDragEnter={(event) => {
               event.preventDefault();
               setDragActive(true);
@@ -144,14 +170,17 @@ function AddRecordDialog({
               <Text as="b" size="md" weight="semibold">{file.name}</Text>
               <Text as="small" size="sm">{file.type === "application/pdf" ? "PDF" : "Image"}</Text>
             </span>
-            <Button size="sm" variant="tertiary" type="button" onClick={() => inputRef.current?.click()}>
+            <Button size="sm" variant="tertiary" type="button" disabled={processing} onClick={() => inputRef.current?.click()}>
               Change
             </Button>
             <Button size="sm" iconOnly variant="tertiary"
               type="button"
+              disabled={processing}
               aria-label="Remove selected file"
               onClick={() => {
                 setFile(null);
+                setAnalysis(null);
+                setReview(null);
                 setError("");
                 if (inputRef.current) inputRef.current.value = "";
               }}
@@ -175,9 +204,10 @@ function AddRecordDialog({
             />
           </Text>
         ) : null}
+        {review ? <HealthUploadReview value={review} onChange={setReview} /> : null}
         {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}
         <footer>
-          <Button variant="secondary" type="button" onClick={onClose}>
+          <Button variant="secondary" type="button" disabled={processing} onClick={onClose}>
             Cancel
           </Button>
           <Button loading={processing} variant="primary"
@@ -185,7 +215,7 @@ function AddRecordDialog({
             disabled={!file || (!aiProcessingEnabled && !type) || processing}
             onClick={process}
           >
-            <Upload aria-hidden="true" focusable="false" size={15} /> {processing ? "Processing..." : "Process"}
+            <Upload aria-hidden="true" focusable="false" size={15} /> {processing ? "Processing..." : review ? "Save health record" : "Process"}
           </Button>
         </footer>
       </ModalPanel>

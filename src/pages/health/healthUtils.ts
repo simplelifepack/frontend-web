@@ -152,3 +152,5 @@ export function relativeDate(value: string | null | undefined) {
   if (days === 0) return "today";
   return days < 45 ? `in ${days} days` : `in ${Math.round(days / 30)} months`;
 }
+
+export const familyRelationships = ["Spouse", "Mother", "Father", "Son", "Daughter", "Brother", "Sister", "Grandfather", "Grandmother", "Other"];

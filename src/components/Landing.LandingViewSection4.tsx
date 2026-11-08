@@ -121,7 +121,7 @@ return (<Section
                   reverse
                   name="Documents"
                   title="A home for your important records."
-                  body="Upload documents or import from Gmail and Google Drive. Review extracted details when AI processing is enabled, organize records, and search when you need them."
+                  body="Upload documents from your device. Review extracted details when AI processing is enabled, organize records, and search when you need them."
                   points={[
                     "Files and photos in one library",
                     "Review categories and document details",

@@ -1,3 +1,4 @@
+import type { ProfileDraft } from "../members/AddMemberDialog";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
@@ -35,12 +36,10 @@ export function useHealthData() {
   const [search, setSearch] = useState("");
   const [showAddRecord, setShowAddRecord] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
-  const [memberPrefill, setMemberPrefill] = useState<{
-    name?: string;
-    dateOfBirth?: string | null;
-  }>({});
+  const [memberPrefill, setMemberPrefill] = useState<ProfileDraft>({});
   const [processedRecord, setProcessedRecord] =
     useState<HealthRecordDetail | null>(null);
+  const [pendingRecords, setPendingRecords] = useState<HealthMemberResolution[]>([]);
   const [memberResolution, setMemberResolution] =
     useState<HealthMemberResolution | null>(null);
   const [deleteRecord, setDeleteRecord] = useState<HealthRecord | null>(null);
@@ -60,7 +59,7 @@ export function useHealthData() {
     try {
       const nextMembers = await api.health.members();
       setMembers(nextMembers);
-      setSelectedMemberId((current) => current || nextMembers[0]?.id || "");
+      setSelectedMemberId((current) => nextMembers.some(member => member.id === current) ? current : nextMembers[0]?.id ?? "");
       setMessage("");
     } catch (error) {
       setMessage(
@@ -113,10 +112,26 @@ export function useHealthData() {
   };
 
   useEffect(() => {
-    void refreshMembers();
+    let active = true;
+    const loadPending = () => {
+      void api.health.pendingRecords().then(records => {
+        if (active) setPendingRecords(records);
+      }).catch(() => undefined);
+    };
+    const refresh = () => { void refreshMembers(); loadPending(); };
+    refresh();
+    window.addEventListener("readiness:health-updated", refresh);
+    return () => { active = false; window.removeEventListener("readiness:health-updated", refresh); };
   }, []);
   useEffect(() => {
-    if (selectedMemberId) void refreshHealth(selectedMemberId);
+    if (!selectedMemberId) return;
+    void refreshHealth(selectedMemberId);
+    const refreshSavedProfile = (event: Event) => {
+      const detail = (event as CustomEvent<{ memberId?: string; createdMember?: unknown }>).detail;
+      if (!detail?.createdMember && detail?.memberId === selectedMemberId) void refreshHealth(selectedMemberId);
+    };
+    window.addEventListener("readiness:health-updated", refreshSavedProfile);
+    return () => window.removeEventListener("readiness:health-updated", refreshSavedProfile);
     // Refresh is intentionally keyed to the selected profile, not each render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMemberId]);
@@ -166,6 +181,8 @@ export function useHealthData() {
     setMemberPrefill,
     processedRecord,
     setProcessedRecord,
+    pendingRecords,
+    setPendingRecords,
     memberResolution,
     setMemberResolution,
     deleteRecord,

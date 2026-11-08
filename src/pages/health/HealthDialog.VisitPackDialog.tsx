@@ -1,15 +1,47 @@
-import { Heading, Text, ModalPanel, ModalBackdrop, Input, Button } from "@/design-system";
-import { CalendarClock, Check, Download, FileText, X } from "lucide-react";
-import { formatVisitDate, visitSummary, documentLabel } from "./HealthDialog.buildVisitContexts";
-import { DocumentIcon, documentDetail } from "./HealthDialog.documentDetail";
+import { Heading, Text, ModalPanel, ModalBackdrop, Input, Button, Checkbox } from "@/design-system";
+import { CalendarClock, Check, ChevronRight, Download, X } from "lucide-react";
+import { documentLabel } from "./HealthDialog.buildVisitContexts";
+import { DocumentIcon, documentDetail, humanRecordType } from "./HealthDialog.documentDetail";
+import type { VisitDocument } from "./HealthDialog.HealthDialogKind";
 import { useVisitPackDialogLogic } from "./HealthDialog.useVisitPackDialogLogic";
 
 
- export function VisitPackDialog(props: Parameters<typeof useVisitPackDialogLogic>[0]) {
-const context = useVisitPackDialogLogic(props);
-const { member, records, onClose, onViewDocument, documents, setDocuments, selectedContextId, setSelectedContextId, selectedIds, setSelectedIds, loading, setLoading, downloading, setDownloading, error, setError, choosingVisit, setChoosingVisit, chooserQuery, setChooserQuery, contexts, selectedContext, matching, selected, appointmentDate, chooserGroups, toggle, download } = context;
+export function VisitPackDialog(props: Parameters<typeof useVisitPackDialogLogic>[0]) {
+  const {
+    member, onClose, onViewDocument, setSelectedContextId, selectedIds, loading,
+    downloading, error, choosingVisit, setChoosingVisit, chooserQuery,
+    setChooserQuery, contexts, selectedContext, matching, otherDocuments,
+    selected, chooserGroups, toggle, download,
+  } = useVisitPackDialogLogic(props);
 
-return ((
+  function renderDocument(item: VisitDocument, optional = false) {
+    const checked = selectedIds.has(item.record.id);
+    return (
+      <article
+        className={optional && !checked ? "lp-visit-pack-document lp-visit-pack-document-optional" : "lp-visit-pack-document"}
+        key={item.record.id}
+      >
+        <Checkbox
+          aria-label={`Select ${documentLabel(item)}`}
+          checked={checked}
+          onChange={() => toggle(item.record.id)}
+        />
+        <DocumentIcon item={item} />
+        <span>
+          <Text className="lp-visit-pack-record-title" weight="medium">{humanRecordType(item.record.type)}</Text>
+          <Text as="small" size="sm">{documentDetail(item)}</Text>
+        </span>
+        <Button className="lp-visit-pack-view" size="md" variant="tertiary"
+          type="button"
+          onClick={() => onViewDocument(item.record.documentId)}
+        >
+          View
+        </Button>
+      </article>
+    );
+  }
+
+  return (
     <ModalBackdrop className="lp-visit-pack-backdrop">
       <ModalPanel onDismiss={onClose}
         className="lp-visit-pack-dialog"
@@ -19,10 +51,10 @@ return ((
       >
         <header className="lp-health-dialog-head">
           <div>
-            <Text as="p" size="sm" weight="semibold" className="lp-visit-pack-eyebrow">
+            <Text as="p" size="sm" className="lp-visit-pack-eyebrow">
               Your own records, filtered for this visit
             </Text>
-            <Heading level={2} size="md" id="visit-pack-title">Prepare for a visit</Heading>
+            <Heading level={2} size="sm" id="visit-pack-title">Prepare for a visit</Heading>
           </div>
           <Button size="sm" iconOnly variant="tertiary" type="button" onClick={onClose} aria-label="Close">
             <X aria-hidden="true" focusable="false" size="var(--icon-medium)" />
@@ -55,7 +87,7 @@ return ((
                   className="lp-visit-pack-choice-group"
                   key={group.title}
                 >
-                  <Heading level={3} size="sm">{group.title}</Heading>
+                  <Text as="h3" size="sm" weight="medium">{group.title}</Text>
                   {group.items.map((context) => (
                     <button
                       key={context.id}
@@ -80,87 +112,37 @@ return ((
             </div>
           ) : (
             <>
-              <Text as="p" size="md" weight="medium" className="lp-visit-pack-next">
-                Next appointment: {selectedContext?.label}
-                {appointmentDate
-                  ? ` on ${formatVisitDate(appointmentDate)}`
-                  : ""}
-                .
-              </Text>
               <section className="lp-visit-pack-context">
-                <span>
-                  <Text as="small" size="sm">Doctors</Text>
-                  <Text as="b" size="md" weight="semibold">{selectedContext?.label}</Text>
-                  <Text as="em" size="md">
-                    {matching.length}{" "}
-                    {matching.length === 1 ? "document" : "documents"} · tap to
-                    choose another doctor, hospital, or specialisation
-                  </Text>
-                </span>
-                <Button size="sm" variant="tertiary" type="button" onClick={() => setChoosingVisit(true)}>
+                <Text className="lp-visit-pack-context-label" weight="medium">{selectedContext?.label}</Text>
+                <Button className="lp-visit-pack-change" variant="tertiary" type="button" onClick={() => setChoosingVisit(true)}>
                   Change
+                  <ChevronRight aria-hidden="true" size="var(--icon-regular)" />
                 </Button>
               </section>
-              {matching.length ? (
-                <Text as="p" size="sm" weight="medium" className="lp-visit-pack-summary">
-                  {visitSummary(matching)}
-                </Text>
-              ) : (
-                <Text as="p" size="sm" className="lp-health-muted">
-                  No documents are available for this selection.
-                </Text>
-              )}
-              <div   className="lp-visit-pack-documents">
-                {matching.map((item) => (
-                  <article
-                    className="lp-visit-pack-document"
-                    key={item.record.id}
-                  >
-                    <button
-                      className={
-                        selectedIds.has(item.record.id) ? "checked" : ""
-                      }
-                      type="button"
-                      aria-label={`Select ${documentLabel(item)}`}
-                      aria-pressed={selectedIds.has(item.record.id)}
-                      onClick={() => toggle(item.record.id)}
-                    >
-                      {selectedIds.has(item.record.id) ? (
-                        <Check aria-hidden="true" focusable="false" size={13} />
-                      ) : null}
-                    </button>
-                    <DocumentIcon item={item} />
-                    <span>
-                      <Text as="b" size="md" weight="semibold">{documentLabel(item)}</Text>
-                      <Text as="small" size="sm">{documentDetail(item)}</Text>
-                    </span>
-                    <Button size="sm" variant="tertiary"
-                      type="button"
-                      onClick={() => onViewDocument(item.record.documentId)}
-                    >
-                      View
-                    </Button>
-                  </article>
-                ))}
+              <div className="lp-visit-pack-documents">
+                {matching.map((item) => renderDocument(item))}
+                {otherDocuments.length > 0 && (
+                  <>
+                    <Text as="h3" size="sm" weight="medium" className="lp-visit-pack-other-heading">
+                      Anything else on file
+                    </Text>
+                    {otherDocuments.map((item) => renderDocument(item, true))}
+                  </>
+                )}
               </div>
-              <div className="lp-visit-pack-note">
-                <FileText aria-hidden="true" focusable="false" size="var(--icon-regular)" />
-                <Text size="md">
-                  Cover sheet included: allergies, conditions, medicines, and
-                  latest readings.
-                </Text>
-                <Button size="sm" variant="tertiary" type="button" disabled title="Cover-sheet preview is not connected yet.">Preview</Button>
-              </div>
-              <Button loading={downloading} variant="primary"
-                type="button"
-                disabled={!selected.length || downloading}
-                onClick={() => void download()}
-              >
-                <Download aria-hidden="true" focusable="false" size="var(--icon-regular)" />{" "}
-                {downloading
-                  ? "Preparing visit pack…"
-                  : `Download visit pack (cover + ${selected.length})`}
-              </Button>
+              <footer className="lp-visit-pack-footer">
+                <Button className="lp-visit-pack-preview" size="sm" variant="tertiary" type="button" disabled title="Cover-sheet preview is not connected yet.">
+                  Preview cover sheet
+                </Button>
+                <Button className="lp-visit-pack-download" loading={downloading} variant="primary"
+                  type="button"
+                  disabled={!selected.length || downloading}
+                  onClick={() => void download()}
+                >
+                  <Download aria-hidden="true" focusable="false" size="var(--icon-medium)" />
+                  {downloading ? "Preparing visit pack…" : "Download"}
+                </Button>
+              </footer>
             </>
           )
         ) : (
@@ -180,5 +162,5 @@ return ((
         ) : null}
       </ModalPanel>
     </ModalBackdrop>
-  ));
+  );
 }

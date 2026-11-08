@@ -1,9 +1,10 @@
+import { validateDateOfBirth } from "./healthUtils";
 import { useState } from "react";
 import { FlaskConical, Link2, Pill, ShieldCheck } from "lucide-react";
 import { api } from "@/lib/api";
 import type { HealthMeasurement, HealthMember, HealthRecord } from "@/lib/api.types";
 import { type VisitDocument, type HealthDialogKind, type ReminderType, type ReminderFrequency } from "./HealthDialog.HealthDialogKind";
-import { visitDate, formatVisitDate } from "./HealthDialog.buildVisitContexts";
+import { visitDate, formatVisitDate, isInsuranceDocument } from "./HealthDialog.buildVisitContexts";
 
 export function documentDetail(item: VisitDocument) {
   const fileName =
@@ -18,50 +19,17 @@ export function documentDetail(item: VisitDocument) {
 }
 
 export function DocumentIcon({ item }: { item: VisitDocument }) {
-  const meta = documentIconMeta(item);
-  const Icon = meta.icon;
+  const insurance = item.record.type === "medical_report" && item.document && isInsuranceDocument(item.document);
+  const Icon = item.record.type === "lab_report"
+    ? FlaskConical
+    : item.record.type === "prescription"
+      ? Pill
+      : insurance ? ShieldCheck : Link2;
   return (
-    <span
-      className="lp-visit-pack-document-icon"
-      style={{
-        color: meta.color,
-        background: meta.background,
-      }}
-    >
+    <span className={insurance ? "lp-visit-pack-document-icon lp-visit-pack-insurance-icon" : "lp-visit-pack-document-icon"}>
       <Icon aria-hidden="true" focusable="false" size={17} />
     </span>
   );
-}
-
-export function documentIconMeta(item: VisitDocument) {
-  const text =
-    `${item.record.type} ${item.document?.documentType ?? ""} ${item.document?.category ?? ""}`.toLowerCase();
-  if (/prescription|medication|medicine/.test(text)) {
-    return {
-      icon: Pill,
-      color: "var(--lp-purple)",
-      background: "color-mix(in srgb, var(--lp-purple) 14%, transparent)",
-    };
-  }
-  if (/lab|test|report|blood|lipid/.test(text)) {
-    return {
-      icon: FlaskConical,
-      color: "var(--lp-pink)",
-      background: "color-mix(in srgb, var(--lp-pink) 14%, transparent)",
-    };
-  }
-  if (/insurance|policy/.test(text)) {
-    return {
-      icon: ShieldCheck,
-      color: "var(--lp-mint)",
-      background: "color-mix(in srgb, var(--lp-mint) 14%, transparent)",
-    };
-  }
-  return {
-    icon: Link2,
-    color: "var(--lp-purple)",
-    background: "color-mix(in srgb, var(--lp-purple) 14%, transparent)",
-  };
 }
 
 export function humanRecordType(type: string) {
@@ -119,6 +87,10 @@ export function useHealthDialogLogic({
   const [date, setDate] = useState("");
   const [reminderType, setReminderType] = useState<ReminderType | "">("");
   const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency | "">("");
+  const [identity, setIdentity] = useState({
+    name: member.name, relation: member.relation, dateOfBirth: member.dateOfBirth ?? "",
+    age: member.age == null ? "" : String(member.age), gender: member.gender ?? "",
+  });
   const [bloodGroup, setBloodGroup] = useState(member.bloodGroup || "Unknown");
   const [conditions, setConditions] = useState(member.conditions || "");
   const [allergies, setAllergies] = useState(member.allergies || "");
@@ -150,6 +122,14 @@ export function useHealthDialogLogic({
       setError("Title, what for, due date, and how often are required.");
       return;
     }
+    const age = identity.age === "" ? null : Number(identity.age);
+    if (kind === "profile") {
+      const issue = validateDateOfBirth(identity.dateOfBirth);
+      if (!identity.name.trim() || issue || (age != null && (!Number.isInteger(age) || age < 0 || age > 120))) {
+        setError(issue || (!identity.name.trim() ? "Enter the patient name." : "Enter an age from 0 to 120."));
+        return;
+      }
+    }
     setSaving(true);
     setError("");
     try {
@@ -163,6 +143,11 @@ export function useHealthDialogLogic({
         });
       else
         await api.health.updateMember(member.id, {
+          name: identity.name.trim(),
+          relation: identity.relation,
+          dateOfBirth: identity.dateOfBirth || null,
+          age: identity.age === (member.age == null ? "" : String(member.age)) ? undefined : age,
+          gender: identity.gender.trim() || null,
           bloodGroup,
           conditions,
           allergies,
@@ -180,5 +165,5 @@ export function useHealthDialogLogic({
       setSaving(false);
     }
   };
-return { kind, member, records, measurements, onClose, onSaved, onViewDocument, title, setTitle, date, setDate, reminderType, setReminderType, reminderFrequency, setReminderFrequency, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, setError, saving, setSaving, titles, save };
+return { kind, member, identity, setIdentity, records, measurements, onClose, onSaved, onViewDocument, title, setTitle, date, setDate, reminderType, setReminderType, reminderFrequency, setReminderFrequency, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, setError, saving, setSaving, titles, save };
 }

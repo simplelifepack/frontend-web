@@ -19,7 +19,7 @@ import {
 import type { ReactNode } from "react";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { ChevronsLeft, ChevronsRight, Settings } from "lucide-react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import { useAppSelector } from "@/store/hooks";
 import AccountMenu from "./AccountMenu";
@@ -42,6 +42,7 @@ type AppShellProps = {
 
 export default function AppShell({ children }: AppShellProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const user = useAppSelector((state) => state.auth.user);
   const currentRoute = routeFromPath(location.pathname);
   const isPackagesAdmin = user?.email?.toLowerCase() === "admin@readines.com";
@@ -61,6 +62,15 @@ export default function AppShell({ children }: AppShellProps) {
     return () =>
       window.removeEventListener("readiness:open-upload", openUpload);
   }, []);
+
+  useEffect(() => {
+    const showNewProfile = (event: Event) => {
+      const member = (event as CustomEvent<{ createdMember?: { id: string; name: string } }>).detail?.createdMember;
+      if (member) navigate("/health", { state: { newHealthProfileId: member.id, newHealthProfileName: member.name } });
+    };
+    window.addEventListener("readiness:health-updated", showNewProfile);
+    return () => window.removeEventListener("readiness:health-updated", showNewProfile);
+  }, [navigate]);
 
   return (
     <AppFrame>

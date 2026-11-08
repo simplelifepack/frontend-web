@@ -3,26 +3,36 @@ import { Heading, Text, ModalBackdrop, ModalPanel, Input, SelectMenu, Button } f
 import { useState } from "react";
 import { X } from "lucide-react";
 
-import { isoDateInput, validateDateOfBirth } from "../healthUtils";
+import { familyRelationships as relations, isoDateInput, validateDateOfBirth } from "../healthUtils";
+
+export type ProfileDraft = { name?: string; relation?: string | null; dateOfBirth?: string | null; age?: number | null; gender?: string | null; bloodGroup?: string | null; conditions?: string | null; allergies?: string | null };
 
 function AddMemberDialog({
   initial,
   onClose,
   onCreate,
 }: {
-  initial?: { name?: string; dateOfBirth?: string | null };
+  initial?: ProfileDraft;
   onClose: () => void;
   onCreate: (payload: {
     name: string;
     relation: string;
     bloodGroup?: string | null;
     dateOfBirth?: string | null;
+    age?: number | null;
+    gender?: string | null;
+    conditions?: string | null;
+    allergies?: string | null;
   }) => Promise<void>;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [relation, setRelation] = useState("");
-  const [customRelation, setCustomRelation] = useState("");
-  const [bloodGroup, setBloodGroup] = useState("Unknown");
+  const suggestedRelation = initial?.relation?.trim() ?? "";
+  const knownRelation = relations.find(option => option.toLowerCase() === suggestedRelation.toLowerCase());
+  const [relation, setRelation] = useState(knownRelation ?? (suggestedRelation ? "Other" : ""));
+  const [customRelation, setCustomRelation] = useState(knownRelation ? "" : suggestedRelation);
+  const [bloodGroup, setBloodGroup] = useState(initial?.bloodGroup ?? "Unknown");
+  const [age, setAge] = useState(initial?.age == null ? "" : String(initial.age));
+  const [gender, setGender] = useState(initial?.gender ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(initial?.dateOfBirth ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -43,6 +53,7 @@ function AddMemberDialog({
     if (!trimmedName) nextErrors.name = "Name is required";
     if (!resolvedRelation) nextErrors.relation = "Relation is required";
     if (dobError) nextErrors.dateOfBirth = dobError;
+    if (age && (!Number.isInteger(Number(age)) || Number(age) < 0 || Number(age) > 120)) nextErrors.age = "Enter an age from 0 to 120.";
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
     setSubmitting(true);
@@ -52,9 +63,13 @@ function AddMemberDialog({
         relation: resolvedRelation,
         bloodGroup: bloodGroup || "Unknown",
         dateOfBirth: dateOfBirth || null,
+        age: age ? Number(age) : null,
+        gender: gender.trim() || null,
+        conditions: initial?.conditions,
+        allergies: initial?.allergies,
       });
-    } catch {
-      setErrors({ form: "Unable to create profile. Try again." });
+    } catch (error) {
+      setErrors({ form: error instanceof Error ? error.message : "Unable to create profile. Try again." });
       setSubmitting(false);
     }
   };
@@ -98,18 +113,7 @@ function AddMemberDialog({
               aria-invalid={Boolean(errors.relation)}
               options={[
                 { value: "", label: "Select relation" },
-                ...[
-                  "Spouse",
-                  "Mother",
-                  "Father",
-                  "Son",
-                  "Daughter",
-                  "Brother",
-                  "Sister",
-                  "Grandfather",
-                  "Grandmother",
-                  "Other",
-                ].map((option) => ({ value: option, label: option })),
+                ...relations.map((option) => ({ value: option, label: option })),
               ]}
             />
             {relation === "Other" ? (
@@ -120,6 +124,13 @@ function AddMemberDialog({
               />
             ) : null}
             {errors.relation ? <small>{errors.relation}</small> : null}
+          </Text>
+          <Text as="label" size="sm" weight="medium">
+            <span>Age</span><Input type="number" min={0} max={120} value={age} onChange={event => setAge(event.target.value)} />
+            {errors.age ? <small>{errors.age}</small> : null}
+          </Text>
+          <Text as="label" size="sm" weight="medium">
+            <span>Gender</span><Input value={gender} onChange={event => setGender(event.target.value)} />
           </Text>
           <Text as="label" size="sm" weight="medium">
             <span>Blood group</span>

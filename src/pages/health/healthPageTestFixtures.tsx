@@ -22,6 +22,7 @@ import HealthPage from "./index";
 vi.mock("@/lib/api", () => ({
   api: {
     health: {
+      pendingRecords: vi.fn().mockResolvedValue([]),
       members: vi.fn(),
       overview: vi.fn(),
       records: vi.fn(),
@@ -149,9 +150,9 @@ export const manualMedication: HealthMedication = {
   createdAt: "2026-09-25",
 };
 
-export function renderHealthPage() {
+export function renderHealthPage(entry = "/") {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[entry]}>
       <HealthPage />
     </MemoryRouter>,
   );

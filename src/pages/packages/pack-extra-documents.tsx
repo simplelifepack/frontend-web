@@ -19,7 +19,7 @@ export default function PackExtraDocuments({ documents, selected, onChange, onCl
     <ModalPanel className="lp-pack-change-panel" role="dialog" aria-modal="true" aria-label="Add documents to download" onDismiss={onClose}>
       <div className="lp-pack-change-head"><Heading level={2} size="sm">Add documents to download</Heading><Button iconOnly variant="tertiary" aria-label="Close document picker" onClick={onClose}><X size={16} /></Button></div>
       <div className="lp-pack-change-section">
-        <Button variant="primary" type="button" onClick={() => setUploadOpen(true)}><Upload size={16} aria-hidden="true" /> Upload and scan a document</Button>
+        <Button variant="primary" type="button" onClick={() => setUploadOpen(true)}><Upload size={16} aria-hidden="true" /> Upload a document</Button>
         <SearchField aria-label="Search documents for download" placeholder="Search documents" value={query} onChange={event => setQuery(event.target.value)} />
         {filtered.map(document => <Text as="label" size="md" className="lp-pack-document-option" key={document.id}>
           <Checkbox checked={selected.has(document.id)} onChange={() => onChange(document.id)} />
@@ -29,6 +29,6 @@ export default function PackExtraDocuments({ documents, selected, onChange, onCl
       </div>
       <div className="lp-pack-change-actions"><Button variant="primary" onClick={onClose}>Done</Button></div>
     </ModalPanel>
-    {uploadOpen ? <UploadDocumentModal open scanByDefault unknownAsOther onClose={() => setUploadOpen(false)} onSaved={document => { setUploadOpen(false); onUploaded?.(document); }} /> : null}
+    {uploadOpen ? <UploadDocumentModal open unknownAsOther onClose={() => setUploadOpen(false)} onSaved={document => { setUploadOpen(false); onUploaded?.(document); }} /> : null}
   </ModalBackdrop>;
 }

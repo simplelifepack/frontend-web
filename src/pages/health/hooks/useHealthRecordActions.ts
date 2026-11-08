@@ -1,3 +1,5 @@
+import type { AnalyzeDocumentResponse } from "@/lib/api.types";
+import type { HealthUploadReview } from "@/lib/health-upload.types";
 import { api } from "@/lib/api";
 import type { HealthDocumentType } from "../types/health";
 import { documentTypeLabels, healthMemberResolutionMessage, isMemberResolution } from "../healthUtils";
@@ -13,15 +15,16 @@ function prescriptionUploadMessage(record: { processingStatus: string; medicatio
 }
 
 export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
-  const { selectedMemberId, memberResolution, recordOpenRequest, setMessage, setShowAddRecord, setMemberResolution, setSelectedMemberId, setActiveTab, setSelectedRecord, setProcessedRecord, refreshHealth, setDeleteRecord, setSelectedRecordId, setIsRecordModalOpen, setMembers, setShowAddMember, setOverview, setRecords, setTimeline, setAvailableMetrics } = data;
-  const createRecord = async (payload: { file: File; type?: HealthDocumentType }) => {
+  const { selectedMemberId, memberResolution, recordOpenRequest, setMessage, setShowAddRecord, setMemberResolution, setPendingRecords, setSelectedMemberId, setActiveTab, setSelectedRecord, setProcessedRecord, refreshHealth, setDeleteRecord, setSelectedRecordId, setIsRecordModalOpen, setMembers, setShowAddMember, setOverview, setRecords, setTimeline, setAvailableMetrics } = data;
+  const createRecord = async (payload: { file: File; type?: HealthDocumentType; analysis?: AnalyzeDocumentResponse; healthReview?: HealthUploadReview }) => {
     setMessage("Processing health record...");
     try {
-      const analysis = await api.documents.analyze([payload.file]);
+      const analysis = payload.analysis ?? await api.documents.analyze([payload.file]);
       const aiDisabled = analysis.warnings.some(
         (warning) => warning.code === "AI_PROCESSING_DISABLED",
       );
       const saved = await api.documents.save({
+        healthReview: payload.healthReview,
         tempFileIds: analysis.files.map((file) => file.tempFileId),
         originalName: analysis.files[0]?.originalName ?? payload.file.name,
         mimeType: analysis.files[0]?.mimeType ?? payload.file.type,
@@ -41,8 +44,7 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
         duplicateAction: "keep_both",
         userConfirmedUnknown: true,
       });
-      const record = await api.health.createRecord({
-        memberId: selectedMemberId || undefined,
+      const record = saved.healthRecord ?? await api.health.createRecord({
         documentId: saved.document.id,
         ...(payload.type ? { type: payload.type } : {}),
       });
@@ -54,8 +56,9 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
       }
       setSelectedMemberId(record.memberId);
       await refreshHealth(record.memberId);
-      setActiveTab(record.type === "prescription" ? "Medications" : "Records");
+      setActiveTab(payload.analysis?.document.healthExtraction ? "Records" : record.type === "prescription" ? "Medications" : "Records");
       setSelectedRecord(record);
+      if (payload.analysis?.document.healthExtraction) return;
       if (record.measurements.length) {
         setProcessedRecord(record);
         setMessage(record.matchedMember ? `Report added to ${record.matchedMember.name}` : "");
@@ -77,6 +80,7 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
         type: memberResolution.type,
       });
       if (isMemberResolution(record)) throw new Error("A health profile still needs to be selected.");
+      setPendingRecords(current => current.filter(item => item.documentId !== memberResolution.documentId));
       setMemberResolution(null);
       setSelectedMemberId(memberId);
       await refreshHealth(memberId);
@@ -125,7 +129,21 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
     }
   };
 
-  const createMember = async (payload: { name: string; relation: string; bloodGroup?: string | null; dateOfBirth?: string | null }) => {
+  const createMember = async (payload: Parameters<typeof api.health.createMember>[0]) => {
+    if (memberResolution) {
+      const record = await api.health.createRecord({
+        documentId: memberResolution.documentId, type: memberResolution.type, newMember: payload,
+      });
+      if (isMemberResolution(record)) throw new Error("A health profile still needs to be selected.");
+      setPendingRecords(current => current.filter(item => item.documentId !== memberResolution.documentId));
+      setMemberResolution(null);
+      setShowAddMember(false);
+      setMembers(await api.health.members());
+      setSelectedMemberId(record.memberId);
+      await refreshHealth(record.memberId);
+      setSelectedRecord(record);
+      return;
+    }
     const member = await api.health.createMember(payload);
     setMembers((current) => [...current, member]);
     setSelectedMemberId(member.id);
@@ -136,7 +154,6 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
     setSelectedRecord(null);
     setAvailableMetrics([]);
     await refreshHealth(member.id);
-    if (memberResolution) await confirmMemberResolution(member.id);
   };
 
   return {

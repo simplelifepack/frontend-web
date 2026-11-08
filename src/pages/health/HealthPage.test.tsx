@@ -65,10 +65,13 @@ it("renders, switches profiles, and opens exact records with duplicate type and 
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
     vi.spyOn(window, "open").mockReturnValue(null);
 
-    renderHealthPage();
+    renderHealthPage("/health?member=member-a&tab=Records");
     expect(
       await screen.findByRole("heading", { name: "Alex Example" }),
     ).toBeTruthy();
+    await screen.findAllByRole("button", { name: /^Correct what was read for Lab Report/ });
+    fireEvent.click(screen.getByRole("button", { name: "Overview" }));
+    expect(screen.queryByRole("button", { name: /^Correct what was read for Lab Report/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /^Records/ }));
     await waitFor(() =>
       expect(

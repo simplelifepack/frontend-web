@@ -1,13 +1,10 @@
 import { Text, Button, Card } from "@/design-system";
 
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { T } from "@/constants/theme";
 import type { DocumentRecord } from "@/lib/api";
-// Gmail/Drive integrations are paused for now because their buttons are not exposed.
-// Restore this import when those entry points come back:
-// import { api, type DriveStatus, type GmailStatus } from "@/lib/api";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   fetchDocumentById,
@@ -18,23 +15,6 @@ import { categories, safeCategory } from "./document-utils";
 const CategoryDocuments = lazy(() => import("./category-documents"));
 const DocumentDetail = lazy(() => import("./document-detail"));
 const DocumentsOverview = lazy(() => import("./documents-overview"));
-// const GmailImportDialog = lazy(() => import("./gmail-import-dialog"));
-// const DriveDialog = lazy(() => import("./drive-dialog"));
-
-// const emptyDriveStatus: DriveStatus = {
-//   connected: false,
-//   account: null,
-//   scanStatus: "idle",
-//   lastScannedAt: null,
-//   lastSuccessfulSync: null,
-//   scanning: false,
-//   phase: null,
-//   processed: 0,
-//   total: 0,
-//   indexedCount: 0,
-//   error: null,
-// };
-
 function hasDocumentDetails(document: DocumentRecord | undefined) {
   return Boolean(
     document && ("rawText" in document || "extractedKeyFields" in document),
@@ -60,29 +40,6 @@ export default function DocumentsPage() {
     detailStatus,
     error,
   } = useAppSelector((state) => state.documents);
-  // const [gmailOpen, setGmailOpen] = useState(false);
-  // const [driveOpen, setDriveOpen] = useState(false);
-  // const [, setGmailStatus] = useState<GmailStatus>({
-  //   connected: false,
-  //   account: null,
-  //   lastScannedAt: null,
-  //   scanning: false,
-  // });
-  // const [, setDriveStatus] = useState<DriveStatus>(emptyDriveStatus);
-
-  // Gmail/Drive status calls are paused with the dormant UI.
-  // useEffect(() => {
-  //   void api.gmail
-  //     .status()
-  //     .then(setGmailStatus)
-  //     .catch(() => undefined);
-  // }, []);
-  // useEffect(() => {
-  //   void api.drive
-  //     .status()
-  //     .then(setDriveStatus)
-  //     .catch(() => undefined);
-  // }, []);
   useEffect(() => {
     if (status === "idle") void dispatch(fetchDocuments());
   }, [dispatch, status]);
@@ -162,32 +119,8 @@ export default function DocumentsPage() {
   }
 
   return (
-    <>
-      <Suspense fallback={<DocumentsFallback />}>
-        <DocumentsOverview
-          documents={documents}
-          error={error}
-          status={status}
-        />
-      </Suspense>
-      {/* Gmail/Drive dialogs are paused with the dormant UI. */}
-      {/*
-      <Suspense fallback={null}>
-        <GmailImportDialog
-          open={gmailOpen}
-          onClose={() => setGmailOpen(false)}
-          onStatusChange={setGmailStatus}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <DriveDialog
-          open={driveOpen}
-          onClose={() => setDriveOpen(false)}
-          onStatusChange={setDriveStatus}
-          onDocumentsChanged={() => void dispatch(fetchDocuments())}
-        />
-      </Suspense>
-      */}
-    </>
+    <Suspense fallback={<DocumentsFallback />}>
+      <DocumentsOverview documents={documents} error={error} status={status} />
+    </Suspense>
   );
 }

@@ -5,7 +5,7 @@ import { useEffect, useState, type MouseEvent } from "react";
 import { Text, Heading, Button, Card, Stack, Container, Section, Grid, Row, Center, SiteNav, NavLayout, NavLink, colors, spacing } from "@/design-system";
 import { billingApi, requestBillingCheckout, selectedBillingPlan, type BillingCatalogue } from "@/lib/billing-api";
 import { toast } from "sonner";
-import { ArrowRight, Lock, UploadCloud, Sparkles, Briefcase, Mail, HardDrive } from "lucide-react";
+import { ArrowRight, Lock, UploadCloud, Sparkles, Briefcase } from "lucide-react";
 import { Brand } from "./Landing.Brand";
 
 
@@ -141,19 +141,11 @@ return (<header className="lp-hero">
             </div>
             <div className="lp-connectors">
               <Text size="md">
-                Upload files or photos, review Gmail attachments, or scan
-                connected Google Drive from Documents.
-              </Text>
-              <Text size="md" className="lp-conn">
-                <Mail aria-hidden="true" focusable="false" size={14} /> Email
-              </Text>
-              <Text size="md" className="lp-conn">
-                <HardDrive aria-hidden="true" focusable="false" size={14} />{" "}
-                Drive
+                Upload files or photos from Documents.
               </Text>
               <Text size="md" className="lp-conn">
                 <UploadCloud aria-hidden="true" focusable="false" size={14} />{" "}
-                Upload &amp; scan
+                Upload documents
               </Text>
             </div>
           </header>);
@@ -184,7 +176,7 @@ return (<Section
                       {
                         icon: UploadCloud,
                         title: "Add your documents",
-                        body: "Upload a file or photo. Or connect Gmail to review attachments, or Google Drive to scan documents.",
+                        body: "Upload a file or photo from your device.",
                       },
                       {
                         icon: Sparkles,

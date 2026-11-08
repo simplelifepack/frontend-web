@@ -49,9 +49,11 @@ export const uploadDocument = createAsyncThunk("documents/uploadDocument", async
 
 export const analyzeDocument = createAsyncThunk("documents/analyzeDocument", async (input: {
   files: File[];
+  separate?: boolean;
 }) => {
-  return api.documents.analyze(input.files);
-});
+  if (input.separate) return api.documents.analyzeBatch(input.files);
+  return { analyses: [await api.documents.analyze(input.files)], issues: [] };
+}, { condition: (_, { getState }) => (getState() as RootState).documents.analyzeStatus !== "loading" });
 
 export const saveDocument = createAsyncThunk(
   "documents/saveDocument",
@@ -122,11 +124,6 @@ const documentsSlice = createSlice({
       state.uploadStatus = "idle";
       state.error = null;
     },
-    setImportedAnalyses(state, action: { payload: AnalyzeDocumentResponse[] }) {
-      state.pendingAnalysis = action.payload[0] ?? null;
-      state.pendingAnalysisQueue = action.payload.slice(1);
-      state.error = null;
-    },
     documentAdded(state, action: { payload: DocumentRecord }) {
       const existed = state.items.some((document) => document.id === action.payload.id);
       state.items = state.items.filter((document) => document.id !== action.payload.id);
@@ -180,12 +177,7 @@ const documentsSlice = createSlice({
       })
       .addCase(uploadDocument.fulfilled, (state, action) => {
         state.uploadStatus = "succeeded";
-        if (action.payload.document) {
-          state.items.unshift(action.payload.document);
-          state.documentCount += 1;
-        } else {
-          state.pendingAnalysis = action.payload as AnalyzeDocumentResponse;
-        }
+        state.pendingAnalysis = action.payload;
       })
       .addCase(uploadDocument.rejected, (state, action) => {
         state.uploadStatus = "failed";
@@ -197,7 +189,8 @@ const documentsSlice = createSlice({
       })
       .addCase(analyzeDocument.fulfilled, (state, action) => {
         state.analyzeStatus = "succeeded";
-        state.pendingAnalysis = action.payload;
+        state.pendingAnalysis = action.payload.analyses[0] ?? null;
+        state.pendingAnalysisQueue = action.payload.analyses.slice(1);
       })
       .addCase(analyzeDocument.rejected, (state, action) => {
         state.analyzeStatus = "failed";
@@ -257,5 +250,5 @@ const documentsSlice = createSlice({
   },
 });
 
-export const { clearPendingAnalysis, documentAdded, documentRemoved, documentUpdated, setImportedAnalyses } = documentsSlice.actions;
+export const { clearPendingAnalysis, documentAdded, documentRemoved, documentUpdated } = documentsSlice.actions;
 export default documentsSlice.reducer;

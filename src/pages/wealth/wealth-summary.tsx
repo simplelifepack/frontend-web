@@ -9,7 +9,7 @@ import {
   LinearProgress,
 } from "@/design-system";
 
-import { ChevronRight, Coins, Link2, ShieldAlert, Wallet } from "lucide-react";
+import { ChevronRight, Coins, KeyRound, Siren, Wallet } from "lucide-react";
 
 import type { WealthRecord } from "@/lib/api";
 import {
@@ -54,61 +54,59 @@ export function Readiness({
     )
     .reduce((total, record) => total + recordHomeAmount(record), 0);
   return (
-    <Stack $spaceAfter="s16">
-      <Card>
-        <Stack $gap="s16">
-          <Row $justify="space-between">
-            <Row $gap="s8">
-              <Link2 aria-hidden="true" size="var(--icon-regular)" />
+    <Stack $gap="s10" $spaceAfter="s16">
+      <Card className="lp-wealth-readiness-card">
+        <Row>
+          <Row className="lp-wealth-readiness-meter" $wrap={false}>
+            <Row $gap="s6" $wrap={false}>
+              <KeyRound aria-hidden="true" size="var(--icon-regular)" />
               <Text weight="semibold">Family access readiness</Text>
             </Row>
-            <Row $gap="s8">
-              <Text size="lg" weight="semibold">
-                {stats.readiness}%
-              </Text>
-              <Button
-                size="sm"
-                variant="tertiary"
-                type="button"
-                onClick={onMath}
-              >
-                {showMath ? "Hide" : "How?"}
-              </Button>
-            </Row>
+            <Text className="lp-wealth-readiness-score" size="lg" weight="semibold">
+              {stats.readiness}%
+            </Text>
+            <LinearProgress
+              $tone="readiness"
+              value={stats.readiness}
+              max={100}
+              aria-label="Family access readiness"
+            />
           </Row>
-          <LinearProgress
-            $tone="readiness"
-            value={stats.readiness}
-            max={100}
-            aria-label="Family access readiness"
-          />
-          <Row $justify="space-between">
-            <Row>
-              <Text tone="muted">{records.length} docs</Text>
-              <Text tone="muted">{gaps} access missing</Text>
-            </Row>
-            <Button variant="tertiary" type="button" onClick={onSos}>
-              <ShieldAlert aria-hidden="true" size="var(--icon-regular)" />
-              SOS handoff
+          <Row $gap="s8">
+            <Text size="sm" tone="muted">
+              {records.length} docs · {gaps} access missing
+            </Text>
+            <Button size="sm" variant="secondary" type="button" onClick={onMath}>
+              {showMath ? "Hide" : "How?"}
             </Button>
           </Row>
           <Button
-            variant="secondary"
+            size="sm"
+            variant="tertiary"
             type="button"
-            fullWidth
             onClick={onLent}
             title="Lent and borrowed"
-            aria-label="Lent and borrowed"
           >
-            <Coins aria-hidden="true" size="var(--icon-regular)" />
-            <Text>
-              Owed to you <b>{money(owedToYou)}</b> · You owe{" "}
-              <b>{money(youOwe)}</b>
+            <Coins aria-hidden="true" />
+            <Text size="sm" tone="muted">
+              Owed to you <b>{money(owedToYou)}</b> · You owe <b>{money(youOwe)}</b>
             </Text>
-            <ChevronRight aria-hidden="true" size="var(--icon-regular)" />
+            <ChevronRight aria-hidden="true" />
           </Button>
-        </Stack>
+        </Row>
       </Card>
+      <Button
+        className="lp-wealth-handoff-button"
+        size="lg"
+        variant="primary"
+        tone="danger"
+        type="button"
+        fullWidth
+        onClick={onSos}
+      >
+        <Siren aria-hidden="true" />
+        SOS handoff
+      </Button>
     </Stack>
   );
 }

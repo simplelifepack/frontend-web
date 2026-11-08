@@ -20,7 +20,7 @@ async function chooseCategory(value: string) {
 
 let pendingAnalysis: AnalyzeDocumentResponse | null = null;
 const dispatch = vi.fn((action: { kind: string }) =>
-  action.kind === "save" ? { unwrap: async () => ({}) } : {},
+  action.kind === "save" ? { unwrap: async () => ({}) } : { unwrap: async () => ({ analyses: pendingAnalysis ? [pendingAnalysis] : [], issues: [] }) },
 );
 vi.mock("@/lib/preferences-api", () => ({ preferencesApi: { get: async () => ({ aiProcessingEnabled: true }) } }));
 vi.mock("@/store/hooks", () => ({
@@ -135,6 +135,9 @@ describe("manual document upload review", () => {
     const dropped = new File(["%PDF-1.4\n%%EOF"], "drop.pdf", { type: "application/pdf" });
     fireEvent.drop(screen.getByTestId("document-drop-zone"), { dataTransfer: { files: [dropped] } });
     expect(screen.getByText("drop.pdf")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Continue with 2 documents" }));
+    expect(analyzeDocument).toHaveBeenLastCalledWith({ files: [pdf, dropped], separate: true });
+
   });
 
   it.each([

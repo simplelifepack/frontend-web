@@ -1,3 +1,4 @@
+import { familyRelationships } from "./healthUtils";
 import { Heading, Text, ChoiceGroup, Choice, ModalPanel, ModalBackdrop, Input, SelectMenu, Textarea, Button } from "@/design-system";
 import { X } from "lucide-react";
 import { reminderTypeOptions, reminderFrequencyOptions } from "./HealthDialog.HealthDialogKind";
@@ -9,7 +10,7 @@ import { useHealthDialogLogic } from "./HealthDialog.documentDetail";
 
 export function HealthDialog(props: Parameters<typeof useHealthDialogLogic>[0]) {
 const context = useHealthDialogLogic(props);
-const { kind, member, records, measurements, onClose, onSaved, onViewDocument, title, setTitle, date, setDate, reminderType, setReminderType, reminderFrequency, setReminderFrequency, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, setError, saving, setSaving, titles, save } = context;
+const { kind, member, identity, setIdentity, records, measurements, onClose, onSaved, onViewDocument, title, setTitle, date, setDate, reminderType, setReminderType, reminderFrequency, setReminderFrequency, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, setError, saving, setSaving, titles, save } = context;
 if (kind === "visit")
     return (
       <VisitPackDialog
@@ -119,6 +120,29 @@ return ((
             }}
             className="lp-health-form lp-health-profile-form"
           >
+            <Text as="label" size="sm" weight="medium">
+              Patient name
+              <Input value={identity.name} maxLength={120} onChange={event => setIdentity({ ...identity, name: event.target.value })} />
+            </Text>
+            {member.relation !== "Myself" ? (
+              <Text as="label" size="sm" weight="medium">
+                Relationship
+                <SelectMenu value={identity.relation} onValueChange={relation => setIdentity({ ...identity, relation })}
+                  options={[...new Set(["Unknown", ...familyRelationships, member.relation])].map(label => ({ value: label, label }))} />
+              </Text>
+            ) : null}
+            <Text as="label" size="sm" weight="medium">
+              Date of birth
+              <Input type="date" value={identity.dateOfBirth} onChange={event => setIdentity({ ...identity, dateOfBirth: event.target.value })} />
+            </Text>
+            <Text as="label" size="sm" weight="medium">
+              Age
+              <Input type="number" min={0} max={120} value={identity.age} onChange={event => setIdentity({ ...identity, age: event.target.value })} />
+            </Text>
+            <Text as="label" size="sm" weight="medium">
+              Gender
+              <Input value={identity.gender} maxLength={80} onChange={event => setIdentity({ ...identity, gender: event.target.value })} />
+            </Text>
             <Text as="label" size="sm" weight="medium">
               Blood group
               <SelectMenu

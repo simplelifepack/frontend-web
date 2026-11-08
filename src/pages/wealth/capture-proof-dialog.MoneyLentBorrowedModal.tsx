@@ -54,7 +54,7 @@ return ((
               <UploadCloud aria-hidden="true" focusable="false" size="var(--icon-regular)" />
             </span>
             <span>
-              <b>Scan or upload a new document</b>
+              <b>Upload a new document</b>
               <small>
                 Photo, screenshot, receipt, or PDF. It will be filed in
                 Documents.
