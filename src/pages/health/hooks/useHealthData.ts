@@ -15,6 +15,8 @@ import type {
 import type { HealthDialogKind } from "../HealthDialog";
 import type { HealthTab } from "../types/health";
 
+const lastMemberKey = "readiness.health.lastMember";
+
 export function useHealthData() {
   const [healthDialog, setHealthDialog] = useState<HealthDialogKind | null>(
     null,
@@ -46,9 +48,11 @@ export function useHealthData() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const recordOpenRequest = useRef(0);
+  const memberLoadRequest = useRef(0);
 
   const selectedMember =
     members.find((member) => member.id === selectedMemberId) ??
+    members.find((member) => member.relation === "Myself" || member.relation === "Self") ??
     members[0] ??
     null;
   const tracked = overview?.trackedMetrics ?? [];
@@ -59,7 +63,21 @@ export function useHealthData() {
     try {
       const nextMembers = await api.health.members();
       setMembers(nextMembers);
-      setSelectedMemberId((current) => nextMembers.some(member => member.id === current) ? current : nextMembers[0]?.id ?? "");
+      let lastMemberId: string | null = null;
+      try {
+        lastMemberId = window.localStorage.getItem(lastMemberKey);
+      } catch {
+        // Health remains usable when browser storage is unavailable.
+      }
+      const restoredMember = nextMembers.find((member) => member.id === lastMemberId);
+      const defaultMember = nextMembers.find((member) => member.relation === "Myself" || member.relation === "Self") ?? nextMembers[0];
+      setSelectedMemberId((current) =>
+        nextMembers.some((member) => member.id === current)
+          ? current
+          : current
+            ? defaultMember?.id ?? ""
+            : restoredMember?.id ?? defaultMember?.id ?? "",
+      );
       setMessage("");
     } catch (error) {
       setMessage(
@@ -74,6 +92,7 @@ export function useHealthData() {
 
   const refreshHealth = async (memberId: string) => {
     if (!memberId) return;
+    const request = ++memberLoadRequest.current;
     setLoading(true);
     setOverview(null);
     setRecords([]);
@@ -92,6 +111,7 @@ export function useHealthData() {
           api.health.availableMetrics(memberId, search),
           api.health.measurements(memberId),
         ]);
+      if (request !== memberLoadRequest.current) return;
       setOverview(nextOverview);
       setRecords(nextRecords);
       setTimeline(nextTimeline);
@@ -99,15 +119,17 @@ export function useHealthData() {
       setMeasurements(nextMeasurements);
       if (nextRecords[0]) {
         setSelectedRecordId(nextRecords[0].id);
-        setSelectedRecord(await api.health.record(nextRecords[0].id));
+        const firstRecord = await api.health.record(nextRecords[0].id);
+        if (request === memberLoadRequest.current) setSelectedRecord(firstRecord);
       } else setSelectedRecord(null);
     } catch (error) {
+      if (request !== memberLoadRequest.current) return;
       toast.error("Health data could not be loaded", {
         description:
           error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
-      setLoading(false);
+      if (request === memberLoadRequest.current) setLoading(false);
     }
   };
 
@@ -125,6 +147,11 @@ export function useHealthData() {
   }, []);
   useEffect(() => {
     if (!selectedMemberId) return;
+    try {
+      window.localStorage.setItem(lastMemberKey, selectedMemberId);
+    } catch {
+      // Remembering the last profile is optional.
+    }
     void refreshHealth(selectedMemberId);
     const refreshSavedProfile = (event: Event) => {
       const detail = (event as CustomEvent<{ memberId?: string; createdMember?: unknown }>).detail;

@@ -1,8 +1,8 @@
 export type HealthTab =
   | "Overview"
-  | "Trends"
+  | "Readings"
   | "Timeline"
-  | "Medications"
+  | "Medicines"
   | "Records";
 export type HealthDocumentType =
   | "lab_report"

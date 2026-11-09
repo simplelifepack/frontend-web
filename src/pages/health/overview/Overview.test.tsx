@@ -35,6 +35,8 @@ function renderOverview(overview: HealthOverview) {
       onTrack={vi.fn()}
       onReminder={vi.fn()}
       onEdit={vi.fn()}
+      onAddRecord={vi.fn()}
+      onInsurance={vi.fn()}
       onApplyTracked={vi.fn()}
     />,
   );

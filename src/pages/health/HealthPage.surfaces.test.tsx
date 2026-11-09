@@ -93,12 +93,13 @@ it("keeps the Timeline, Medications, emergency, reading, and add-record surfaces
         frequency: "weekly",
       }),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Timeline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Readings" }));
+    fireEvent.click(screen.getByRole("button", { name: "View timeline" }));
     expect(await screen.findByText("Test reading 118 mg/dL")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Medications" }));
+    fireEvent.click(screen.getByRole("button", { name: "Medicines" }));
     expect(await screen.findByText("Test medication")).toBeTruthy();
     const medicationCard = screen
-      .getByText("Current medications")
+      .getByRole("heading", { name: "Medicines" })
       .closest(".lp-health-med-card")!;
     fireEvent.click(
       within(medicationCard as HTMLElement).getByRole("button", {

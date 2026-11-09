@@ -33,7 +33,6 @@ vi.mock("@/lib/api", () => ({
       createReminder: vi.fn(),
       availableMetrics: vi.fn(),
       createMedication: vi.fn(),
-      updateRecord: vi.fn(),
     },
     documents: {
       download: vi.fn(),

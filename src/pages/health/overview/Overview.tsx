@@ -23,11 +23,15 @@ function Overview({
   onTrack,
   onReminder,
   onEdit,
+  onAddRecord,
+  onInsurance,
   measurements,
   onApplyTracked,
 }: {
   onReminder: () => void;
   onEdit: () => void;
+  onAddRecord: () => void;
+  onInsurance: () => void;
   overview: HealthOverview | null;
   records: HealthRecord[];
   measurements: HealthMeasurement[];
@@ -114,11 +118,15 @@ function Overview({
       ) : null}
       <Grid $align="start">
         <ReminderPanel reminders={upcoming} onAdd={onReminder} />
-        <HealthReadiness
-          member={overview?.member}
-          records={records}
-          onRecords={onEdit}
-        />
+        {overview ? (
+          <HealthReadiness
+            member={overview.member}
+            records={records}
+            onEdit={onEdit}
+            onAddRecord={onAddRecord}
+            onInsurance={onInsurance}
+          />
+        ) : null}
       </Grid>
     </Stack>
   );

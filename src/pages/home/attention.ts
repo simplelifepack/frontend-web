@@ -86,7 +86,7 @@ export function medicationAttention(events: HealthMedicationAttention[]): HomeAt
       label: `${event.title} · ${event.memberName}`,
       detail: days < 0 ? "ran out" : `runs out ${reminderWhen(event.occurredAt)}`,
       tone: days < 0 ? T.coral : A.pink,
-      route: `/health?tab=Medications&member=${encodeURIComponent(event.memberId)}&medication=${encodeURIComponent(event.id)}`,
+      route: `/health?tab=Medicines&member=${encodeURIComponent(event.memberId)}&medication=${encodeURIComponent(event.id)}`,
     }];
   });
 }

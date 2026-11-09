@@ -13,10 +13,8 @@ type AuthState = {
   status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
   initialized: boolean;
-  initializationStatus: "idle" | "loading" | "succeeded" | "failed";
-  initializationError: string | null;
+  initializationStatus: "idle" | "loading" | "succeeded" | "failed" | "degraded";
   sessionStatus: "idle" | "loading" | "authenticated" | "anonymous" | "failed";
-  sessionError: string | null;
 };
 
 const initialState: AuthState = {
@@ -26,9 +24,7 @@ const initialState: AuthState = {
   error: null,
   initialized: false,
   initializationStatus: "idle",
-  initializationError: null,
   sessionStatus: "idle",
-  sessionError: null,
 };
 
 export const restoreSession = createAsyncThunk(
@@ -74,6 +70,9 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    acknowledgeInitializationFailure(state) {
+      if (state.initializationStatus === "failed") state.initializationStatus = "degraded";
+    },
     updateCurrentUser(state, action: { payload: AuthUser }) {
       state.user = action.payload;
     },
@@ -84,9 +83,7 @@ const authSlice = createSlice({
       state.error = null;
       state.initialized = false;
       state.initializationStatus = "idle";
-      state.initializationError = null;
       state.sessionStatus = "anonymous";
-      state.sessionError = null;
       clearInMemoryAuth();
     },
   },
@@ -157,20 +154,17 @@ const authSlice = createSlice({
       })
       .addCase(initializeApp.pending, (state) => {
         state.initializationStatus = "loading";
-        state.initializationError = null;
       })
       .addCase(initializeApp.fulfilled, (state, action) => {
         state.user = { ...state.user, ...action.payload.user };
         state.initialized = true;
         state.initializationStatus = "succeeded";
       })
-      .addCase(initializeApp.rejected, (state, action) => {
-        state.initializationStatus = "failed";
-        state.initializationError = action.error.message ?? "Unable to initialize Readines.";
+      .addCase(initializeApp.rejected, (state) => {
+        if (state.token) state.initializationStatus = "failed";
       })
       .addCase(restoreSession.pending, (state) => {
         state.sessionStatus = "loading";
-        state.sessionError = null;
       })
       .addCase(restoreSession.fulfilled, (state, action) => {
         state.token = action.payload.accessToken ?? action.payload.token;
@@ -183,11 +177,10 @@ const authSlice = createSlice({
         state.token = null;
         state.user = null;
         state.sessionStatus = action.payload === "anonymous" ? "anonymous" : "failed";
-        state.sessionError = action.payload === "anonymous" ? null : "Unable to restore your session. Please try again.";
         clearInMemoryAuth();
       });
   },
 });
 
-export const { logout, updateCurrentUser } = authSlice.actions;
+export const { acknowledgeInitializationFailure, logout, updateCurrentUser } = authSlice.actions;
 export default authSlice.reducer;

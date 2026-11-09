@@ -56,6 +56,7 @@ export type DocumentPage = {
 };
 
 export type DocumentRecord = {
+  healthPatientName?: string;
   id: string;
   title?: string | null;
   displayName?: string | null;

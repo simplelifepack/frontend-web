@@ -5,7 +5,16 @@ export default function MeasurementChart({ measurements, large = false }: { meas
   const rows = [...measurements].filter(x => Number.isFinite(x.value)).sort((a, b) => (a.measuredAt ?? '').localeCompare(b.measuredAt ?? ''));
   if (!rows.length) return null;
   const latest = rows[rows.length - 1];
-  const limits = [latest.referenceMin, latest.referenceMax].filter((v): v is number => v != null && Number.isFinite(v));
+  const { referenceMin, referenceMax, referenceText } = latest;
+  const hasSharedRange = Boolean(referenceText) &&
+    typeof referenceMin === "number" && Number.isFinite(referenceMin) &&
+    typeof referenceMax === "number" && Number.isFinite(referenceMax) &&
+    referenceMax > referenceMin &&
+    rows.every((row) =>
+      row.sourceDocumentId && row.referenceText === referenceText &&
+      row.referenceMin === referenceMin && row.referenceMax === referenceMax
+    );
+  const limits = hasSharedRange ? [referenceMin!, referenceMax!] : [];
   const values = [...rows.map(x => x.value), ...limits];
   const low = Math.min(...values), high = Math.max(...values);
   const pad = Math.max((high - low) * .25, Math.abs(high) * .1, 1);
@@ -18,7 +27,12 @@ export default function MeasurementChart({ measurements, large = false }: { meas
   const label = (date: string | null) => date ? new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(date)) : 'Date unavailable';
   const mint = colors.chart[0];
   return <svg className={`lp-measurement-chart${large ? ' large' : ''}`} viewBox="0 0 360 150" role="img" aria-label={`${rows.length} recorded measurements`}>
-    {limits.length > 0 && <rect x="38" width="300" y={y(latest.referenceMax ?? max)} height={y(latest.referenceMin ?? min) - y(latest.referenceMax ?? max)} fill="color-mix(in srgb, var(--lp-mint) 12%, transparent)" />}
+    {limits.length > 0 && (
+      <g aria-label="Range as printed on reports">
+        <rect x="38" width="300" y={y(limits[1])} height={y(limits[0]) - y(limits[1])} fill="color-mix(in srgb, var(--lp-mint) 12%, transparent)" />
+        <title>Range as printed on reports</title>
+      </g>
+    )}
     {limits.map((limit, i) => <g key={i}><line x1="38" x2="338" y1={y(limit)} y2={y(limit)} stroke={mint} strokeDasharray="3 4" /><text x="336" y={y(limit) - 5} textAnchor="end" fill={mint}>{limit} {latest.unit}</text></g>)}
     <path d="M38 20V122H338" fill="none" stroke="var(--lp-border)" />
     <text x="31" y="26" textAnchor="end">{Number(max.toPrecision(3))}</text><text x="31" y="122" textAnchor="end">{Number(min.toPrecision(3))}</text>

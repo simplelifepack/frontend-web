@@ -44,7 +44,7 @@ export function documentPerson(
       field.label.trim(),
     ),
   )?.value;
-  return direct?.trim() || reviewed?.trim() || currentUserName?.trim() || "You";
+  return document.healthPatientName?.trim() || direct?.trim() || reviewed?.trim() || currentUserName?.trim() || "You";
 }
 
 export function documentSource(document: DocumentRecord) {
@@ -132,6 +132,7 @@ export function filterDocuments(
           document.category,
           document.uniqueIdentifier,
           document.source,
+          document.healthPatientName,
           person,
         ].some((value) =>
           String(value ?? "")

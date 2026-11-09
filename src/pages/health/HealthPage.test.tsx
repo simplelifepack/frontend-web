@@ -8,7 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import { api } from "@/lib/api";
 import { preferencesApi } from "@/lib/preferences-api";
 import type {
@@ -21,6 +21,13 @@ import type {
 import HealthPage from "./index";
 HTMLElement.prototype.scrollIntoView ??= vi.fn();
 it("renders, switches profiles, and opens exact records with duplicate type and date", async () => {
+    const storage = new Map<string, string>();
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+      removeItem: (key: string) => storage.delete(key),
+    });
+    onTestFinished(() => { vi.unstubAllGlobals(); });
     vi.mocked(preferencesApi.get).mockResolvedValue({
       country: "IN",
       passportCountry: "IN",
@@ -63,27 +70,34 @@ it("renders, switches profiles, and opens exact records with duplicate type and 
       });
     vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:health-preview");
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
-    vi.spyOn(window, "open").mockReturnValue(null);
+    const originalTab = {
+      opener: window,
+      document: document.implementation.createHTMLDocument(),
+      closed: false,
+      close: vi.fn(),
+      location: { replace: vi.fn() },
+    };
+    vi.spyOn(window, "open").mockReturnValue(originalTab as unknown as Window);
 
-    renderHealthPage("/health?member=member-a&tab=Records");
+    const initial = renderHealthPage("/health?member=member-a&tab=Records");
     expect(
       await screen.findByRole("heading", { name: "Alex Example" }),
     ).toBeTruthy();
-    await screen.findAllByRole("button", { name: /^Correct what was read for Lab Report/ });
+    await screen.findAllByRole("button", { name: /^Open Lab Report/ });
     fireEvent.click(screen.getByRole("button", { name: "Overview" }));
-    expect(screen.queryByRole("button", { name: /^Correct what was read for Lab Report/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Open Lab Report/ })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /^Records/ }));
     await waitFor(() =>
       expect(
         screen.getAllByRole("button", {
-          name: /^Correct what was read for Lab Report/,
+          name: /^Open Lab Report/,
         }),
       ).toHaveLength(2),
     );
 
     fireEvent.click(
       screen.getAllByRole("button", {
-        name: /^Correct what was read for Lab Report/,
+        name: /^Open Lab Report/,
       })[1],
     );
     let dialog = await screen.findByRole("dialog", {
@@ -111,33 +125,18 @@ it("renders, switches profiles, and opens exact records with duplicate type and 
         .find((row) => row.textContent?.includes("Clinic B"))
         ?.classList.contains("active"),
     ).toBe(true);
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: "Correct details" }),
-    );
-    expect(
-      await screen.findByRole("dialog", { name: "Choose measurements to track" }),
-    ).toBeTruthy();
-    vi.mocked(api.health.updateRecord).mockResolvedValue({
-      ...details["record-b"]!,
-      type: "prescription",
-    });
-    const correctionDialog = screen.getByRole("dialog", {
-      name: "Choose measurements to track",
-    });
-    fireEvent.keyDown(within(correctionDialog).getByLabelText("Document type"), { key: "ArrowDown" });
-    fireEvent.click(await screen.findByRole("option", { name: "Prescription" }));
-    fireEvent.click(
-      within(correctionDialog).getByRole("button", { name: "Save tracking" }),
-    );
-    await waitFor(() =>
-      expect(api.health.updateRecord).toHaveBeenCalledWith("record-b", {
-        type: "prescription",
-      }),
-    );
+    fireEvent.click(within(dialog).getByRole("button", { name: "Close document viewer" }));
+    const row = screen.getAllByRole("listitem").find((item) => item.textContent?.includes("Clinic B"))!;
+    fireEvent.click(within(row).getByRole("button", { name: "View original document" }));
+    expect(window.open).toHaveBeenCalledWith("about:blank", "_blank");
+    await waitFor(() => expect(originalTab.location.replace).toHaveBeenCalledWith("blob:health-preview"));
+    expect(api.documents.preview).toHaveBeenCalledWith("document-b");
+    expect(originalTab.opener).toBeNull();
+    expect(screen.queryByRole("button", { name: /Correct what was read/ })).toBeNull();
 
     fireEvent.click(
       screen.getAllByRole("button", {
-        name: /^Correct what was read for Lab Report/,
+        name: /^Open Lab Report/,
       })[0],
     );
     dialog = await screen.findByRole("dialog", {
@@ -148,10 +147,17 @@ it("renders, switches profiles, and opens exact records with duplicate type and 
     );
     expect(api.health.record).toHaveBeenCalledWith("record-a");
     expect(api.documents.download).not.toHaveBeenCalled();
+    const pdf = new Blob(["%PDF-1.7"], { type: "application/pdf" });
+    vi.mocked(api.documents.preview).mockResolvedValueOnce({ blob: pdf, fileName: "original.pdf" });
     fireEvent.click(within(dialog).getByRole("button", { name: "View original" }));
     await waitFor(() =>
-      expect(api.documents.preview).toHaveBeenCalledWith("document-a"),
+      expect(URL.createObjectURL).toHaveBeenCalledWith(pdf),
     );
+    expect(api.documents.preview).toHaveBeenCalledWith("document-a");
+
+    vi.mocked(api.documents.preview).mockRejectedValueOnce(new Error("Document not found."));
+    fireEvent.click(within(dialog).getByRole("button", { name: "View original" }));
+    await waitFor(() => expect(originalTab.close).toHaveBeenCalled());
 
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Close document viewer" }),
@@ -163,4 +169,16 @@ it("renders, switches profiles, and opens exact records with duplicate type and 
     await waitFor(() =>
       expect(api.health.records).toHaveBeenCalledWith("member-b"),
     );
+
+    initial.unmount();
+    const reopened = renderHealthPage("/health");
+    expect(await screen.findByRole("heading", { name: "Jordan Example" })).toBeTruthy();
+    reopened.unmount();
+
+    window.localStorage.setItem("readiness.health.lastMember", "removed-profile");
+    vi.mocked(api.health.members).mockResolvedValue([...members].reverse());
+    renderHealthPage("/health");
+    expect(await screen.findByRole("heading", { name: "Alex Example" })).toBeTruthy();
+    window.localStorage.removeItem("readiness.health.lastMember");
+    originalTab.closed = true;
   });

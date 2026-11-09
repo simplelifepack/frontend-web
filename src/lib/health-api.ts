@@ -49,8 +49,6 @@ export const healthApi = {
     mutateHealth(() => request<HealthProcessResponse>("/api/health/records", { method: "POST", body: payload, requiresAuth: true })),
   reanalyzeRecord: (recordId: string) =>
     mutateHealth(() => request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}/reprocess`, { method: "POST", requiresAuth: true })),
-  updateRecord: (recordId: string, payload: { type?: "lab_report" | "medical_report" | "prescription" }) =>
-    mutateHealth(() => request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}`, { method: "PATCH", body: payload, requiresAuth: true })),
   record: (recordId: string) => request<HealthRecordDetail>(`/api/health/records/${encodeURIComponent(recordId)}`, { requiresAuth: true, dedupeMs: 5_000 }),
   deleteRecord: (recordId: string) => mutateHealth(() => request<void>(`/api/health/records/${encodeURIComponent(recordId)}`, { method: "DELETE", requiresAuth: true })),
   measurements: (memberId: string, metric?: string) => request<HealthMeasurement[]>(`/api/health/members/${encodeURIComponent(memberId)}/measurements${metric ? `?metric=${encodeURIComponent(metric)}` : ""}`, { requiresAuth: true, dedupeMs: 5_000 }),

@@ -5,7 +5,6 @@ import { Microscope } from "lucide-react";
 import type { HealthOverview } from "@/lib/api.types";
 import MeasurementChart from "../MeasurementChart";
 import { documentTypeLabels, formatDate } from "../healthUtils";
-import { measurementStatus } from "./measurementStatus";
 const MiniChart = MeasurementChart;
 
 export type MetricCardMetric = Pick<
@@ -20,17 +19,10 @@ function MetricCards({
 }) {
   return (
     <div   className="lp-health-vitals">
-      {tracked.map((metric) => {
-        const status = metric.latest ? measurementStatus(metric.latest) : null;
-        return (
+      {tracked.map((metric) => (
           <Card key={metric.id}>
             <Text as="div" size="md" className="lp-health-vital-head">
               <span>{metric.displayName}</span>
-              {status ? (
-                <b className={`lp-health-metric-status ${status.tone}`}>
-                  {status.label}
-                </b>
-              ) : null}
             </Text>
             {metric.latest ? (
               <>
@@ -58,8 +50,7 @@ function MetricCards({
               <Text as="p" size="sm" className="lp-health-muted">No measurements available yet.</Text>
             )}
           </Card>
-        );
-      })}
+      ))}
     </div>
   );
 }

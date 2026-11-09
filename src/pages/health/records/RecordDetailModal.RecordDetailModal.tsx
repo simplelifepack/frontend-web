@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ExternalLink, FileText, ShieldCheck, X } from "lucide-react";
 import { api, type DocumentRecord } from "@/lib/api";
 import type { HealthMember, HealthRecordDetail } from "@/lib/api.types";
-import { documentTypeLabels } from "../healthUtils";
+import { documentTypeLabels, formatDate } from "../healthUtils";
 import { PrescriptionDocument, MedicalReportDocument, LabReportDocument } from "./RecordDetailModal.LabReportDocument";
 import { sourceCopy } from "./RecordDetailModal.DocumentMeta";
 
@@ -12,14 +12,12 @@ export function RecordDetailModal({
   record,
   member,
   onClose,
-  onCorrectDetails,
   onViewOriginal,
   onReanalyze,
 }: {
   record: HealthRecordDetail | null;
   member: HealthMember | null;
   onClose: () => void;
-  onCorrectDetails: (record: HealthRecordDetail) => void;
   onViewOriginal: (documentId: string) => void;
   onReanalyze?: (record: HealthRecordDetail) => Promise<void>;
 }) {
@@ -55,7 +53,6 @@ export function RecordDetailModal({
             record={record}
             member={member}
             onClose={onClose}
-            onCorrectDetails={() => onCorrectDetails(record)}
             onViewOriginal={() => onViewOriginal(record.documentId)}
             onReanalyze={onReanalyze ? () => onReanalyze(record) : undefined}
           />
@@ -77,14 +74,12 @@ export function HealthRecordDocumentViewer({
   record,
   member,
   onClose,
-  onCorrectDetails,
   onViewOriginal,
   onReanalyze,
 }: {
   record: HealthRecordDetail;
   member: HealthMember | null;
   onClose: () => void;
-  onCorrectDetails: () => void;
   onViewOriginal: () => void;
   onReanalyze?: () => Promise<void>;
 }) {
@@ -143,6 +138,7 @@ export function HealthRecordDocumentViewer({
             <Text as="small" size="sm" weight="semibold">
               {sourceLabel} · {categoryLabel}
             </Text>
+            {record.processedAt && <Text as="small" size="sm">Read on {formatDate(record.processedAt)}</Text>}
           </span>
         </div>
         <Button size="sm" iconOnly variant="tertiary"
@@ -178,9 +174,6 @@ export function HealthRecordDocumentViewer({
               Reanalyze document
             </Button>
           ) : null}
-          <Button size="sm" variant="primary" type="button" onClick={onCorrectDetails}>
-            Correct details
-          </Button>
         </div>
       </footer>
     </>

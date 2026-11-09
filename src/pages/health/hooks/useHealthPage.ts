@@ -14,16 +14,20 @@ export function useHealthPage(location: Pick<Location, "search" | "state">) {
   const uploadState = location.state as { newHealthProfileId?: string; newHealthProfileName?: string } | null;
   const newProfileId = uploadState?.newHealthProfileId;
   const newProfileName = uploadState?.newHealthProfileName;
-  const [aiProcessingEnabled, setAiProcessingEnabled] = useState(true);
+  const [aiProcessingEnabled, setAiProcessingEnabled] = useState(false);
   const handledDeepLink = useRef("");
   const handledMemberLink = useRef("");
 
   useEffect(() => {
     let cancelled = false;
     const refreshPreferences = () => {
-      void preferencesApi.get().then((preferences) => {
-        if (!cancelled) setAiProcessingEnabled(preferences.aiProcessingEnabled);
-      });
+      void preferencesApi.get()
+        .then((preferences) => {
+          if (!cancelled) setAiProcessingEnabled(preferences.aiProcessingEnabled);
+        })
+        .catch(() => {
+          if (!cancelled) setAiProcessingEnabled(false);
+        });
     };
     refreshPreferences();
     window.addEventListener("readiness-preferences-changed", refreshPreferences);
@@ -33,8 +37,9 @@ export function useHealthPage(location: Pick<Location, "search" | "state">) {
     };
   }, []);
   useEffect(() => {
-    const tab = newProfileId ? "Records" : new URLSearchParams(location.search).get("tab");
-    if (tab === "Overview" || tab === "Trends" || tab === "Timeline" || tab === "Medications" || tab === "Records") setActiveTab(tab);
+    const requestedTab = newProfileId ? "Records" : new URLSearchParams(location.search).get("tab");
+    const tab = requestedTab === "Trends" ? "Readings" : requestedTab === "Medications" ? "Medicines" : requestedTab;
+    if (tab === "Overview" || tab === "Readings" || tab === "Timeline" || tab === "Medicines" || tab === "Records") setActiveTab(tab);
   }, [location.search, newProfileId, setActiveTab]);
 
   useEffect(() => {

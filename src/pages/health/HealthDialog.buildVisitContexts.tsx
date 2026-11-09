@@ -50,12 +50,7 @@ export function buildVisitContexts(records: HealthRecord[]) {
 
 export function findInsuranceDocument(records: HealthRecord[], documents: DocumentRecord[]) {
   const ids = new Set(records.map((record) => record.documentId));
-  const healthRecordDocument = documents.find((document) => {
-    if (!ids.has(document.id)) return false;
-    return isInsuranceDocument(document);
-  });
-  if (healthRecordDocument) return healthRecordDocument;
-  return documents.find(isInsuranceDocument);
+  return documents.find((document) => ids.has(document.id) && isInsuranceDocument(document));
 }
 
 export function isInsuranceDocument(document: DocumentRecord) {
@@ -72,21 +67,6 @@ export function contactSummary(member: HealthMember) {
   return [member.emergencyContactName, member.emergencyContactPhone]
     .filter(Boolean)
     .join(" · ");
-}
-
-export function medicineSummary(records: HealthRecord[]) {
-  const total = records.reduce(
-    (sum, record) => sum + record.medicationCount,
-    0,
-  );
-  return total
-    ? `${total} medication${total === 1 ? "" : "s"} on file`
-    : "NOT ANSWERED";
-}
-
-export function preferredHospital(records: HealthRecord[]) {
-  const provider = records.find((record) => record.provider)?.provider;
-  return provider ?? "";
 }
 
 export function exportEmergencyCardPdf(html: string) {

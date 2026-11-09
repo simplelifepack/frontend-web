@@ -3,18 +3,20 @@ import { useEffect, useState } from "react";
 import { Download, FileText, X } from "lucide-react";
 import UploadDocumentModal from "@/components/UploadDocumentModal";
 import { api } from "@/lib/api";
-import type { DocumentRecord, HealthMember, HealthRecord } from "@/lib/api.types";
+import type { DocumentRecord, HealthMember, HealthRecord, HealthTimelineEvent } from "@/lib/api.types";
 import { InsuranceDocumentPreview } from "./HealthDialog.InsuranceDocumentPreview";
-import { findInsuranceDocument, known, medicineSummary, preferredHospital, contactSummary, exportEmergencyCardPdf, buildEmergencyCardHtml } from "./HealthDialog.buildVisitContexts";
+import { findInsuranceDocument, known, contactSummary, exportEmergencyCardPdf, buildEmergencyCardHtml } from "./HealthDialog.buildVisitContexts";
 
 
 export function EmergencyCardDialog({
   member,
   records,
+  timeline,
   onClose,
 }: {
   member: HealthMember;
   records: HealthRecord[];
+  timeline: HealthTimelineEvent[];
   onClose: () => void;
 }) {
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
@@ -28,6 +30,12 @@ export function EmergencyCardDialog({
     };
   }, []);
   const insuranceDoc = findInsuranceDocument(records, documents);
+  const currentMedicines = timeline
+    .filter((event) => event.eventType === "medication" && event.medication && event.medication.status !== "stopped")
+    .map((event) => event.medication?.name || event.title)
+    .join(", ");
+  const phone = member.emergencyContactPhone?.replace(/[\s().-]/g, "");
+  const dialablePhone = phone && /^\+?\d{7,15}$/.test(phone) ? phone : null;
   const generatedDate = new Date().toLocaleDateString(undefined, {
     day: "2-digit",
     month: "short",
@@ -36,20 +44,18 @@ export function EmergencyCardDialog({
   const rows = [
     ["Name", member.name],
     ["Blood group", known(member.bloodGroup)],
-    ["Critical allergies", member.allergies || "NOT ANSWERED"],
-    ["Conditions", member.conditions || "NOT ANSWERED"],
-    ["Current meds", medicineSummary(records)],
-    ["Primary physician", member.primaryDoctor || "NOT ANSWERED"],
-    ["Preferred hospital", preferredHospital(records) || "NOT ANSWERED"],
-    ["Emergency contact", contactSummary(member) || "-"],
+    ["Allergies", member.allergies || "No allergies recorded"],
+    ["Conditions", member.conditions || ""],
+    ["Current medicines", currentMedicines],
+    ["Primary doctor", member.primaryDoctor || "Not added"],
     [
       "Insurance",
       insuranceDoc
         ? insuranceDoc.title || insuranceDoc.originalName
-        : member.insuranceProvider || "NOT ANSWERED",
+        : member.insuranceProvider || "Not added",
     ],
-    ["Medical documents", `${records.length} on file in Readines`],
-  ];
+    ["Emergency contact", contactSummary(member) || "Not added"],
+  ].filter(([, value]) => value);
   return (
     <ModalBackdrop className="lp-card-preview-backdrop">
       <ModalPanel onDismiss={onClose}
@@ -76,7 +82,11 @@ export function EmergencyCardDialog({
             {rows.map(([label, value]) => (
               <div key={label}>
                 <Text as="dt" size="sm">{label}</Text>
-                <Text as="dd" size="md" weight="semibold">{value}</Text>
+                <Text as="dd" size="md" weight="semibold">
+                  {label === "Emergency contact" && dialablePhone ? (
+                    <a href={`tel:${dialablePhone}`}>{value}</a>
+                  ) : value}
+                </Text>
               </div>
             ))}
           </dl>

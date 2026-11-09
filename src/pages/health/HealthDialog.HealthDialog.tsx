@@ -6,9 +6,10 @@ import { ReadingDialog } from "./HealthDialog.ReadingDialog";
 import { EmergencyCardDialog, InsuranceCardDialog } from "./HealthDialog.EmergencyCardDialog";
 import { VisitPackDialog } from "./HealthDialog.VisitPackDialog";
 import { useHealthDialogLogic } from "./HealthDialog.documentDetail";
+import type { HealthTimelineEvent } from "@/lib/api.types";
 
 
-export function HealthDialog(props: Parameters<typeof useHealthDialogLogic>[0]) {
+export function HealthDialog(props: Parameters<typeof useHealthDialogLogic>[0] & { timeline: HealthTimelineEvent[] }) {
 const context = useHealthDialogLogic(props);
 const { kind, member, identity, setIdentity, records, measurements, onClose, onSaved, onViewDocument, title, setTitle, date, setDate, reminderType, setReminderType, reminderFrequency, setReminderFrequency, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, setError, saving, setSaving, titles, save } = context;
 if (kind === "visit")
@@ -25,6 +26,7 @@ if (kind === "emergency")
       <EmergencyCardDialog
         member={member}
         records={records}
+        timeline={props.timeline}
         onClose={onClose}
       />
     );

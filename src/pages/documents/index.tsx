@@ -41,8 +41,8 @@ export default function DocumentsPage() {
     error,
   } = useAppSelector((state) => state.documents);
   useEffect(() => {
-    if (status === "idle") void dispatch(fetchDocuments());
-  }, [dispatch, status]);
+    void dispatch(fetchDocuments());
+  }, [dispatch]);
   const category = categoryParam ? safeCategory(categoryParam) : null;
   const categoryMeta = categories.find((item) => item.key === category);
   const selectedDocument = documentId

@@ -11,6 +11,8 @@ import { isSupportedHealthFile } from "../healthUtils";
 import { healthDocumentTypes, type HealthDocumentType } from "../types/health";
 import { documentTypeLabels } from "../healthUtils";
 
+const maxHealthFileBytes = 25 * 1024 * 1024;
+
 function AddRecordDialog({
   onClose,
   onCreate,
@@ -61,8 +63,13 @@ function AddRecordDialog({
     if (!candidate || inFlight.current) return;
     setAnalysis(null);
     setReview(null);
-    if (!isSupportedHealthFile(candidate)) {
-      setError("Only images and PDF files are supported.");
+    const validationError = !isSupportedHealthFile(candidate)
+      ? "ReadiNes keeps PDFs and images. Save this as a PDF or take a photo of it."
+      : candidate.size > maxHealthFileBytes
+        ? "This file is larger than 25 MB."
+        : null;
+    if (validationError) {
+      setError(validationError);
       setFile(null);
       if (inputRef.current) inputRef.current.value = "";
       return;

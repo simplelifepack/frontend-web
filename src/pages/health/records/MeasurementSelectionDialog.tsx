@@ -1,17 +1,15 @@
-import { Heading, Text, ModalBackdrop, ModalPanel, SelectMenu, SearchField, Button } from "@/design-system";
+import { Heading, Text, ModalBackdrop, ModalPanel, SearchField, Button } from "@/design-system";
 
 import { useState } from "react";
 import { Check, X } from "lucide-react";
 import type { HealthRecordDetail, TrackedHealthMetric } from "@/lib/api.types";
 
 import {
-  documentTypeLabels,
   filterMeasurements,
   metricIdentity,
   uniqueMeasurements,
   valueWithUnit,
 } from "../healthUtils";
-import { healthDocumentTypes, type HealthDocumentType } from "../types/health";
 
 function MeasurementSelectionDialog({
   record,
@@ -29,7 +27,6 @@ function MeasurementSelectionDialog({
       context?: string | null;
       bodySite?: string | null;
     }>,
-    documentType: HealthDocumentType,
   ) => Promise<void>;
 }) {
   const alreadyTracked = new Set(tracked.map(metricIdentity));
@@ -43,9 +40,6 @@ function MeasurementSelectionDialog({
       ),
   );
   const [query, setQuery] = useState("");
-  const [documentType, setDocumentType] = useState<HealthDocumentType>(
-    record.type,
-  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const visible = filterMeasurements(measurements, query);
@@ -82,7 +76,7 @@ function MeasurementSelectionDialog({
             context: item.context,
             bodySite: item.bodySite,
           }));
-      await onSave(metrics, documentType);
+      await onSave(metrics);
     } catch {
       setError("Unable to save tracking preferences. Try again.");
       setSaving(false);
@@ -105,20 +99,6 @@ function MeasurementSelectionDialog({
             <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
           </Button>
         </header>
-        <Heading level={3} size="sm">Correct details</Heading>
-        <Text as="label" size="md" className="lp-health-document-type lp-health-correct-type">
-          <span>Document type</span>
-          <SelectMenu
-            value={documentType}
-            onValueChange={(selectedValue) =>
-              setDocumentType(selectedValue as HealthDocumentType)
-            }
-            options={healthDocumentTypes.map((type) => ({
-              value: type,
-              label: documentTypeLabels[type] ?? type,
-            }))}
-          />
-        </Text>
         <Heading level={3} size="sm">Choose what you want to track</Heading>
         <div className="lp-health-toolbar compact">
           <SearchField aria-label="Search measurements"

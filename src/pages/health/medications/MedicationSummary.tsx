@@ -49,19 +49,24 @@ function MedicationSummary({
   const medications = events.filter(
     (event) => event.eventType === "medication",
   );
+  const groups = [
+    { title: "Current", items: medications.filter((item) => item.medication?.status !== "stopped") },
+    { title: "Past", items: medications.filter((item) => item.medication?.status === "stopped") },
+  ];
   return (
     <Card className="lp-health-med-card">
       <div className="lp-health-med-head">
         <Heading level={2} size="sm">
-          <Pill aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Current medications
+          <Pill aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Medicines
         </Heading>
         <Button variant="primary" type="button" onClick={() => setAdding(true)}>
           <Plus aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Add
         </Button>
       </div>
-      <div   className="lp-health-med-list">
-        {medications.length ? (
-          medications.map((item) => {
+      {groups.filter((group) => group.items.length).map(({ title, items }) => (
+        <section key={title} className="lp-health-med-list">
+          <Heading level={3} size="sm">{title}</Heading>
+          {items.map((item) => {
             const detail = medicationDetail(item);
             const stopped = item.medication?.status === "stopped";
             return (
@@ -101,7 +106,7 @@ function MedicationSummary({
                     }}
                   >
                     {!stopped ? <Check aria-hidden="true" focusable="false" size={14} /> : null}
-                    Still taking
+                    {stopped ? "Mark as current" : "Still taking"}
                   </Choice>
                   <Choice aria-pressed={stopped}
                     type="button"
@@ -121,7 +126,7 @@ function MedicationSummary({
                       }
                     }}
                   >
-                    Stopped
+                    {stopped ? "Stopped" : "Mark as stopped"}
                   </Choice>
                 </span>
                 <Button size="sm" tone="danger" iconOnly variant="tertiary"
@@ -134,11 +139,10 @@ function MedicationSummary({
                 </Button>
               </div>
             );
-          })
-        ) : (
-          <Text as="p" size="sm" className="lp-health-muted">No medications recorded.</Text>
-        )}
-      </div>
+          })}
+        </section>
+      ))}
+      {!medications.length && <Text as="p" size="sm" className="lp-health-muted">No medications recorded.</Text>}
       {adding ? (
         <AddMedicationDialog
           onClose={() => setAdding(false)}

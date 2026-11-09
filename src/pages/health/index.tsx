@@ -70,7 +70,6 @@ export default function HealthPage() {
     trackMetric,
     trackMetrics,
     applyTrackedMetrics,
-    toggleRecordMetric,
     removeRecord,
     viewOriginalDocument,
     openHealthRecord,
@@ -122,28 +121,35 @@ export default function HealthPage() {
         <Overview
           onReminder={() => setHealthDialog("reminder")}
           onEdit={() => setHealthDialog("profile")}
+          onAddRecord={() => setShowAddRecord(true)}
+          onInsurance={() => setHealthDialog("insurance")}
           overview={overview}
           records={records}
           measurements={measurements}
-          onTrack={() => setActiveTab("Trends")}
+          onTrack={() => setActiveTab("Readings")}
           onApplyTracked={applyTrackedMetrics}
         />
       ) : null}
-      {!loading && selectedMember && activeTab === "Trends" ? (
-        <Trends
-          tracked={tracked}
-          available={availableMetrics}
-          search={search}
-          onSearch={setSearch}
-          onTrack={trackMetric}
-          onUntrack={untrackMetric}
-          onApplyTracked={applyTrackedMetrics}
-        />
+      {!loading && selectedMember && activeTab === "Readings" ? (
+        <>
+          <Button type="button" variant="tertiary" onClick={() => setActiveTab("Timeline")}>
+            View timeline
+          </Button>
+          <Trends
+            tracked={tracked}
+            available={availableMetrics}
+            search={search}
+            onSearch={setSearch}
+            onTrack={trackMetric}
+            onUntrack={untrackMetric}
+            onApplyTracked={applyTrackedMetrics}
+          />
+        </>
       ) : null}
       {!loading && selectedMember && activeTab === "Timeline" ? (
         <Timeline events={timeline} />
       ) : null}
-      {!loading && selectedMember && activeTab === "Medications" ? (
+      {!loading && selectedMember && activeTab === "Medicines" ? (
         <HealthMedicationsTab
           selectedMember={selectedMember}
           timeline={timeline}
@@ -153,9 +159,12 @@ export default function HealthPage() {
       {!loading && selectedMember && activeTab === "Records" ? (
         <Records
           records={records}
+          measurements={measurements}
+          aiProcessingEnabled={aiProcessingEnabled}
           selectedRecordId={selectedRecordId}
           onAdd={() => setShowAddRecord(true)}
           onSelect={(recordId) => void openHealthRecord(recordId)}
+          onViewOriginal={viewOriginalDocument}
           onDelete={setDeleteRecord}
         />
       ) : null}
@@ -168,15 +177,12 @@ export default function HealthPage() {
           onClose={() => setIsRecordModalOpen(false)}
           onViewOriginal={viewOriginalDocument}
           onReanalyze={aiProcessingEnabled ? async record => setSelectedRecord(await api.health.reanalyzeRecord(record.id)) : undefined}
-          onCorrectDetails={(record) => {
-            setIsRecordModalOpen(false);
-            setProcessedRecord(record);
-          }}
         />
       ) : null}
       {healthDialog && selectedMember ? (
         <HealthDialog
           kind={healthDialog}
+          timeline={timeline}
           member={selectedMember}
           records={records}
           measurements={measurements}
@@ -211,12 +217,7 @@ export default function HealthPage() {
             setSelectedRecord(await api.health.record(processedRecord.id));
             setMessage("Health record saved.");
           }}
-          onSave={async (metrics, documentType) => {
-            if (documentType !== processedRecord.type) {
-              const updated = await api.health.updateRecord(processedRecord.id, { type: documentType });
-              setSelectedRecord(updated);
-              await refreshHealth(updated.memberId);
-            }
+          onSave={async (metrics) => {
             await trackMetrics(metrics, processedRecord.id);
             setProcessedRecord(null);
             setMessage("Tracking preferences saved.");

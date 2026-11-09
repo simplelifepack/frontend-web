@@ -13,7 +13,6 @@ import {
 
 import {
   Activity,
-  CalendarClock,
   FileText,
   HeartPulse,
   Plus,
@@ -176,20 +175,19 @@ export default function HealthPageHeader({
           {(
             [
               "Overview",
-              "Trends",
-              "Timeline",
-              "Medications",
               "Records",
+              "Readings",
+              "Medicines",
             ] as HealthTab[]
           ).map((tab) => (
             <Choice
               appearance="filter"
-              aria-pressed={tab === activeTab}
+              aria-pressed={tab === activeTab || (tab === "Readings" && activeTab === "Timeline")}
               key={tab}
               type="button"
               onClick={() => onTab(tab)}
               count={
-                tab === "Medications" && medicationCount
+                tab === "Medicines" && medicationCount
                   ? medicationCount
                   : tab === "Records" && recordCount
                     ? recordCount
@@ -198,11 +196,9 @@ export default function HealthPageHeader({
             >
               {tab === "Overview" ? (
                 <HeartPulse aria-hidden="true" />
-              ) : tab === "Trends" ? (
+              ) : tab === "Readings" ? (
                 <Activity aria-hidden="true" />
-              ) : tab === "Timeline" ? (
-                <CalendarClock aria-hidden="true" />
-              ) : tab === "Medications" ? (
+              ) : tab === "Medicines" ? (
                 <Stethoscope aria-hidden="true" />
               ) : (
                 <FileText aria-hidden="true" />

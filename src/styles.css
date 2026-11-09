@@ -2723,9 +2723,10 @@ button.lp-pack-check-row:hover {
 }
 .lp-health-records-head {
   display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: var(--space-s18);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-s12);
 }
 .lp-health-records-head h2 {
   display: inline-flex;
@@ -2816,7 +2817,21 @@ button.lp-pack-check-row:hover {
 .lp-health-record-main {
   display: block;
   min-width: 0;
+  min-height: 44px;
   overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.lp-health-record-main:hover b {
+  text-decoration: underline;
+}
+.lp-health-record-main:focus-visible {
+  outline: 2px solid var(--lp-action);
+  outline-offset: -2px;
 }
 .lp-health-record-main b,
 .lp-health-record-main small {
@@ -2831,9 +2846,6 @@ button.lp-pack-check-row:hover {
 .lp-health-record-main small {
   margin-top: 3px;
   color: var(--lp-muted);
-}
-.lp-health-record-main strong {
-  color: var(--lp-action);
 }
 .lp-health-record-actions {
   display: inline-flex;

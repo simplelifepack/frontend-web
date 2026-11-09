@@ -44,6 +44,7 @@ export const documentsApi = {
     const generation = getAuthGeneration();
     const saved = await request<{ document: DocumentRecord; healthRecord?: HealthProcessResponse | null; replayed?: boolean }>("/documents", { method: "POST", body: payload, requiresAuth: true });
     if (generation === getAuthGeneration()) {
+      invalidateRequests("GET:/documents:");
       invalidateRequests("GET:/api/health");
       if (!saved.replayed && saved.healthRecord && typeof window !== "undefined") {
         const createdMember = "createdMember" in saved.healthRecord ? saved.healthRecord.createdMember : undefined;

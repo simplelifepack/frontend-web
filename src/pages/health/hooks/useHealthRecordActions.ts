@@ -1,6 +1,7 @@
 import type { AnalyzeDocumentResponse } from "@/lib/api.types";
 import type { HealthUploadReview } from "@/lib/health-upload.types";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 import type { HealthDocumentType } from "../types/health";
 import { documentTypeLabels, healthMemberResolutionMessage, isMemberResolution } from "../healthUtils";
 import type { useHealthData } from "./useHealthData";
@@ -54,7 +55,7 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
       }
       setSelectedMemberId(record.memberId);
       await refreshHealth(record.memberId);
-      setActiveTab(payload.analysis?.document.healthExtraction ? "Records" : record.type === "prescription" ? "Medications" : "Records");
+      setActiveTab(payload.analysis?.document.healthExtraction ? "Records" : record.type === "prescription" ? "Medicines" : "Records");
       setSelectedRecord(record);
       if (payload.analysis?.document.healthExtraction) return;
       if (record.measurements.length) {
@@ -102,13 +103,38 @@ export function useHealthRecordActions(data: ReturnType<typeof useHealthData>) {
   };
 
   const viewOriginalDocument = async (documentId: string) => {
+    const tab = window.open("about:blank", "_blank");
+    if (!tab) {
+      toast.error("Allow pop-ups to open the original document.");
+      return;
+    }
+    let url: string | undefined;
     try {
+      tab.opener = null;
+      tab.document.title = "Original document";
+      tab.document.body.textContent = "Loading original document…";
       const { blob } = await api.documents.preview(documentId);
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
-      window.setTimeout(() => URL.revokeObjectURL(url), 1200);
+      if (tab.closed) return;
+      if (!blob.size || !/^(application\/pdf|image\/(jpeg|png|gif|webp|bmp|avif|tiff|heic|heif))$/i.test(blob.type)) {
+        throw new Error("The original could not be loaded as a PDF or image.");
+      }
+      const objectUrl = URL.createObjectURL(blob);
+      url = objectUrl;
+      tab.location.replace(objectUrl);
+      const cleanup = window.setInterval(() => {
+        if (!tab.closed) return;
+        window.clearInterval(cleanup);
+        URL.revokeObjectURL(objectUrl);
+      }, 1000);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Original document could not be opened.");
+      if (url) URL.revokeObjectURL(url);
+      tab.close();
+      const message = error instanceof Error ? error.message : "";
+      toast.error("Could not open the original document.", {
+        description: /unauthorized|session|token|expired/i.test(message)
+          ? "Sign in again and retry."
+          : message || "Try again in a moment.",
+      });
     }
   };
 

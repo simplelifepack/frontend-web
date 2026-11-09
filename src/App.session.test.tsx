@@ -204,16 +204,14 @@ describe("session restoration and entry routing", () => {
     expect(screen.queryByText("Signed in home")).toBeNull();
   });
 
-  it.each([0, 429, 503])("offers retry for a temporary refresh failure (%s) without asking for login", async (status) => {
+  it.each([0, 429, 503])("shows the landing page after a refresh failure (%s)", async (status) => {
     refreshResponse = async () => {
       if (status === 0) throw new TypeError("Failed to fetch");
       return json({ message: "Service unavailable." }, status);
     };
     openPage("/home");
-    await screen.findByRole("alert");
-    expect(screen.queryByText("Public landing")).toBeNull();
-    refreshResponse = async () => json(authResult);
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-    await screen.findByText("Signed in home");
+    await screen.findByText("Public landing");
+    expect(screen.getByTestId("path").textContent).toBe("/");
+    expect(screen.queryByText("Signed in home")).toBeNull();
   });
 });
