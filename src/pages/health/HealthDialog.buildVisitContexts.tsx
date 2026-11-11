@@ -64,7 +64,7 @@ export function known(value: string | null | undefined) {
 }
 
 export function contactSummary(member: HealthMember) {
-  return [member.emergencyContactName, member.emergencyContactPhone]
+  return [member.emergencyContactName, member.emergencyContactRelationship, member.emergencyContactPhone]
     .filter(Boolean)
     .join(" · ");
 }

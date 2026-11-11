@@ -1,22 +1,13 @@
-import { Heading, Text, Choice, ModalBackdrop, ModalPanel, Button, Card } from "@/design-system";
+import { Heading, Text, Choice, Button, Card } from "@/design-system";
 
 import { useState } from "react";
 import { Check, Pill, Plus, Trash2 } from "lucide-react";
 
-import type { HealthTimelineEvent } from "@/lib/api.types";
+import type { HealthRecord, HealthTimelineEvent } from "@/lib/api.types";
 
 import { formatDate } from "../healthUtils";
-import AddMedicationDialog from "./AddMedicationDialog";
-
-type MedicationForm = {
-  name: string;
-  dose: string;
-  whenToTake: Array<"morning" | "afternoon" | "night">;
-  mealTiming: "before_food" | "after_food" | "with_food" | "any_time" | "";
-  repeatRunsOut: string;
-  status: "continuing" | "stopped";
-  stoppedAt: string;
-};
+import DeleteMedicationDialog from "./DeleteMedicationDialog";
+import AddMedicationDialog, { type MedicationForm } from "./AddMedicationDialog";
 
 const timeLabels: Record<"morning" | "afternoon" | "night", string> = {
   morning: "Morning",
@@ -32,14 +23,24 @@ const mealLabels: Record<"before_food" | "after_food" | "with_food" | "any_time"
 
 function MedicationSummary({
   events,
+  prescriptions,
+  onSchedule,
+  onViewOriginal,
   onCreate,
   onUpdate,
   onDelete,
+  addRequested,
+  onAddClosed,
 }: {
   events: HealthTimelineEvent[];
+  prescriptions: HealthRecord[];
+  onSchedule: (id: string) => void;
+  onViewOriginal: (id: string) => void;
   onCreate: (form: MedicationForm) => Promise<void>;
   onUpdate: (medicationId: string, form: MedicationForm) => Promise<void>;
   onDelete: (medicationId: string) => Promise<void>;
+  addRequested: boolean;
+  onAddClosed: () => void;
 }) {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<HealthTimelineEvent | null>(null);
@@ -57,10 +58,10 @@ function MedicationSummary({
     <Card className="lp-health-med-card">
       <div className="lp-health-med-head">
         <Heading level={2} size="sm">
-          <Pill aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Medicines
+          <Pill aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Medications
         </Heading>
         <Button variant="primary" type="button" onClick={() => setAdding(true)}>
-          <Plus aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Add
+          <Plus aria-hidden="true" focusable="false" size="var(--icon-regular)" /> Add a medicine
         </Button>
       </div>
       {groups.filter((group) => group.items.length).map(({ title, items }) => (
@@ -68,6 +69,7 @@ function MedicationSummary({
           <Heading level={3} size="sm">{title}</Heading>
           {items.map((item) => {
             const detail = medicationDetail(item);
+            const prescription = prescriptions.find(record => record.id === (item.medication?.sourceDocumentId ?? item.recordId));
             const stopped = item.medication?.status === "stopped";
             return (
               <div className={`lp-health-med-row${stopped ? " stopped" : ""}`} key={item.id}>
@@ -83,6 +85,16 @@ function MedicationSummary({
                     {item.title}
                     {detail.dose ? <em>{detail.dose}</em> : null}
                   </Text>
+                  <Button size="sm" variant="tertiary" aria-label={"Schedule reminder for " + item.title} onClick={() => onSchedule(item.id)}>
+                    {item.medication?.reminderIds?.length ? "Add another reminder" : "Schedule reminder"}
+                  </Button>
+                  {prescription && <Button variant="tertiary" size="sm" onClick={() => onViewOriginal(prescription.documentId)}>View prescription</Button>}
+                  {item.medication?.route && <Text size="sm">{item.medication.route}</Text>}
+                  {item.medication?.instructions && <Text size="sm">{item.medication.instructions}</Text>}
+                  {item.medication?.prescribingDoctor && <Text size="sm">{item.medication.prescribingDoctor}</Text>}
+                  {(item.medication?.courseStartDate || item.medication?.courseEndDate) && <Text size="sm">
+                    {[item.medication.courseStartDate, item.medication.courseEndDate].filter(Boolean).map(date => formatDate(date)).join(" – ")}
+                  </Text>}
                 </span>
                 <Text size="md" className="lp-health-med-frequency">{detail.frequency || "Not set"}</Text>
                 <Text size="md" className="lp-health-med-confirmation">{detail.confirmation}</Text>
@@ -142,15 +154,25 @@ function MedicationSummary({
           })}
         </section>
       ))}
-      {!medications.length && <Text as="p" size="sm" className="lp-health-muted">No medications recorded.</Text>}
-      {adding ? (
+      {!medications.length && (
+        <>
+          <Heading level={3} size="sm">No medicines yet</Heading>
+          <Text as="p" size="sm">Medicines arrive from prescriptions you add. You can also add one by hand.</Text>
+        </>
+      )}
+      {adding || addRequested ? (
         <AddMedicationDialog
-          onClose={() => setAdding(false)}
+          prescriptions={prescriptions}
+          onClose={() => {
+            setAdding(false);
+            onAddClosed();
+          }}
           onCreate={onCreate}
         />
       ) : null}
       {editing ? (
         <AddMedicationDialog
+          prescriptions={prescriptions}
           onClose={() => setEditing(null)}
           initialMedication={formFromMedication(editing)}
           onCreate={async (form) => {
@@ -189,7 +211,7 @@ function medicationDetail(item: HealthTimelineEvent) {
   const mealTiming = medication?.mealTiming ? mealLabels[medication.mealTiming] : "";
   return {
     dose: medication?.dose ?? "",
-    frequency: [when, mealTiming].filter(Boolean).join(" · "),
+    frequency: [...new Set([medication?.frequency, when, mealTiming].filter(Boolean))].join(" · "),
     confirmation: [stoppedLabel, repeatDue].filter(Boolean).join(" · "),
   };
 }
@@ -197,6 +219,13 @@ function medicationDetail(item: HealthTimelineEvent) {
 function formFromMedication(item: HealthTimelineEvent): MedicationForm {
   const medication = item.medication;
   return {
+    route: medication?.route ?? "",
+    instructions: medication?.instructions ?? "",
+    courseStartDate: medication?.courseStartDate?.slice(0, 10) ?? "",
+    courseEndDate: medication?.courseEndDate?.slice(0, 10) ?? "",
+    prescribingDoctor: medication?.prescribingDoctor ?? "",
+    frequency: medication?.frequency ?? "",
+    sourceDocumentId: medication?.sourceDocumentId ?? item.recordId ?? "",
     name: medication?.name ?? item.title,
     dose: medication?.dose ?? "",
     whenToTake: medication?.whenToTake?.length ? medication.whenToTake : inferWhenToTake(medication?.frequency),
@@ -225,39 +254,6 @@ function inferMealTiming(frequency: string | null | undefined): MedicationForm["
 
 function today() {
   return new Date().toISOString().slice(0, 10);
-}
-
-function DeleteMedicationDialog({
-  deleting,
-  medicationName,
-  onClose,
-  onConfirm,
-}: {
-  deleting: boolean;
-  medicationName: string;
-  onClose: () => void;
-  onConfirm: () => Promise<void>;
-}) {
-  return (
-    <ModalBackdrop  style={{ zIndex: "var(--layer-nestedDialog)" }}>
-      <ModalPanel onDismiss={onClose} className="lp-health-add-dialog" role="dialog" aria-modal="true" aria-label="Delete medication">
-        <header className="lp-health-dialog-head">
-          <div>
-            <Heading level={2} size="md">Delete medication?</Heading>
-            <Text as="p" size="md">{medicationName} will be permanently removed from this Health profile.</Text>
-          </div>
-        </header>
-        <footer>
-          <Button variant="secondary" type="button" disabled={deleting} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button tone="danger" variant="primary" type="button" disabled={deleting} onClick={() => void onConfirm()}>
-            {deleting ? "Deleting..." : "Delete medication"}
-          </Button>
-        </footer>
-      </ModalPanel>
-    </ModalBackdrop>
-  );
 }
 
 export default MedicationSummary;

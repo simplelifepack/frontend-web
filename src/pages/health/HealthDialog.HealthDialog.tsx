@@ -1,17 +1,17 @@
 import { familyRelationships } from "./healthUtils";
-import { Heading, Text, ChoiceGroup, Choice, ModalPanel, ModalBackdrop, Input, SelectMenu, Textarea, Button } from "@/design-system";
+import { Heading, Text, ModalPanel, ModalBackdrop, Input, SelectMenu, Textarea, Button } from "@/design-system";
 import { X } from "lucide-react";
-import { reminderTypeOptions, reminderFrequencyOptions } from "./HealthDialog.HealthDialogKind";
+import ReminderDialog from "./overview/ReminderDialog";
 import { ReadingDialog } from "./HealthDialog.ReadingDialog";
 import { EmergencyCardDialog, InsuranceCardDialog } from "./HealthDialog.EmergencyCardDialog";
 import { VisitPackDialog } from "./HealthDialog.VisitPackDialog";
 import { useHealthDialogLogic } from "./HealthDialog.documentDetail";
-import type { HealthTimelineEvent } from "@/lib/api.types";
+import type { HealthTimelineEvent, TrackedHealthMetric } from "@/lib/api.types";
 
 
-export function HealthDialog(props: Parameters<typeof useHealthDialogLogic>[0] & { timeline: HealthTimelineEvent[] }) {
+export function HealthDialog(props: Parameters<typeof useHealthDialogLogic>[0] & { timeline: HealthTimelineEvent[]; tracked?: TrackedHealthMetric[] }) {
 const context = useHealthDialogLogic(props);
-const { kind, member, identity, setIdentity, records, measurements, onClose, onSaved, onViewDocument, title, setTitle, date, setDate, reminderType, setReminderType, reminderFrequency, setReminderFrequency, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, setError, saving, setSaving, titles, save } = context;
+const { kind, member, identity, setIdentity, records, measurements, onClose, onSaved, onViewDocument, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactRelationship, setEmergencyContactRelationship, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, saving, titles, save } = context;
 if (kind === "visit")
     return (
       <VisitPackDialog
@@ -37,6 +37,7 @@ if (kind === "insurance")
         onClose={onClose}
       />
     );
+if (kind === "reminder") return <ReminderDialog memberId={member.id} timeline={props.timeline} tracked={props.tracked} onClose={onClose} onSaved={onSaved} />;
 if (kind === "reading")
     return (
       <ReadingDialog
@@ -60,59 +61,6 @@ return ((
             <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
           </Button>
         </header>
-        {kind === "reminder" ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void save();
-            }}
-            className="lp-health-form lp-health-reminder-form"
-          >
-            <Text as="label" size="sm" weight="medium" className="lp-health-reminder-title">
-              Title
-              <Input
-                required
-                maxLength={180}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Cardiology follow-up"
-              />
-            </Text>
-            <fieldset className="lp-health-reminder-choice">
-              <Text size="md">What for</Text>
-              <ChoiceGroup  aria-label="What for">
-                {reminderTypeOptions.map((option) => (
-                  <Choice key={option.value} type="button" aria-pressed={reminderType === option.value} onClick={() => setReminderType(option.value)}>
-                    {option.label}
-                  </Choice>
-                ))}
-              </ChoiceGroup>
-            </fieldset>
-            <Text as="label" size="sm" weight="medium" className="lp-health-reminder-due">
-              Due
-              <Input
-                required
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                placeholder="dd/mm/yyyy"
-              />
-            </Text>
-            <fieldset className="lp-health-reminder-choice">
-              <Text size="md">How often</Text>
-              <ChoiceGroup  aria-label="How often">
-                {reminderFrequencyOptions.map((option) => (
-                  <Choice key={option.value} type="button" aria-pressed={reminderFrequency === option.value} onClick={() => setReminderFrequency(option.value)}>
-                    {option.label}
-                  </Choice>
-                ))}
-              </ChoiceGroup>
-            </fieldset>
-            <Button variant="primary" type="submit" disabled={saving || !title.trim() || !reminderType || !date || !reminderFrequency}>
-              Add reminder
-            </Button>
-          </form>
-        ) : null}
         {kind === "profile" ? (
           <form
             id="health-profile-form"
@@ -142,7 +90,7 @@ return ((
               <Input type="number" min={0} max={120} value={identity.age} onChange={event => setIdentity({ ...identity, age: event.target.value })} />
             </Text>
             <Text as="label" size="sm" weight="medium">
-              Gender
+              Sex (optional)
               <Input value={identity.gender} maxLength={80} onChange={event => setIdentity({ ...identity, gender: event.target.value })} />
             </Text>
             <Text as="label" size="sm" weight="medium">
@@ -180,6 +128,10 @@ return ((
                 onChange={(e) => setEmergencyContactName(e.target.value)}
                 maxLength={120}
               />
+            </Text>
+            <Text as="label" size="sm" weight="medium">
+              Emergency contact relationship
+              <Input maxLength={80} value={emergencyContactRelationship} onChange={event => setEmergencyContactRelationship(event.target.value)} />
             </Text>
             <Text as="label" size="sm" weight="medium">
               Emergency contact phone

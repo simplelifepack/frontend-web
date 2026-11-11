@@ -1,19 +1,22 @@
-import { Heading, Text, ModalPanel, ModalBackdrop, Input, Button } from "@/design-system";
+import { Heading, Text, ModalPanel, ModalBackdrop, Input, Textarea, Button } from "@/design-system";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { api } from "@/lib/api";
 import type { HealthMeasurement, HealthMember } from "@/lib/api.types";
+import { healthTimestamp, scheduleFields } from "./healthDateTime";
 import { buildReadingTests, todayInputDate, metricKeyFromName } from "./HealthDialog.ReadingTest";
 
 
 export function ReadingDialog({
   member,
   measurements,
+  reading,
   onClose,
   onSaved,
 }: {
   member: HealthMember;
   measurements: HealthMeasurement[];
+  reading?: HealthMeasurement;
   onClose: () => void;
   onSaved: () => Promise<void>;
 }) {
@@ -25,10 +28,15 @@ export function ReadingDialog({
   const [custom, setCustom] = useState(false);
   const [customName, setCustomName] = useState("");
   const [unit, setUnit] = useState("");
-  const [value, setValue] = useState("0");
-  const [date, setDate] = useState(todayInputDate());
-  const [rangeLow, setRangeLow] = useState("");
-  const [rangeHigh, setRangeHigh] = useState("");
+  const schedule = scheduleFields(reading?.measuredAt, reading?.timeZone);
+  const [value, setValue] = useState(reading ? String(reading.value) : "0");
+  const [date, setDate] = useState(schedule.date || todayInputDate());
+  const [time, setTime] = useState(schedule.time);
+  const [timeZone, setTimeZone] = useState(schedule.timeZone);
+  const [source, setSource] = useState(reading?.source ?? "");
+  const [notes, setNotes] = useState(reading?.notes ?? "");
+  const [rangeLow, setRangeLow] = useState(reading?.referenceMin?.toString() ?? "");
+  const [rangeHigh, setRangeHigh] = useState(reading?.referenceMax?.toString() ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   useEffect(() => {
@@ -49,8 +57,8 @@ export function ReadingDialog({
     readingTests.find((test) => test.key === selectedKey) ??
     readingTests[0] ??
     null;
-  const testName = custom ? customName.trim() : selected?.label ?? "";
-  const testUnit = custom ? unit.trim() : selected?.unit ?? "";
+  const testName = reading?.displayName ?? (custom ? customName.trim() : selected?.label ?? "");
+  const testUnit = reading?.unit ?? (custom ? unit.trim() : selected?.unit ?? "");
   const saveReading = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (saving) return;
@@ -68,21 +76,34 @@ export function ReadingDialog({
     setSaving(true);
     setError("");
     try {
-      await api.health.createMeasurement(member.id, {
+      const timing = {
+        measuredAt: healthTimestamp(date, time, timeZone),
+        ...(time ? { timeZone: timeZone.trim() } : reading?.timeZone ? { timeZone: null } : {}),
+      };
+      const rangeChanged = !reading || min !== (reading.referenceMin ?? null) || max !== (reading.referenceMax ?? null);
+      const payload = {
+        value: numericValue,
+        ...(rangeChanged ? {
+          referenceMin: min,
+          referenceMax: max,
+          referenceText: min != null || max != null ? [min ?? "", max ?? ""].join(" - ").trim() : null,
+        } : {}),
+        ...(source.trim() || reading?.source ? { source: source.trim() || null } : {}),
+        ...(notes.trim() || reading?.notes ? { notes: notes.trim() || null } : {}),
+      };
+      if (reading) {
+        const timeChanged = date !== schedule.date || time !== schedule.time || timeZone.trim() !== schedule.timeZone;
+        await api.health.updateMeasurement(reading.id, { ...payload, ...(timeChanged ? timing : {}) });
+      }
+      else await api.health.createMeasurement(member.id, {
+        ...payload,
+        ...timing,
         metricKey: custom ? metricKeyFromName(testName) : selected!.key,
         displayName: testName,
         originalName: testName,
-        value: numericValue,
         unit: testUnit,
         context: custom ? null : selected?.context ?? null,
         bodySite: custom ? null : selected?.bodySite ?? null,
-        referenceMin: min,
-        referenceMax: max,
-        referenceText:
-          min != null || max != null
-            ? [min ?? "", max ?? ""].join(" - ").trim()
-            : null,
-        measuredAt: date,
       });
       await onSaved();
       onClose();
@@ -101,13 +122,13 @@ export function ReadingDialog({
         aria-labelledby="reading-dialog-title"
       >
         <header className="lp-health-dialog-head">
-          <Heading level={2} size="sm" id="reading-dialog-title">Log a reading for {firstName}</Heading>
+          <Heading level={2} size="sm" id="reading-dialog-title">{reading ? "Edit " + reading.displayName + " reading" : "Log a reading for " + firstName}</Heading>
           <Button size="sm" iconOnly variant="tertiary" onClick={onClose} aria-label="Close" type="button">
             <X aria-hidden="true" focusable="false" size="var(--icon-regular)" />
           </Button>
         </header>
         <form className="lp-reading-form" onSubmit={saveReading}>
-          <section>
+          {!reading && <section>
             <Text as="b" size="sm" weight="semibold">Test</Text>
             {readingTests.length ? (
               <div   className="lp-reading-test-grid">
@@ -158,7 +179,7 @@ export function ReadingDialog({
                 </Text>
               </div>
             ) : null}
-          </section>
+          </section>}
           <div className="lp-reading-field-grid">
             <Text as="label" size="sm" weight="medium">
               Value ({testUnit})
@@ -179,6 +200,18 @@ export function ReadingDialog({
               />
             </Text>
             <Text as="label" size="sm" weight="medium">
+              Time (optional)
+              <Input type="time" value={time} onChange={event => setTime(event.target.value)} />
+            </Text>
+            <Text as="label" size="sm" weight="medium">
+              Time zone
+              <Input required={Boolean(time)} value={timeZone} onChange={event => setTimeZone(event.target.value)} placeholder="Asia/Kolkata" />
+            </Text>
+            <Text as="label" size="sm" weight="medium">
+              Source (optional)
+              <Input value={source} onChange={event => setSource(event.target.value)} placeholder="Home BP monitor" />
+            </Text>
+            <Text as="label" size="sm" weight="medium">
               Range low (optional)
               <Input
                 inputMode="decimal"
@@ -197,6 +230,10 @@ export function ReadingDialog({
               />
             </Text>
           </div>
+          <Text as="label" size="sm" weight="medium">
+            Notes (optional)
+            <Textarea value={notes} onChange={event => setNotes(event.target.value)} />
+          </Text>
           <Text as="p" size="md" weight="medium">
             Copy the test name, value, unit, and reference range from your report.
             Readines supplies none of them, so a reading with no range is recorded

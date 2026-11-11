@@ -184,6 +184,7 @@ export type UploadDocumentResponse = AnalyzeDocumentResponse & {
 };
 
 export type HealthMember = {
+  emergencyContactRelationship?: string | null;
   age?: number | null;
   gender?: string | null;
   id: string;
@@ -203,6 +204,9 @@ export type HealthMember = {
 };
 
 export type HealthMeasurement = {
+  timeZone?: string | null;
+  source?: string | null;
+  notes?: string | null;
   id: string;
   sourceDocumentId: string | null;
   recordId: string | null;
@@ -274,6 +278,30 @@ export type HealthRecordDetail = HealthRecord & {
     origin: string;
     status: string;
   }>;
+};
+
+export type HealthReminderType = "appointment" | "medicine" | "refill" | "vaccination" | "test" | "other" | "reading";
+export type HealthReminderFrequency = "once" | "daily" | "weekly" | "monthly";
+export type HealthReminderInput = {
+  title: string;
+  type: HealthReminderType;
+  dueDate: string;
+  frequency: HealthReminderFrequency;
+  timeZone?: string | null;
+  endDate?: string | null;
+  notes?: string | null;
+  medicationId?: string | null;
+  trackedMetricId?: string | null;
+};
+export type HealthReminder = Partial<Omit<HealthReminderInput, "type" | "frequency" | "dueDate">> & {
+  id: string;
+  title: string;
+  type?: string | null;
+  frequency?: string | null;
+  dueDate: string | null;
+  scheduledAt?: string | null;
+  status: string;
+  origin: string;
 };
 
 export type HealthHomeReminder = {
@@ -353,14 +381,7 @@ export type HealthAvailableMetric = {
 
 export type HealthOverview = {
   member: HealthMember;
-  upcoming: Array<{
-    id: string;
-    title: string;
-    dueDate: string | null;
-    origin: string;
-    status: string;
-    sourceDocumentId?: string | null;
-  }>;
+  upcoming: HealthReminder[];
   trackedMetrics: Array<
     TrackedHealthMetric & {
       measurements: HealthMeasurement[];
@@ -368,6 +389,29 @@ export type HealthOverview = {
     }
   >;
   recentRecords: HealthRecord[];
+};
+
+export type HealthMedicationDetails = {
+  route?: string | null;
+  instructions?: string | null;
+  courseStartDate?: string | null;
+  courseEndDate?: string | null;
+  prescribingDoctor?: string | null;
+  sourceDocumentId?: string | null;
+  reminderIds?: string[];
+};
+
+export type HealthVisitPacketInput = {
+  memberId: string;
+  recordIds: string[];
+  doctor?: string | null;
+  clinic?: string | null;
+  visitDate?: string | null;
+};
+export type HealthVisitPacket = HealthVisitPacketInput & {
+  id: string;
+  fileDocumentId: string;
+  downloadPath: string;
 };
 
 export type HealthTimelineEvent = {
@@ -382,7 +426,7 @@ export type HealthTimelineEvent = {
   detail?: string | null;
   source: string;
   sourceType: string;
-  medication?: {
+  medication?: HealthMedicationDetails & {
     name: string;
     dose?: string | null;
     frequency?: string | null;
@@ -398,7 +442,7 @@ export type HealthTimelineEvent = {
   };
 };
 
-export type HealthMedication = {
+export type HealthMedication = HealthMedicationDetails & {
   id: string;
   memberId: string;
   name: string;

@@ -11,7 +11,7 @@ export type HealthExtraction = {
   followUps: Array<{ title: string; explicitDate?: string | null; recommendedAfter?: { value: number; unit: "days" | "weeks" | "months" | "years" } | null; sourceText?: string | null }>;
   prescriptionAnalysis?: { isHandwritten: boolean; hasUnreadableMedicationText: boolean; outcome: "not_prescription" | "medications_detected" | "partial_medications_detected" | "handwriting_unreadable" | "no_medications_detected"; message?: string | null } | null;
 };
-export type HealthProfileInput = { name: string; relation: string; dateOfBirth?: string | null; age?: number | null; gender?: string | null; bloodGroup?: string | null; conditions?: string | null; allergies?: string | null };
+export type HealthProfileInput = { name: string; relation: string; dateOfBirth?: string | null; age?: number | null; gender?: string | null; emergencyContactRelationship?: string | null; bloodGroup?: string | null; conditions?: string | null; allergies?: string | null };
 export type HealthUploadReview = {
   extraction: HealthExtraction;
   memberId?: string;

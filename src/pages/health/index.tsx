@@ -1,3 +1,5 @@
+import HealthProfileNotices from "./components/HealthProfileNotices";
+import ManualReadings from "./records/ManualReadings";
 import type { HealthMember } from "@/lib/api.types";
 import { Text, Card, Button } from "@/design-system";
 
@@ -97,20 +99,9 @@ export default function HealthPage() {
         onTab={setActiveTab}
       />
 
-      {newProfileName ? (
-        <Card>
-          <Text as="p" role="status">New health profile created for {newProfileName}.</Text>
-          <Button variant="tertiary" type="button" onClick={() => navigate(location.pathname + location.search, { replace: true, state: { newHealthProfileId: newProfileId } })}>Dismiss</Button>
-        </Card>
-      ) : null}
-      {pendingRecords.length > 0 && !memberResolution ? (
-        <Card>
-          <Text as="p">{pendingRecords.length === 1 ? "One health report needs a profile." : `${pendingRecords.length} health reports need a profile.`}</Text>
-          <Button variant="tertiary" type="button" onClick={() => setMemberResolution(pendingRecords[0]!)}>
-            Review assignment
-          </Button>
-        </Card>
-      ) : null}
+      <HealthProfileNotices newProfileName={newProfileName} pendingCount={memberResolution ? 0 : pendingRecords.length}
+        onDismiss={() => navigate(location.pathname + location.search, { replace: true, state: { newHealthProfileId: newProfileId } })}
+        onReview={() => setMemberResolution(pendingRecords[0]!)} />
       {message && activeTab !== "Overview" ? (
         <div className="lp-health-insight">
           <Text size="md">{message}</Text>
@@ -120,6 +111,8 @@ export default function HealthPage() {
       {!loading && selectedMember && activeTab === "Overview" ? (
         <Overview
           onReminder={() => setHealthDialog("reminder")}
+          timeline={timeline}
+          onReminderSaved={() => refreshHealth(selectedMember.id)}
           onEdit={() => setHealthDialog("profile")}
           onAddRecord={() => setShowAddRecord(true)}
           onInsurance={() => setHealthDialog("insurance")}
@@ -150,7 +143,7 @@ export default function HealthPage() {
         <Timeline events={timeline} />
       ) : null}
       {!loading && selectedMember && activeTab === "Medicines" ? (
-        <HealthMedicationsTab
+        <HealthMedicationsTab records={records} onViewOriginal={viewOriginalDocument} addRequested={false} onAddClosed={() => undefined}
           selectedMember={selectedMember}
           timeline={timeline}
           refreshHealth={refreshHealth}
@@ -168,6 +161,8 @@ export default function HealthPage() {
           onDelete={setDeleteRecord}
         />
       ) : null}
+      {!loading && selectedMember && activeTab === "Records" && <ManualReadings key={selectedMember.id} member={selectedMember}
+        measurements={measurements} onSaved={() => refreshHealth(selectedMember.id)} />}
       {isRecordModalOpen ? (
         <RecordDetailModal
           record={
@@ -182,6 +177,7 @@ export default function HealthPage() {
       {healthDialog && selectedMember ? (
         <HealthDialog
           kind={healthDialog}
+          tracked={tracked}
           timeline={timeline}
           member={selectedMember}
           records={records}

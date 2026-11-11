@@ -1,3 +1,4 @@
+import VisitPacketActions from "./VisitPacketActions";
 import { Heading, Text, ModalPanel, ModalBackdrop, Input, Button, Checkbox } from "@/design-system";
 import { CalendarClock, Check, ChevronRight, Download, X } from "lucide-react";
 import { documentLabel } from "./HealthDialog.buildVisitContexts";
@@ -155,6 +156,10 @@ export function VisitPackDialog(props: Parameters<typeof useVisitPackDialogLogic
             </Text>
           </div>
         )}
+        <VisitPacketActions key={member.id} memberId={member.id} selectedIds={selected.map(item => item.record.id)}
+          doctor={selectedContext?.kind === "doctor" ? selectedContext.label : undefined}
+          clinic={selectedContext?.kind === "provider" ? selectedContext.label : undefined}
+          canSave={Boolean(selectedContext) && !choosingVisit} />
         {error ? (
           <Text as="p" size="sm" weight="semibold" className="lp-health-form-error" role="alert">
             {error}

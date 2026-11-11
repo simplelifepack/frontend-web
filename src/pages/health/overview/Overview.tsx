@@ -22,6 +22,8 @@ function Overview({
   records,
   onTrack,
   onReminder,
+  timeline,
+  onReminderSaved,
   onEdit,
   onAddRecord,
   onInsurance,
@@ -29,6 +31,8 @@ function Overview({
   onApplyTracked,
 }: {
   onReminder: () => void;
+  timeline?: import("@/lib/api.types").HealthTimelineEvent[];
+  onReminderSaved?: () => Promise<void>;
   onEdit: () => void;
   onAddRecord: () => void;
   onInsurance: () => void;
@@ -117,7 +121,7 @@ function Overview({
         />
       ) : null}
       <Grid $align="start">
-        <ReminderPanel reminders={upcoming} onAdd={onReminder} />
+        {overview && <ReminderPanel key={overview.member.id} reminders={upcoming} memberId={overview.member.id} timeline={timeline ?? []} tracked={overview.trackedMetrics} onSaved={onReminderSaved ?? (async () => undefined)} onAdd={onReminder} />}
         {overview ? (
           <HealthReadiness
             member={overview.member}

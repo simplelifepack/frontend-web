@@ -1,4 +1,4 @@
-import type { DocumentRecord, HealthRecord } from "@/lib/api.types";
+import type { DocumentRecord, HealthRecord, HealthReminderType, HealthReminderFrequency } from "@/lib/api.types";
 
 
 export type HealthDialogKind =
@@ -18,15 +18,18 @@ export type VisitContext = {
 
 export type VisitDocument = { record: HealthRecord; document?: DocumentRecord };
 
-export type ReminderType = "appointment" | "medicine" | "refill" | "other";
+export type ReminderType = HealthReminderType;
 
-export type ReminderFrequency = "once" | "daily" | "weekly" | "monthly";
+export type ReminderFrequency = HealthReminderFrequency;
 
 
 export const reminderTypeOptions: Array<{ value: ReminderType; label: string }> = [
   { value: "appointment", label: "Appointment" },
   { value: "medicine", label: "Take a medicine" },
   { value: "refill", label: "Refill" },
+  { value: "reading", label: "Take a reading" },
+  { value: "vaccination", label: "Vaccination" },
+  { value: "test", label: "Test" },
   { value: "other", label: "Something else" },
 ];
 

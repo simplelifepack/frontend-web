@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FlaskConical, Link2, Pill, ShieldCheck } from "lucide-react";
 import { api } from "@/lib/api";
 import type { HealthMeasurement, HealthMember, HealthRecord } from "@/lib/api.types";
-import { type VisitDocument, type HealthDialogKind, type ReminderType, type ReminderFrequency } from "./HealthDialog.HealthDialogKind";
+import { type VisitDocument, type HealthDialogKind } from "./HealthDialog.HealthDialogKind";
 import { visitDate, formatVisitDate, isInsuranceDocument } from "./HealthDialog.buildVisitContexts";
 
 export function documentDetail(item: VisitDocument) {
@@ -83,10 +83,6 @@ export function useHealthDialogLogic({
   onViewDocument: (documentId: string) => void;
 }) {
 
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [reminderType, setReminderType] = useState<ReminderType | "">("");
-  const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency | "">("");
   const [identity, setIdentity] = useState({
     name: member.name, relation: member.relation, dateOfBirth: member.dateOfBirth ?? "",
     age: member.age == null ? "" : String(member.age), gender: member.gender ?? "",
@@ -94,6 +90,7 @@ export function useHealthDialogLogic({
   const [bloodGroup, setBloodGroup] = useState(member.bloodGroup || "Unknown");
   const [conditions, setConditions] = useState(member.conditions || "");
   const [allergies, setAllergies] = useState(member.allergies || "");
+  const [emergencyContactRelationship, setEmergencyContactRelationship] = useState(member.emergencyContactRelationship ?? "");
   const [emergencyContactName, setEmergencyContactName] = useState(
     member.emergencyContactName || "",
   );
@@ -112,16 +109,12 @@ export function useHealthDialogLogic({
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const titles = {
-    reminder: "Add reminder",
+    reminder: "Add a reminder",
     profile: "Edit medical profile",
     emergency: "Emergency card",
-    reading: "Log reading",
+    reading: "Log a reading",
   };
   const save = async () => {
-    if (kind === "reminder" && (!title.trim() || !reminderType || !date || !reminderFrequency)) {
-      setError("Title, what for, due date, and how often are required.");
-      return;
-    }
     const age = identity.age === "" ? null : Number(identity.age);
     if (kind === "profile") {
       const issue = validateDateOfBirth(identity.dateOfBirth);
@@ -133,15 +126,6 @@ export function useHealthDialogLogic({
     setSaving(true);
     setError("");
     try {
-      if (kind === "reminder")
-        await api.health.createReminder({
-          memberId: member.id,
-          title: title.trim(),
-          type: reminderType || "other",
-          dueDate: date,
-          frequency: reminderFrequency || "once",
-        });
-      else
         await api.health.updateMember(member.id, {
           name: identity.name.trim(),
           relation: identity.relation,
@@ -151,6 +135,7 @@ export function useHealthDialogLogic({
           bloodGroup,
           conditions,
           allergies,
+          emergencyContactRelationship: emergencyContactRelationship.trim() || null,
           emergencyContactName,
           emergencyContactPhone,
           primaryDoctor,
@@ -165,5 +150,5 @@ export function useHealthDialogLogic({
       setSaving(false);
     }
   };
-return { kind, member, identity, setIdentity, records, measurements, onClose, onSaved, onViewDocument, title, setTitle, date, setDate, reminderType, setReminderType, reminderFrequency, setReminderFrequency, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, setError, saving, setSaving, titles, save };
+return { kind, member, identity, setIdentity, records, measurements, onClose, onSaved, onViewDocument, bloodGroup, setBloodGroup, conditions, setConditions, allergies, setAllergies, emergencyContactRelationship, setEmergencyContactRelationship, emergencyContactName, setEmergencyContactName, emergencyContactPhone, setEmergencyContactPhone, primaryDoctor, setPrimaryDoctor, insuranceProvider, setInsuranceProvider, insurancePolicyNumber, setInsurancePolicyNumber, error, setError, saving, setSaving, titles, save };
 }

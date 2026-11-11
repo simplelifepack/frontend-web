@@ -1,9 +1,18 @@
-import { Heading, Text, ChoiceGroup, Choice, ModalBackdrop, ModalPanel, Input, Button } from "@/design-system";
+import { Heading, Text, ChoiceGroup, Choice, ModalBackdrop, ModalPanel, Input, Button, SelectMenu, Textarea } from "@/design-system";
 
 import { useState } from "react";
 import { X } from "lucide-react";
 
-type MedicationForm = {
+import type { HealthRecord } from "@/lib/api.types";
+
+export type MedicationForm = {
+  route: string;
+  instructions: string;
+  courseStartDate: string;
+  courseEndDate: string;
+  prescribingDoctor: string;
+  frequency: string;
+  sourceDocumentId: string;
   name: string;
   dose: string;
   whenToTake: MedicationTime[];
@@ -31,14 +40,18 @@ function AddMedicationDialog({
   onClose,
   onCreate,
   initialMedication,
+  prescriptions,
 }: {
   onClose: () => void;
   onCreate: (form: MedicationForm) => Promise<void>;
   initialMedication?: MedicationForm;
+  prescriptions: HealthRecord[];
 }) {
   const editing = Boolean(initialMedication);
   const [form, setForm] = useState<MedicationForm>(
     initialMedication ?? {
+      route: "", instructions: "", courseStartDate: "", courseEndDate: "",
+      prescribingDoctor: "", frequency: "", sourceDocumentId: "",
       name: "",
       dose: "",
       whenToTake: [],
@@ -50,7 +63,7 @@ function AddMedicationDialog({
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const isValid = form.name.trim() && form.dose.trim() && form.whenToTake.length > 0 && form.mealTiming;
+  const isValid = form.name.trim() && (editing || Boolean(form.dose.trim() && form.whenToTake.length && form.mealTiming));
   const update = <K extends keyof MedicationForm>(key: K, value: MedicationForm[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
   const toggleTime = (value: MedicationTime) =>
@@ -62,7 +75,11 @@ function AddMedicationDialog({
     }));
   const submit = async () => {
     if (!isValid) {
-      setError("Name, dose, when to take it, and meal timing are required.");
+      setError(editing ? "Name is required." : "Name, dose, when to take it, and meal timing are required.");
+      return;
+    }
+    if (form.courseStartDate && form.courseEndDate && form.courseEndDate < form.courseStartDate) {
+      setError("Course end date must be on or after the start date.");
       return;
     }
     setSaving(true);
@@ -120,7 +137,31 @@ function AddMedicationDialog({
               ))}
             </ChoiceGroup>
           </fieldset>
-          <Text as="p" size="md" className="lp-health-med-note">Repeat date is optional.</Text>
+          <Text as="label" size="sm" weight="medium">Frequency (optional)
+            <Input maxLength={160} value={form.frequency} onChange={event => update("frequency", event.target.value)} placeholder="e.g. Twice daily" />
+          </Text>
+          <Text as="label" size="sm" weight="medium">Route (optional)
+            <Input value={form.route} onChange={event => update("route", event.target.value)} placeholder="e.g. Oral" />
+          </Text>
+          <Text as="label" size="sm" weight="medium">Course start (optional)
+            <Input type="date" value={form.courseStartDate} onChange={event => update("courseStartDate", event.target.value)} />
+          </Text>
+          <Text as="label" size="sm" weight="medium">Course end (optional)
+            <Input type="date" min={form.courseStartDate || undefined} value={form.courseEndDate} onChange={event => update("courseEndDate", event.target.value)} />
+          </Text>
+          <Text as="label" size="sm" weight="medium">Prescribing doctor (optional)
+            <Input value={form.prescribingDoctor} onChange={event => update("prescribingDoctor", event.target.value)} />
+          </Text>
+          <Text as="label" size="sm" weight="medium">Prescription (optional)
+            <SelectMenu aria-label="Prescription" value={form.sourceDocumentId} onValueChange={value => update("sourceDocumentId", value)}
+              options={[
+                { value: "", label: "No prescription" },
+                ...prescriptions.map(record => ({ value: record.id, label: ["Prescription", record.doctor, record.documentDate].filter(Boolean).join(" · ") })),
+              ]} />
+          </Text>
+          <Text as="label" size="sm" weight="medium">Instructions (optional)
+            <Textarea value={form.instructions} onChange={event => update("instructions", event.target.value)} />
+          </Text>
         </div>
         {error ? <Text as="div" size="sm" weight="semibold" className="lp-health-form-error" tone="danger" role="alert">{error}</Text> : null}
         <footer>

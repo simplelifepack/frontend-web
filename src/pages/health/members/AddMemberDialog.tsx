@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 
 import { familyRelationships as relations, isoDateInput, validateDateOfBirth } from "../healthUtils";
 
-export type ProfileDraft = { name?: string; relation?: string | null; dateOfBirth?: string | null; age?: number | null; gender?: string | null; bloodGroup?: string | null; conditions?: string | null; allergies?: string | null };
+export type ProfileDraft = { name?: string; relation?: string | null; dateOfBirth?: string | null; age?: number | null; gender?: string | null; emergencyContactRelationship?: string | null; bloodGroup?: string | null; conditions?: string | null; allergies?: string | null };
 
 function AddMemberDialog({
   initial,
@@ -21,6 +21,7 @@ function AddMemberDialog({
     dateOfBirth?: string | null;
     age?: number | null;
     gender?: string | null;
+    emergencyContactRelationship?: string | null;
     conditions?: string | null;
     allergies?: string | null;
   }) => Promise<void>;
@@ -32,6 +33,7 @@ function AddMemberDialog({
   const [customRelation, setCustomRelation] = useState(knownRelation ? "" : suggestedRelation);
   const [bloodGroup, setBloodGroup] = useState(initial?.bloodGroup ?? "Unknown");
   const [age, setAge] = useState(initial?.age == null ? "" : String(initial.age));
+  const [contactRelationship, setContactRelationship] = useState(initial?.emergencyContactRelationship ?? "");
   const [gender, setGender] = useState(initial?.gender ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(initial?.dateOfBirth ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -65,6 +67,7 @@ function AddMemberDialog({
         dateOfBirth: dateOfBirth || null,
         age: age ? Number(age) : null,
         gender: gender.trim() || null,
+        ...(contactRelationship.trim() ? { emergencyContactRelationship: contactRelationship.trim() } : {}),
         conditions: initial?.conditions,
         allergies: initial?.allergies,
       });
@@ -130,7 +133,11 @@ function AddMemberDialog({
             {errors.age ? <small>{errors.age}</small> : null}
           </Text>
           <Text as="label" size="sm" weight="medium">
-            <span>Gender</span><Input value={gender} onChange={event => setGender(event.target.value)} />
+            <span>Sex (optional)</span><Input maxLength={80} value={gender} onChange={event => setGender(event.target.value)} />
+          </Text>
+          <Text as="label" size="sm" weight="medium">
+            <span>Emergency contact relationship (optional)</span>
+            <Input maxLength={80} value={contactRelationship} onChange={event => setContactRelationship(event.target.value)} />
           </Text>
           <Text as="label" size="sm" weight="medium">
             <span>Blood group</span>
